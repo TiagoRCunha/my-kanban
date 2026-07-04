@@ -1,4 +1,4 @@
-package com.tiagorcunha.mykanban.backend.user;
+package com.tiagorcunha.mykanban.backend.user.domain.model;
 
 import java.time.LocalDateTime;
 

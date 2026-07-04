@@ -1,4 +1,4 @@
-package com.tiagorcunha.mykanban.backend.user;
+package com.tiagorcunha.mykanban.backend.board.infrastructure.web;
 
 import java.util.List;
 
@@ -14,43 +14,46 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tiagorcunha.mykanban.backend.board.application.port.in.BoardUseCase;
+import com.tiagorcunha.mykanban.backend.board.application.response.BoardResponse;
+
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/boards")
 @Validated
-public class UserController {
+public class BoardController {
 
-  private final UserService userService;
+  private final BoardUseCase boardUseCase;
 
-  public UserController(UserService userService) {
-    this.userService = userService;
+  public BoardController(BoardUseCase boardUseCase) {
+    this.boardUseCase = boardUseCase;
   }
 
   @GetMapping
-  public List<UserResponse> findAll() {
-    return userService.findAll();
+  public List<BoardResponse> findAll() {
+    return boardUseCase.findAll();
   }
 
   @GetMapping("/{id}")
-  public UserResponse findById(@PathVariable Long id) {
-    return userService.findById(id);
+  public BoardResponse findById(@PathVariable Long id) {
+    return boardUseCase.findById(id);
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public UserResponse create(@Valid @RequestBody UserRequest request) {
-    return userService.create(request);
+  public BoardResponse create(@Valid @RequestBody BoardRequest request) {
+    return boardUseCase.create(request.toCommand());
   }
 
   @PutMapping("/{id}")
-  public UserResponse update(@PathVariable Long id, @Valid @RequestBody UserRequest request) {
-    return userService.update(id, request);
+  public BoardResponse update(@PathVariable Long id, @Valid @RequestBody BoardRequest request) {
+    return boardUseCase.update(id, request.toCommand());
   }
 
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void delete(@PathVariable Long id) {
-    userService.delete(id);
+    boardUseCase.delete(id);
   }
 }
