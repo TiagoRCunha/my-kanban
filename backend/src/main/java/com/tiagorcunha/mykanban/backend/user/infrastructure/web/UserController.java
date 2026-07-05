@@ -21,11 +21,18 @@ import com.tiagorcunha.mykanban.backend.user.application.port.in.ListUsersUseCas
 import com.tiagorcunha.mykanban.backend.user.application.port.in.UpdateUserUseCase;
 import com.tiagorcunha.mykanban.backend.user.application.response.UserResponse;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/users")
 @Validated
+@Tag(name = "Users", description = "User management endpoints")
 public class UserController {
 
   private final ListUsersUseCase listUsersUseCase;
@@ -48,28 +55,74 @@ public class UserController {
   }
 
   @GetMapping
+  @Operation(summary = "List users")
+  @ApiResponse(responseCode = "200", description = "Users fetched")
   public List<UserResponse> findAll() {
     return listUsersUseCase.findAll();
   }
 
   @GetMapping("/{id}")
+  @Operation(summary = "Get user by id")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "User found"),
+      @ApiResponse(
+          responseCode = "404",
+          description = "User not found",
+          content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+  })
   public UserResponse findById(@PathVariable Long id) {
     return findUserByIdUseCase.findById(id);
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
+  @Operation(summary = "Create user")
+  @ApiResponses({
+      @ApiResponse(responseCode = "201", description = "User created"),
+      @ApiResponse(
+          responseCode = "400",
+          description = "Invalid payload",
+          content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class))),
+      @ApiResponse(
+          responseCode = "409",
+          description = "Email already in use",
+          content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+  })
   public UserResponse create(@Valid @RequestBody UserRequest request) {
     return createUserUseCase.create(request.toCommand());
   }
 
   @PutMapping("/{id}")
+  @Operation(summary = "Update user")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "User updated"),
+      @ApiResponse(
+          responseCode = "400",
+          description = "Invalid payload",
+          content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class))),
+      @ApiResponse(
+          responseCode = "404",
+          description = "User not found",
+          content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class))),
+      @ApiResponse(
+          responseCode = "409",
+          description = "Email already in use",
+          content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+  })
   public UserResponse update(@PathVariable Long id, @Valid @RequestBody UserRequest request) {
     return updateUserUseCase.update(id, request.toCommand());
   }
 
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
+  @Operation(summary = "Delete user")
+  @ApiResponses({
+      @ApiResponse(responseCode = "204", description = "User deleted"),
+      @ApiResponse(
+          responseCode = "404",
+          description = "User not found",
+          content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+  })
   public void delete(@PathVariable Long id) {
     deleteUserUseCase.delete(id);
   }
