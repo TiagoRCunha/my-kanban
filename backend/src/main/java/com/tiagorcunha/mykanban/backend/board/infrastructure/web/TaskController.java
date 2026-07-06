@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tiagorcunha.mykanban.backend.board.application.port.in.TaskUseCase;
 import com.tiagorcunha.mykanban.backend.board.application.response.TaskResponse;
+import com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -44,7 +45,7 @@ public class TaskController {
       @ApiResponse(
         responseCode = "404",
         description = "Column not found",
-        content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
   public List<TaskResponse> findByColumnId(@PathVariable Long columnId) {
     return taskUseCase.findByColumnId(columnId);
@@ -58,15 +59,15 @@ public class TaskController {
       @ApiResponse(
         responseCode = "400",
         description = "Invalid payload",
-        content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class))),
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
       @ApiResponse(
         responseCode = "404",
         description = "Column or user not found",
-        content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class))),
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
       @ApiResponse(
         responseCode = "409",
         description = "Task position already in use",
-        content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
   public TaskResponse create(@PathVariable Long columnId, @Valid @RequestBody TaskRequest request) {
     return taskUseCase.create(columnId, request.toCommand());
@@ -79,15 +80,15 @@ public class TaskController {
       @ApiResponse(
         responseCode = "400",
         description = "Invalid payload",
-        content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class))),
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
       @ApiResponse(
         responseCode = "404",
         description = "Task, column, or user not found",
-        content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class))),
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
       @ApiResponse(
         responseCode = "409",
         description = "Task position already in use",
-        content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
   public TaskResponse update(
       @PathVariable Long columnId,
@@ -104,7 +105,7 @@ public class TaskController {
       @ApiResponse(
           responseCode = "404",
           description = "Task not found",
-          content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   public void delete(@PathVariable Long columnId, @PathVariable Long taskId) {
     taskUseCase.delete(columnId, taskId);

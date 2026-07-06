@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tiagorcunha.mykanban.backend.board.application.port.in.CommentUseCase;
 import com.tiagorcunha.mykanban.backend.board.application.response.CommentResponse;
+import com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -44,7 +45,7 @@ public class CommentController {
       @ApiResponse(
         responseCode = "404",
         description = "Task not found",
-        content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
   public List<CommentResponse> findByTaskId(@PathVariable Long taskId) {
     return commentUseCase.findByTaskId(taskId);
@@ -58,11 +59,11 @@ public class CommentController {
       @ApiResponse(
         responseCode = "400",
         description = "Invalid payload",
-        content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class))),
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
       @ApiResponse(
         responseCode = "404",
         description = "Task or user not found",
-        content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
   public CommentResponse create(@PathVariable Long taskId, @Valid @RequestBody CommentRequest request) {
     return commentUseCase.create(taskId, request.toCommand());
@@ -75,11 +76,11 @@ public class CommentController {
       @ApiResponse(
         responseCode = "400",
         description = "Invalid payload",
-        content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class))),
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
       @ApiResponse(
         responseCode = "404",
         description = "Comment, task, or user not found",
-        content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
   public CommentResponse update(
       @PathVariable Long taskId,
@@ -96,7 +97,7 @@ public class CommentController {
       @ApiResponse(
           responseCode = "404",
           description = "Comment not found",
-          content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   public void delete(@PathVariable Long taskId, @PathVariable Long commentId) {
     commentUseCase.delete(taskId, commentId);

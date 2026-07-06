@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tiagorcunha.mykanban.backend.board.application.port.in.BoardUseCase;
 import com.tiagorcunha.mykanban.backend.board.application.response.BoardResponse;
+import com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -51,7 +52,7 @@ public class BoardController {
       @ApiResponse(
           responseCode = "404",
           description = "Board not found",
-          content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   public BoardResponse findById(@PathVariable Long id) {
     return boardUseCase.findById(id);
@@ -65,11 +66,11 @@ public class BoardController {
       @ApiResponse(
           responseCode = "400",
           description = "Invalid payload",
-          content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class))),
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
       @ApiResponse(
           responseCode = "404",
           description = "Owner user not found",
-          content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   public BoardResponse create(@Valid @RequestBody BoardRequest request) {
     return boardUseCase.create(request.toCommand());
@@ -82,11 +83,11 @@ public class BoardController {
       @ApiResponse(
           responseCode = "400",
           description = "Invalid payload",
-          content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class))),
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
       @ApiResponse(
           responseCode = "404",
           description = "Board or owner user not found",
-          content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   public BoardResponse update(@PathVariable Long id, @Valid @RequestBody BoardRequest request) {
     return boardUseCase.update(id, request.toCommand());
@@ -100,7 +101,7 @@ public class BoardController {
       @ApiResponse(
           responseCode = "404",
           description = "Board not found",
-          content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   public void delete(@PathVariable Long id) {
     boardUseCase.delete(id);

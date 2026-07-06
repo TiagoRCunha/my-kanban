@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tiagorcunha.mykanban.backend.board.application.port.in.BoardColumnUseCase;
 import com.tiagorcunha.mykanban.backend.board.application.response.BoardColumnResponse;
+import com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -44,7 +45,7 @@ public class BoardColumnController {
       @ApiResponse(
         responseCode = "404",
         description = "Board not found",
-        content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
   public List<BoardColumnResponse> findByBoardId(@PathVariable Long boardId) {
     return boardColumnUseCase.findByBoardId(boardId);
@@ -58,15 +59,15 @@ public class BoardColumnController {
       @ApiResponse(
         responseCode = "400",
         description = "Invalid payload",
-        content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class))),
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
       @ApiResponse(
         responseCode = "404",
         description = "Board not found",
-        content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class))),
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
       @ApiResponse(
         responseCode = "409",
         description = "Column position already in use",
-        content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
   public BoardColumnResponse create(
       @PathVariable Long boardId,
@@ -81,15 +82,15 @@ public class BoardColumnController {
     @ApiResponse(
       responseCode = "400",
       description = "Invalid payload",
-      content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class))),
+      content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
     @ApiResponse(
       responseCode = "404",
       description = "Board or column not found",
-      content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class))),
+      content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
     @ApiResponse(
       responseCode = "409",
       description = "Column position already in use",
-      content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+      content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   public BoardColumnResponse update(
       @PathVariable Long boardId,
@@ -106,7 +107,7 @@ public class BoardColumnController {
       @ApiResponse(
           responseCode = "404",
           description = "Board column not found",
-          content = @Content(schema = @Schema(implementation = com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse.class)))
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   public void delete(@PathVariable Long boardId, @PathVariable Long columnId) {
     boardColumnUseCase.delete(boardId, columnId);
