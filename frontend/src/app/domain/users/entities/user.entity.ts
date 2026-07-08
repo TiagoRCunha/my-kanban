@@ -1,3 +1,4 @@
+import { DomainValidators } from '../../shared/domain-validators';
 import { Email } from '../value-objects/email.value-object';
 
 export type UserSnapshot = {
@@ -64,65 +65,24 @@ export class User {
     };
   }
 
-  private static ensureId(id: number): void {
-    if (!Number.isInteger(id) || id <= 0) {
-      throw new Error('User id must be a positive integer.');
-    }
+  private static ensureId(id: number): number {
+    return DomainValidators.positiveInteger(id, 'User id');
   }
 
   private static ensureFullName(fullName: string): string {
-    const value = fullName.trim();
-
-    if (!value) {
-      throw new Error('Full name is required.');
-    }
-
-    if (value.length > 100) {
-      throw new Error('Full name must have at most 100 characters.');
-    }
-
-    return value;
+    return DomainValidators.requiredString(fullName, 'Full name', 100);
   }
 
   private static ensurePasswordHash(passwordHash: string): string {
-    const value = passwordHash.trim();
-
-    if (!value) {
-      throw new Error('Password hash is required.');
-    }
-
-    if (value.length > 255) {
-      throw new Error('Password hash must have at most 255 characters.');
-    }
-
-    return value;
+    return DomainValidators.requiredString(passwordHash, 'Password hash', 255);
+    // TODO: Add password hash format validation
   }
 
   private static ensureAvatarUrl(avatarUrl: string | null): string | null {
-    if (avatarUrl == null) {
-      return null;
-    }
-
-    const value = avatarUrl.trim();
-
-    if (!value) {
-      return null;
-    }
-
-    if (value.length > 255) {
-      throw new Error('Avatar URL must have at most 255 characters.');
-    }
-
-    return value;
+    return DomainValidators.optionalString(avatarUrl, 255);
   }
 
   private static ensureDate(raw: string, fieldName: string): Date {
-    const date = new Date(raw);
-
-    if (Number.isNaN(date.getTime())) {
-      throw new Error(`${fieldName} must be a valid ISO date string.`);
-    }
-
-    return date;
+    return DomainValidators.isoDate(raw, fieldName);
   }
 }
