@@ -1,0 +1,16 @@
+<div class="column">
+  <div class="column__header">
+    <h2 class="column__title">{{ column.title }}</h2>
+    <span class="column__count">{{ tasks.length }}</span>
+  </div>
+
+  <div class="column__tasks">
+    @for (task of tasks; track task.id) {
+      <app-task-card [task]="task" />
+    }
+  </div>
+
+  <button class="column__add-btn" (click)="onAddTask()" type="button">
+    + Add task
+  </button>
+</div>

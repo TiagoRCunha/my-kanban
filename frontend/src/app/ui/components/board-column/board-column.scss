@@ -1,0 +1,74 @@
+@use '../../../../styles/abstracts/tokens' as t;
+@use '../../../../styles/abstracts/mixins' as m;
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: t.$spacing-2;
+  width: t.$column-width;
+  background: t.$color-surface-alt;
+  border-radius: t.$radius-md;
+  padding: t.$spacing-3;
+  flex-shrink: 0;
+  max-height: 100%;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: t.$spacing-2;
+  }
+
+  &__title {
+    font-size: t.$font-size-lg;
+    font-weight: t.$font-weight-bold;
+    color: t.$color-text;
+    margin: 0;
+    flex: 1;
+  }
+
+  &__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 t.$spacing-1;
+    background: t.$color-border;
+    border-radius: t.$radius-md;
+    font-size: t.$font-size-sm;
+    font-weight: t.$font-weight-medium;
+    color: t.$color-text-muted;
+  }
+
+  &__tasks {
+    display: flex;
+    flex-direction: column;
+    gap: t.$spacing-2;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+
+    @include m.thin-scrollbar;
+  }
+
+  &__add-btn {
+    padding: t.$spacing-2;
+    border: 2px dashed t.$color-border;
+    background: transparent;
+    border-radius: t.$radius-md;
+    color: t.$color-text-muted;
+    font-size: t.$font-size-md;
+    font-weight: t.$font-weight-medium;
+    cursor: pointer;
+    transition: all 0.15s;
+
+    @include m.focus-ring;
+
+    &:hover {
+      border-color: t.$color-primary;
+      color: t.$color-primary;
+      background: rgba(0, 82, 204, 0.05);
+    }
+  }
+}
