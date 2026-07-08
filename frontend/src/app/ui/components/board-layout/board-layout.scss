@@ -1,0 +1,14 @@
+@use '../../../../styles/abstracts/tokens' as t;
+
+.board-layout {
+  display: flex;
+  gap: t.$spacing-3;
+  height: 100%;
+
+  &__columns {
+    display: flex;
+    gap: t.$spacing-3;
+    flex: 1;
+    overflow-x: auto;
+  }
+}
