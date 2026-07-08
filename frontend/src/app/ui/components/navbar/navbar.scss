@@ -1,0 +1,79 @@
+@use '../../../../styles/abstracts/tokens' as t;
+@use '../../../../styles/abstracts/mixins' as m;
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: t.$navbar-height;
+  padding: 0 t.$spacing-5;
+  background-color: t.$color-primary;
+  color: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: t.$shadow-card;
+
+  &__brand {
+    display: flex;
+    align-items: center;
+  }
+
+  &__logo {
+    font-size: t.$font-size-lg;
+    font-weight: t.$font-weight-bold;
+    letter-spacing: 0.02em;
+    color: #ffffff;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: t.$spacing-3;
+  }
+
+  &__link {
+    font-size: t.$font-size-md;
+    font-weight: t.$font-weight-medium;
+    color: rgba(255, 255, 255, 0.85);
+    padding: t.$spacing-1 t.$spacing-2;
+    border-radius: t.$radius-sm;
+    transition: color 0.15s, background 0.15s;
+
+    @include m.focus-ring;
+
+    &:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.12);
+    }
+  }
+
+  &__icon-btn {
+    @include m.icon-button;
+
+    font-size: t.$font-size-lg;
+
+    @include m.focus-ring;
+  }
+
+  &__btn {
+    padding: t.$spacing-1 t.$spacing-4;
+    border: none;
+    border-radius: t.$radius-sm;
+    font-size: t.$font-size-md;
+    font-weight: t.$font-weight-medium;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    @include m.focus-ring;
+
+    &--logout {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+    }
+  }
+}

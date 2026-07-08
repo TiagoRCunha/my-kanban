@@ -1,0 +1,48 @@
+// ─── Colors ──────────────────────────────────────────────────────────────────
+
+// Light theme
+$color-bg: #f4f5f7;
+$color-surface: #ffffff;
+$color-surface-alt: #ebecf0;
+$color-border: #dfe1e6;
+$color-primary: #0052cc;
+$color-primary-hover: #0747a6;
+$color-danger: #de350b;
+$color-danger-hover: #bf2600;
+$color-text: #172b4d;
+$color-text-muted: #5e6c84;
+
+// ─── Spacing (4px base) ───────────────────────────────────────────────────────
+
+$spacing-1: 4px;
+$spacing-2: 8px;
+$spacing-3: 12px;
+$spacing-4: 16px;
+$spacing-5: 24px;
+$spacing-6: 32px;
+
+// ─── Radius ───────────────────────────────────────────────────────────────────
+
+$radius-sm: 4px;
+$radius-md: 8px;
+
+// ─── Shadows ──────────────────────────────────────────────────────────────────
+
+$shadow-card: 0 1px 2px rgba(9, 30, 66, 0.25);
+$shadow-card-hover: 0 2px 6px rgba(9, 30, 66, 0.3);
+$shadow-drag: 0 8px 16px rgba(9, 30, 66, 0.35);
+
+// ─── Typography ───────────────────────────────────────────────────────────────
+
+$font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
+$font-size-sm: 12px;
+$font-size-md: 14px;
+$font-size-lg: 16px;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 600;
+
+// ─── Layout ───────────────────────────────────────────────────────────────────
+
+$navbar-height: 56px;
+$column-width: 280px;

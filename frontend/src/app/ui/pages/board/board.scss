@@ -1,0 +1,20 @@
+@use '../../../../styles/abstracts/tokens' as t;
+@use '../../../../styles/abstracts/mixins' as m;
+
+.board-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - t.$navbar-height);
+  background-color: t.$color-primary;
+  overflow: hidden;
+
+  &__content {
+    display: flex;
+    flex: 1;
+    gap: t.$spacing-3;
+    padding: t.$spacing-5;
+    overflow-x: auto;
+
+    @include m.thin-scrollbar;
+  }
+}
