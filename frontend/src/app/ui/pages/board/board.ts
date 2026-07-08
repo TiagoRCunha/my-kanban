@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
-import { Navbar } from '../../components/navbar/navbar';
+import { Navbar } from '../../components/navbar';
+import { BoardLayout } from '../../components/board-layout';
 
 @Component({
   selector: 'app-board-page',
-  imports: [Navbar],
+  imports: [Navbar, BoardLayout],
   templateUrl: './board.html',
   styleUrl: './board.scss',
 })
