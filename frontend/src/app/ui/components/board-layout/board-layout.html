@@ -1,7 +1,13 @@
 <div class="board-layout">
   <div class="board-layout__columns">
     @for (column of columns; track column.id) {
-      <app-board-column [column]="column" />
+      <app-board-column
+        [column]="column"
+        [tasks]="column.tasks"
+        [dropListId]="getDropListId(column.id)"
+        [connectedDropListIds]="connectedDropListIds"
+        (taskDropped)="onTaskDrop($event)"
+      />
     }
   </div>
 

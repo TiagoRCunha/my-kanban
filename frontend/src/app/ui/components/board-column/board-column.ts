@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TaskCard } from '../task-card';
-import { TaskPriority } from '../../../domain/board/entities/task.entity';
+import { TaskCardData } from '../task-card';
 
 export type ColumnData = {
   id: number;
@@ -8,37 +9,22 @@ export type ColumnData = {
   position: number;
 };
 
-export type TaskCardData = {
-  id: number;
-  title: string;
-  priority: TaskPriority;
-  assigneeIds: number[];
-};
-
 @Component({
   selector: 'app-board-column',
-  imports: [TaskCard],
+  imports: [TaskCard, DragDropModule],
   templateUrl: './board-column.html',
   styleUrl: './board-column.scss',
 })
 export class BoardColumn {
   @Input() column!: ColumnData;
+  @Input() tasks: TaskCardData[] = [];
+  @Input() dropListId = '';
+  @Input() connectedDropListIds: string[] = [];
+  @Output() taskDropped = new EventEmitter<CdkDragDrop<TaskCardData[]>>();
 
-  // Mocked tasks for the column
-  tasks: TaskCardData[] = [
-    {
-      id: 1,
-      title: 'Design the navbar layout',
-      priority: TaskPriority.HIGH,
-      assigneeIds: [1, 2],
-    },
-    {
-      id: 2,
-      title: 'Implement drag and drop',
-      priority: TaskPriority.MEDIUM,
-      assigneeIds: [1],
-    },
-  ];
+  onDrop(event: CdkDragDrop<TaskCardData[]>): void {
+    this.taskDropped.emit(event);
+  }
 
   onAddTask(): void {
     // TODO: add new task implementation

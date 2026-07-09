@@ -4,9 +4,18 @@
     <span class="column__count">{{ tasks.length }}</span>
   </div>
 
-  <div class="column__tasks">
+  <div
+    class="column__tasks"
+    cdkDropList
+    [id]="dropListId"
+    [cdkDropListData]="tasks"
+    [cdkDropListConnectedTo]="connectedDropListIds"
+    (cdkDropListDropped)="onDrop($event)"
+  >
     @for (task of tasks; track task.id) {
-      <app-task-card [task]="task" />
+      <div cdkDrag class="column__task-item">
+        <app-task-card [task]="task" />
+      </div>
     }
   </div>
 

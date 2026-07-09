@@ -52,6 +52,10 @@
     @include m.thin-scrollbar;
   }
 
+  &__task-item {
+    display: block;
+  }
+
   &__add-btn {
     padding: t.$spacing-2;
     border: 2px dashed t.$color-border;
@@ -71,4 +75,16 @@
       background: rgba(0, 82, 204, 0.05);
     }
   }
+}
+
+.column__tasks.cdk-drop-list-dragging .column__task-item:not(.cdk-drag-placeholder) {
+  transition: transform 150ms ease;
+}
+
+.column__task-item.cdk-drag-preview {
+  box-shadow: t.$shadow-drag;
+}
+
+.column__task-item.cdk-drag-placeholder {
+  opacity: 0.35;
 }
