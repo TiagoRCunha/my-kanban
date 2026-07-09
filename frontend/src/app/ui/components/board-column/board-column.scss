@@ -56,6 +56,12 @@
     display: block;
   }
 
+  &__empty-tasks {
+    display: block;
+    // empty content
+    min-height: 10px;
+  }
+
   &__add-btn {
     padding: t.$spacing-2;
     border: 2px dashed t.$color-border;

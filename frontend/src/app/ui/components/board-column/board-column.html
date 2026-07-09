@@ -16,6 +16,8 @@
       <div cdkDrag class="column__task-item">
         <app-task-card [task]="task" />
       </div>
+    } @empty {
+    <div class="column__empty-tasks"></div>
     }
   </div>
 
