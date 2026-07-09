@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { BoardColumn } from '../board-column';
 import { TaskCardData } from '../task-card';
 import { ColumnController } from '../column-controller';
@@ -14,7 +14,7 @@ type BoardColumnData = {
 
 @Component({
   selector: 'app-board-layout',
-  imports: [BoardColumn, ColumnController],
+  imports: [BoardColumn, ColumnController, DragDropModule],
   templateUrl: './board-layout.html',
   styleUrl: './board-layout.scss',
 })
@@ -81,6 +81,18 @@ export class BoardLayout {
       event.previousIndex,
       event.currentIndex,
     );
+  }
+
+  onColumnDrop(event: CdkDragDrop<BoardColumnData[]>): void {
+    if (event.previousIndex === event.currentIndex) {
+      return;
+    }
+
+    moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
+
+    this.columns.forEach((column, index) => {
+      column.position = index;
+    });
   }
 
   onAddColumn(): void {

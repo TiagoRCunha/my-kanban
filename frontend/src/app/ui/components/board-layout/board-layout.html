@@ -1,13 +1,21 @@
 <div class="board-layout">
-  <div class="board-layout__columns">
+  <div
+    class="board-layout__columns"
+    cdkDropList
+    cdkDropListOrientation="horizontal"
+    [cdkDropListData]="columns"
+    (cdkDropListDropped)="onColumnDrop($event)"
+  >
     @for (column of columns; track column.id) {
-      <app-board-column
-        [column]="column"
-        [tasks]="column.tasks"
-        [dropListId]="getDropListId(column.id)"
-        [connectedDropListIds]="connectedDropListIds"
-        (taskDropped)="onTaskDrop($event)"
-      />
+      <div class="board-layout__column-item" cdkDrag cdkDragLockAxis="x" [cdkDragData]="column">
+        <app-board-column
+          [column]="column"
+          [tasks]="column.tasks"
+          [dropListId]="getDropListId(column.id)"
+          [connectedDropListIds]="connectedDropListIds"
+          (taskDropped)="onTaskDrop($event)"
+        />
+      </div>
     }
   </div>
 

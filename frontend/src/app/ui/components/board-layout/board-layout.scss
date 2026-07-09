@@ -11,4 +11,22 @@
     flex: 1;
     overflow-x: auto;
   }
+
+  &__column-item {
+    display: block;
+    flex-shrink: 0;
+  }
+}
+
+.board-layout__columns.cdk-drop-list-dragging
+  .board-layout__column-item:not(.cdk-drag-placeholder) {
+  transition: transform 150ms ease;
+}
+
+.board-layout__column-item.cdk-drag-preview {
+  box-shadow: t.$shadow-drag;
+}
+
+.board-layout__column-item.cdk-drag-placeholder {
+  opacity: 0.35;
 }
