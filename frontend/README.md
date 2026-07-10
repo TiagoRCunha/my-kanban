@@ -57,3 +57,131 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## Quick tutorial: add a new use case
+
+The frontend is organized in layers:
+
+`ui -> domain use case -> domain port -> infrastructure adapter -> backend API`
+
+Use the `users` module as the reference implementation.
+
+### 1. Start with the domain port
+
+Open `src/app/domain/users/ports/user-repository.port.ts` and add the repository method required by the new use case.
+
+Example:
+
+```ts
+export interface UserRepository {
+	findAll(): Promise<User[]>;
+	findById(id: number): Promise<User>;
+	create(input: CreateUserInput): Promise<User>;
+	update(id: number, input: UpdateUserInput): Promise<User>;
+	delete(id: number): Promise<void>;
+	archive(id: number): Promise<User>;
+}
+```
+
+If the use case can already be expressed with an existing repository method, do not add a new one.
+
+### 2. Implement the port in infrastructure
+
+Update the adapter in `src/app/infrastructure/users/adapters/http-user.repository.ts`.
+
+Example:
+
+```ts
+public archive(id: number): Promise<User> {
+	return firstValueFrom(
+		this.httpClient
+			.post<UserResponseDto>(`${this.apiBaseUrl}/users/${id}/archive`, {})
+			.pipe(map((user) => UserMapper.toDomain(user))),
+	);
+}
+```
+
+If the backend contract changes, also update the DTO or mapper under `src/app/infrastructure/users`.
+
+### 3. Create the use-case class in the domain
+
+Add a new file in `src/app/domain/users/use-cases`.
+
+Example:
+
+```ts
+import { User } from '../entities/user.entity';
+import { UserRepository } from '../ports/user-repository.port';
+
+export class ArchiveUserUseCase {
+	public constructor(private readonly userRepository: UserRepository) {}
+
+	public execute(id: number): Promise<User> {
+		return this.userRepository.archive(id);
+	}
+}
+```
+
+Keep the use case thin. Validation and orchestration belong here; HTTP details do not.
+
+### 4. Export it from the domain index
+
+Update `src/app/domain/users/index.ts`.
+
+Example:
+
+```ts
+export * from './use-cases/archive-user.use-case';
+```
+
+This keeps imports consistent across the app.
+
+### 5. Instantiate and use it in the UI layer
+
+This project keeps the use cases as plain classes, so create them where the UI or an application service needs them.
+
+Example shape:
+
+```ts
+const useCase = new ArchiveUserUseCase(this.userRepository);
+await useCase.execute(userId);
+```
+
+You can do this inside:
+
+- a page component
+- a facade service
+- an application-level orchestrator
+
+Prefer creating the use case close to the consumer until the project introduces a dedicated DI pattern for use cases.
+
+### 6. Update the UI contract if necessary
+
+If the new use case changes screen behavior:
+
+1. Update the page or component state.
+2. Add form fields if the use case needs input.
+3. Handle loading and error states around `execute()`.
+
+### 7. Validate
+
+Run the frontend locally:
+
+```bash
+ng serve
+```
+
+Run unit tests if you changed domain or UI behavior:
+
+```bash
+ng test
+```
+
+### Checklist
+
+- `domain/.../ports`: repository contract
+- `infrastructure/.../adapters`: HTTP implementation
+- `infrastructure/.../dto` or `mappers`: contract mapping when needed
+- `domain/.../use-cases`: new use-case class
+- `domain/.../index.ts`: export barrel update
+- `ui/...`: consume the use case from the screen or facade

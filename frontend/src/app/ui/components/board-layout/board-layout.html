@@ -1,0 +1,32 @@
+<div class="board-layout">
+  <div
+    class="board-layout__columns"
+    cdkDropList
+    cdkDropListOrientation="horizontal"
+    [cdkDropListData]="columns"
+    (cdkDropListDropped)="onColumnDrop($event)"
+  >
+    @for (column of columns; track column.id) {
+      <div
+        class="board-layout__column-item"
+        cdkDrag
+        cdkDragLockAxis="x"
+        [cdkDragData]="column"
+        [cdkDragDisabled]="column.pinned"
+      >
+        <app-board-column
+          [column]="column"
+          [isPinned]="column.pinned"
+          [tasks]="column.tasks"
+          [dropListId]="getDropListId(column.id)"
+          [connectedDropListIds]="connectedDropListIds"
+          (taskDropped)="onTaskDrop($event)"
+          (togglePin)="onToggleColumnPin(column.id)"
+          (renameColumn)="onRenameColumn(column.id, $event)"
+        />
+      </div>
+    }
+  </div>
+
+  <app-column-controller (onAdd)="onAddColumn()" />
+</div>

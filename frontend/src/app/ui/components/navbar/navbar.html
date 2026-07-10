@@ -1,0 +1,28 @@
+<nav class="navbar">
+  <div class="navbar__brand">
+    <span class="navbar__logo">MyKanban</span>
+  </div>
+
+  <div class="navbar__actions">
+    <a class="navbar__link" routerLink="/settings" aria-label="Settings & Account">
+      Settings & Account
+    </a>
+
+    <button
+      class="navbar__icon-btn"
+      type="button"
+      aria-label="Toggle dark mode"
+      (click)="onToggleDarkMode()"
+    >
+      ☀
+    </button>
+
+    <button
+      class="navbar__btn navbar__btn--logout"
+      type="button"
+      (click)="onLogout()"
+    >
+      Logout
+    </button>
+  </div>
+</nav>

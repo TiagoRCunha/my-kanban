@@ -1,0 +1,57 @@
+<div class="column">
+  <div class="column__header">
+    <div class="column__title-area">
+      @if (isRenaming) {
+        <input
+          class="column__rename-input"
+          type="text"
+          [(ngModel)]="renameTitle"
+          (blur)="onRenameColumn()"
+          (keydown.enter)="onRenameColumn()"
+          (keydown.escape)="onCancelRename()"
+          autofocus
+        />
+      } @else {
+        <button class="column__title-button" type="button" (click)="onToggleRename()">
+          <h2 class="column__title">{{ column.title }}</h2>
+        </button>
+      }
+    </div>
+    <div class="column__header-actions">
+      <!-- <button class="column__rename-btn" type="button" (click)="onToggleRename()">
+        Rename
+      </button> -->
+      <button
+        class="column__pin-btn"
+        type="button"
+        [attr.aria-label]="isPinned ? 'Unpin column' : 'Pin column'"
+        [title]="isPinned ? 'Unpin column' : 'Pin column'"
+        (click)="onTogglePin()"
+      >
+        {{ isPinned ? '📌' : '📍' }}
+      </button>
+      <span class="column__count">{{ tasks.length }}</span>
+    </div>
+  </div>
+
+  <div
+    class="column__tasks"
+    cdkDropList
+    [id]="dropListId"
+    [cdkDropListData]="tasks"
+    [cdkDropListConnectedTo]="connectedDropListIds"
+    (cdkDropListDropped)="onDrop($event)"
+  >
+    @for (task of tasks; track task.id) {
+      <div cdkDrag class="column__task-item">
+        <app-task-card [task]="task" />
+      </div>
+    } @empty {
+    <div class="column__empty-tasks"></div>
+    }
+  </div>
+
+  <button class="column__add-btn" (click)="onAddTask()" type="button">
+    + Add task
+  </button>
+</div>
