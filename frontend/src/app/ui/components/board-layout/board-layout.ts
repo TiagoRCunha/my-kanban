@@ -9,6 +9,7 @@ type BoardColumnData = {
   id: number;
   title: string;
   position: number;
+  pinned: boolean;
   tasks: TaskCardData[];
 };
 
@@ -24,6 +25,7 @@ export class BoardLayout {
       id: 1,
       title: 'To Do',
       position: 0,
+      pinned: false,
       tasks: [
         {
           id: 1,
@@ -37,6 +39,7 @@ export class BoardLayout {
       id: 2,
       title: 'In Progress',
       position: 1,
+      pinned: false,
       tasks: [
         {
           id: 2,
@@ -50,6 +53,7 @@ export class BoardLayout {
       id: 3,
       title: 'Done',
       position: 2,
+      pinned: false,
       tasks: [
         {
           id: 3,
@@ -88,15 +92,78 @@ export class BoardLayout {
       return;
     }
 
-    moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
+    const pinnedIndexById = new Map<number, number>();
+    this.columns.forEach((column, index) => {
+      if (column.pinned) {
+        pinnedIndexById.set(column.id, index);
+      }
+    });
+
+    const reorderedColumns = [...this.columns];
+    moveItemInArray(reorderedColumns, event.previousIndex, event.currentIndex);
+
+    const pinnedMoved = reorderedColumns.some((column, index) => {
+      if (!column.pinned) {
+        return false;
+      }
+      return pinnedIndexById.get(column.id) !== index;
+    });
+
+    if (pinnedMoved) {
+      return;
+    }
+
+    this.columns = reorderedColumns;
 
     this.columns.forEach((column, index) => {
       column.position = index;
     });
   }
 
+  onToggleColumnPin(columnId: number): void {
+    this.columns = this.columns.map((column) => {
+      if (column.id !== columnId) {
+        return column;
+      }
+
+      return {
+        ...column,
+        pinned: !column.pinned,
+      };
+    });
+  }
+
+  onRenameColumn(columnId: number, newTitle: string): void {
+    const title = newTitle.trim();
+
+    if (!title) {
+      return;
+    }
+
+    this.columns = this.columns.map((column) => {
+      if (column.id !== columnId) {
+        return column;
+      }
+
+      return {
+        ...column,
+        title,
+      };
+    });
+  }
+
   onAddColumn(): void {
-    // TODO: add new column implementation
-    console.log('Add column clicked');
+    const nextId = this.columns.reduce((maxId, column) => Math.max(maxId, column.id), 0) + 1;
+
+    this.columns = [
+      ...this.columns,
+      {
+        id: nextId,
+        title: `New Column ${nextId}`,
+        position: this.columns.length,
+        pinned: false,
+        tasks: [],
+      },
+    ];
   }
 }
