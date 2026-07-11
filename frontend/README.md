@@ -40,19 +40,29 @@ This will compile your project and store the build artifacts in the `dist/` dire
 
 To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
 
-```bash
-ng test
-```
+Running all the unit tests
 
-## Running end-to-end tests
+`npm run test:unit:all`
 
-For end-to-end (e2e) testing, run:
+Running a singular unit test
 
-```bash
-ng e2e
-```
+`npm run test:unit --include=<unit_test_file>`
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Running all the integration and integration tests
+
+`npm run test:integration:all`
+
+Running a singular integration test
+
+`npm run test:integration --include=<integration_test_file>`
+
+Running e2e tests
+
+`npm run test:e2e`
+
+Running all test at once
+
+`npm run test`
 
 ## Additional Resources
 
