@@ -42,4 +42,27 @@ describe('BoardLayout (integration)', () => {
 
     expect(component.columns[0].title).toBe('Backlog');
   });
+
+  it('creates a task in the selected column', () => {
+    const firstColumn = fixture.debugElement.queryAll(By.directive(BoardColumn))[0];
+    const childComponent = firstColumn.componentInstance as BoardColumn;
+
+    childComponent.createTask.emit(component.columns[0].id);
+    fixture.detectChanges();
+
+    expect(component.columns[0].tasks.length).toBe(2);
+    expect(component.columns[0].tasks[1].title).toBe('New Task 4');
+  });
+
+  it('deletes a task from the selected column', () => {
+    const firstColumn = fixture.debugElement.queryAll(By.directive(BoardColumn))[0];
+    const childComponent = firstColumn.componentInstance as BoardColumn;
+    const taskIdToDelete = component.columns[0].tasks[0].id;
+
+    childComponent.deleteTask.emit(taskIdToDelete);
+    fixture.detectChanges();
+
+    expect(component.columns[0].tasks.find((task) => task.id === taskIdToDelete)).toBeUndefined();
+    expect(component.columns[0].tasks.length).toBe(0);
+  });
 });
