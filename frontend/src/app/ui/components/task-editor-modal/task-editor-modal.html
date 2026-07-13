@@ -1,0 +1,89 @@
+@if (isVisible) {
+  <div class="task-editor" (click)="onClose()">
+    <section class="task-editor__modal" (click)="$event.stopPropagation()">
+      <header class="task-editor__header">
+        <h3 class="task-editor__title">{{ isEditMode ? 'Edit Task' : 'Create Task' }}</h3>
+        <button class="task-editor__close" type="button" aria-label="Close task editor" (click)="onClose()">
+          ×
+        </button>
+      </header>
+
+      <div class="task-editor__content">
+        <div class="task-editor__main">
+          <label class="task-editor__field">
+            <span>Title</span>
+            <input type="text" [(ngModel)]="draft.title" />
+          </label>
+
+          <label class="task-editor__field">
+            <span>Description</span>
+            <textarea rows="7" [(ngModel)]="draft.description"></textarea>
+          </label>
+
+          <section class="task-editor__comments">
+            <h4>Comments</h4>
+            <p>Comments section will be implemented in a future iteration.</p>
+          </section>
+        </div>
+
+        <aside class="task-editor__sidebar">
+          <label class="task-editor__field">
+            <span>Task Priority</span>
+            <div class="task-editor__tags">
+              @for (option of priorityOptions; track option) {
+                <button
+                  type="button"
+                  class="task-editor__tag"
+                  [class.task-editor__tag--active]="draft.priority === option"
+                  (click)="draft.priority = option"
+                >
+                  {{ option }}
+                </button>
+              }
+            </div>
+          </label>
+
+          <label class="task-editor__field">
+            <span>Due Date (mandatory)</span>
+            <input type="date" [(ngModel)]="draft.dueDate" />
+          </label>
+
+          <label class="task-editor__field">
+            <span>Estimated Hours (mandatory)</span>
+            <input type="number" min="0.5" step="0.5" [(ngModel)]="draft.estimatedHours" />
+          </label>
+
+          <div class="task-editor__meta">
+            <p>Assignees selection will be available in a future step.</p>
+          </div>
+
+          @if (isEditMode) {
+            <button
+              type="button"
+              class="task-editor__trash"
+              aria-label="Delete task"
+              title="Delete task"
+              (click)="onDelete()"
+            >
+              🗑
+            </button>
+          }
+        </aside>
+      </div>
+
+      <footer class="task-editor__actions">
+        <button type="button" class="task-editor__btn task-editor__btn--secondary" (click)="onClose()">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="task-editor__btn task-editor__btn--primary"
+          [disabled]="!canSave"
+          (click)="onSave()"
+        >
+          Save
+        </button>
+      </footer>
+    </section>
+  </div>
+}

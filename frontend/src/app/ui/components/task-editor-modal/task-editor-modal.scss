@@ -1,0 +1,207 @@
+@use '../../../../styles/abstracts/tokens' as t;
+
+$overlay-bg: rgba(9, 30, 66, 0.45);
+
+.task-editor {
+  position: fixed;
+  inset: 0;
+  background: $overlay-bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: t.$spacing-4;
+  z-index: 1200;
+
+  &__modal {
+    width: min(960px, 100%);
+    max-height: 92vh;
+    overflow: auto;
+    background: t.$color-surface;
+    border-radius: t.$radius-md;
+    box-shadow: t.$shadow-drag;
+    padding: t.$spacing-4;
+    display: flex;
+    flex-direction: column;
+    gap: t.$spacing-4;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: t.$spacing-2;
+  }
+
+  &__title {
+    margin: 0;
+    color: t.$color-text;
+    font-size: 20px;
+    font-weight: t.$font-weight-bold;
+  }
+
+  &__close {
+    border: 1px solid t.$color-border;
+    background: t.$color-surface;
+    color: t.$color-text-muted;
+    border-radius: t.$radius-sm;
+    width: 32px;
+    height: 32px;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  &__content {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: t.$spacing-4;
+  }
+
+  &__main {
+    display: flex;
+    flex-direction: column;
+    gap: t.$spacing-3;
+  }
+
+  &__sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: t.$spacing-3;
+    border-left: 1px solid t.$color-border;
+    padding-left: t.$spacing-3;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: t.$spacing-1;
+    color: t.$color-text;
+    font-size: t.$font-size-sm;
+
+    input,
+    textarea {
+      border: 1px solid t.$color-border;
+      border-radius: t.$radius-sm;
+      padding: t.$spacing-2;
+      font: inherit;
+      color: t.$color-text;
+      background: t.$color-surface;
+      resize: vertical;
+    }
+  }
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: t.$spacing-2;
+  }
+
+  &__tag {
+    border: 1px solid t.$color-border;
+    background: t.$color-surface;
+    color: t.$color-text-muted;
+    border-radius: 999px;
+    padding: 4px t.$spacing-2;
+    font-size: t.$font-size-sm;
+    cursor: pointer;
+
+    &--active {
+      border-color: t.$color-primary;
+      background: rgba(0, 82, 204, 0.12);
+      color: t.$color-primary;
+      font-weight: t.$font-weight-medium;
+    }
+  }
+
+  &__comments {
+    border: 1px dashed t.$color-border;
+    border-radius: t.$radius-sm;
+    padding: t.$spacing-3;
+
+    h4 {
+      margin: 0 0 t.$spacing-2;
+      color: t.$color-text;
+    }
+
+    p {
+      margin: 0;
+      color: t.$color-text-muted;
+      font-size: t.$font-size-sm;
+    }
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: t.$spacing-2;
+
+    p {
+      margin: 0;
+      color: t.$color-text-muted;
+      font-size: t.$font-size-sm;
+    }
+  }
+
+  &__trash {
+    margin-top: auto;
+    align-self: flex-end;
+    border: 1px solid rgba(222, 53, 11, 0.35);
+    background: rgba(222, 53, 11, 0.1);
+    color: t.$color-danger;
+    border-radius: t.$radius-sm;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: t.$spacing-2;
+  }
+
+  &__btn {
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-sm;
+    padding: t.$spacing-2 t.$spacing-3;
+    font-size: t.$font-size-md;
+    cursor: pointer;
+
+    &--secondary {
+      background: t.$color-surface;
+      color: t.$color-text-muted;
+    }
+
+    &--primary {
+      background: t.$color-primary;
+      border-color: t.$color-primary;
+      color: #ffffff;
+
+      &:hover:not(:disabled) {
+        background: t.$color-primary-hover;
+        border-color: t.$color-primary-hover;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .task-editor {
+    &__content {
+      grid-template-columns: 1fr;
+    }
+
+    &__sidebar {
+      border-left: 0;
+      border-top: 1px solid t.$color-border;
+      padding-left: 0;
+      padding-top: t.$spacing-3;
+    }
+  }
+}
