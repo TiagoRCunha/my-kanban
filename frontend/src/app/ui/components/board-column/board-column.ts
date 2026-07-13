@@ -24,6 +24,8 @@ export class BoardColumn {
   @Input() dropListId = '';
   @Input() connectedDropListIds: string[] = [];
   @Output() taskDropped = new EventEmitter<CdkDragDrop<TaskCardData[]>>();
+  @Output() createTask = new EventEmitter<number>();
+  @Output() deleteTask = new EventEmitter<number>();
   @Output() togglePin = new EventEmitter<void>();
   @Output() renameColumn = new EventEmitter<string>();
   isRenaming = false;
@@ -34,8 +36,11 @@ export class BoardColumn {
   }
 
   onAddTask(): void {
-    // TODO: add new task implementation
-    console.log('Add task clicked');
+    this.createTask.emit(this.column.id);
+  }
+
+  onDeleteTask(taskId: number): void {
+    this.deleteTask.emit(taskId);
   }
 
   onTogglePin(): void {

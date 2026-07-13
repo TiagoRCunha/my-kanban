@@ -73,6 +73,15 @@ export class BoardLayout {
     return `column-drop-list-${columnId}`;
   }
 
+  private getNextTaskId(): number {
+    const currentMaxTaskId = this.columns.reduce((maxTaskId, column) => {
+      const maxInColumn = column.tasks.reduce((maxId, task) => Math.max(maxId, task.id), 0);
+      return Math.max(maxTaskId, maxInColumn);
+    }, 0);
+
+    return currentMaxTaskId + 1;
+  }
+
   onTaskDrop(event: CdkDragDrop<TaskCardData[]>): void {
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
@@ -148,6 +157,42 @@ export class BoardLayout {
       return {
         ...column,
         title,
+      };
+    });
+  }
+
+  onCreateTask(columnId: number): void {
+    const taskId = this.getNextTaskId();
+
+    this.columns = this.columns.map((column) => {
+      if (column.id !== columnId) {
+        return column;
+      }
+
+      return {
+        ...column,
+        tasks: [
+          ...column.tasks,
+          {
+            id: taskId,
+            title: `New Task ${taskId}`,
+            priority: TaskPriority.MEDIUM,
+            assigneeIds: [],
+          },
+        ],
+      };
+    });
+  }
+
+  onDeleteTask(columnId: number, taskId: number): void {
+    this.columns = this.columns.map((column) => {
+      if (column.id !== columnId) {
+        return column;
+      }
+
+      return {
+        ...column,
+        tasks: column.tasks.filter((task) => task.id !== taskId),
       };
     });
   }

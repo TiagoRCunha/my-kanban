@@ -21,6 +21,8 @@
           [dropListId]="getDropListId(column.id)"
           [connectedDropListIds]="connectedDropListIds"
           (taskDropped)="onTaskDrop($event)"
+          (createTask)="onCreateTask(column.id)"
+          (deleteTask)="onDeleteTask(column.id, $event)"
           (togglePin)="onToggleColumnPin(column.id)"
           (renameColumn)="onRenameColumn(column.id, $event)"
         />
