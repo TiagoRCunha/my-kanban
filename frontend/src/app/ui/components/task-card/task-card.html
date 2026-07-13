@@ -1,8 +1,13 @@
-<div class="task-card" [ngClass]="getPriorityClass()">
+<div class="task-card" [ngClass]="getPriorityClass()" (click)="onOpenTask()">
   <div class="task-card__content">
     <div class="task-card__header">
       <h3 class="task-card__title">{{ task.title }}</h3>
-      <button class="task-card__delete-btn" type="button" aria-label="Delete task" (click)="onDeleteTask()">
+      <button
+        class="task-card__delete-btn"
+        type="button"
+        aria-label="Delete task"
+        (click)="onDeleteTask($event)"
+      >
         ×
       </button>
     </div>

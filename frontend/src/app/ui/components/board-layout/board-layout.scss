@@ -4,6 +4,7 @@
   display: flex;
   gap: t.$spacing-3;
   height: 100%;
+  position: relative;
 
   &__columns {
     display: flex;

@@ -22,6 +22,7 @@
           [connectedDropListIds]="connectedDropListIds"
           (taskDropped)="onTaskDrop($event)"
           (createTask)="onCreateTask(column.id)"
+          (openTask)="onOpenTask(column.id, $event)"
           (deleteTask)="onDeleteTask(column.id, $event)"
           (togglePin)="onToggleColumnPin(column.id)"
           (renameColumn)="onRenameColumn(column.id, $event)"
@@ -31,4 +32,11 @@
   </div>
 
   <app-column-controller (onAdd)="onAddColumn()" />
+
+  <app-task-editor-modal
+    [state]="taskEditor"
+    (close)="onCloseTaskModal()"
+    (save)="onSaveTaskChanges($event)"
+    (deleteTask)="onDeleteTaskFromModal()"
+  />
 </div>

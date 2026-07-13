@@ -5,7 +5,11 @@ import { TaskPriority } from '../../../domain/board/entities/task.entity';
 export type TaskCardData = {
   id: number;
   title: string;
+  description: string;
   priority: TaskPriority;
+  dueDate: string;
+  estimatedHours: number;
+  reportedById: number;
   assigneeIds: number[];
 };
 
@@ -17,13 +21,19 @@ export type TaskCardData = {
 })
 export class TaskCard {
   @Input() task!: TaskCardData;
+  @Output() openTask = new EventEmitter<number>();
   @Output() deleteTask = new EventEmitter<number>();
 
   getPriorityClass(): string {
     return `task-card--priority-${this.task.priority.toLowerCase()}`;
   }
 
-  onDeleteTask(): void {
+  onOpenTask(): void {
+    this.openTask.emit(this.task.id);
+  }
+
+  onDeleteTask(event: MouseEvent): void {
+    event.stopPropagation();
     this.deleteTask.emit(this.task.id);
   }
 }

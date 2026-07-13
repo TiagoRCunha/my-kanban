@@ -44,7 +44,11 @@
   >
     @for (task of tasks; track task.id) {
       <div cdkDrag class="column__task-item">
-        <app-task-card [task]="task" (deleteTask)="onDeleteTask($event)" />
+        <app-task-card
+          [task]="task"
+          (openTask)="onOpenTask($event)"
+          (deleteTask)="onDeleteTask($event)"
+        />
       </div>
     } @empty {
     <div class="column__empty-tasks"></div>
