@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TaskPriority } from '../../../domain/board/entities/task.entity';
 
@@ -27,7 +28,7 @@ export type TaskEditorFormValue = {
 
 @Component({
   selector: 'app-task-editor-modal',
-  imports: [FormsModule],
+  imports: [FormsModule, NgClass],
   templateUrl: './task-editor-modal.html',
   styleUrl: './task-editor-modal.scss',
 })

@@ -34,7 +34,12 @@
                 <button
                   type="button"
                   class="task-editor__tag"
-                  [class.task-editor__tag--active]="draft.priority === option"
+                  [ngClass]="{
+                  'task-editor__tag--active': draft.priority === option,
+                  'task-editor__tag--low': option === 'LOW',
+                  'task-editor__tag--medium': option === 'MEDIUM',
+                  'task-editor__tag--high': option === 'HIGH'
+                  }"
                   (click)="draft.priority = option"
                 >
                   {{ option }}
