@@ -1,0 +1,33 @@
+@use '../abstracts/tokens' as t;
+
+// ─── Headings ────────────────────────────────────────────────────────────────
+
+h1 {
+  font-size: t.$font-size-h1;
+  font-weight: t.$font-weight-bold;
+}
+
+h2 {
+  font-size: t.$font-size-h2;
+  font-weight: t.$font-weight-bold;
+}
+
+h3 {
+  font-size: t.$font-size-h3;
+  font-weight: t.$font-weight-bold;
+}
+
+h4 {
+  font-size: t.$font-size-h4;
+  font-weight: t.$font-weight-bold;
+}
+
+h5 {
+  font-size: t.$font-size-h5;
+  font-weight: t.$font-weight-bold;
+}
+
+h6 {
+  font-size: t.$font-size-h6;
+  font-weight: t.$font-weight-bold;
+}

@@ -11,24 +11,24 @@
       <div class="task-editor__content">
         <div class="task-editor__main">
           <label class="task-editor__field">
-            <span>Title</span>
+            <h6>Title</h6>
             <input type="text" [(ngModel)]="draft.title" />
           </label>
 
           <label class="task-editor__field">
-            <span>Description</span>
+            <h6>Description</h6>
             <textarea rows="7" [(ngModel)]="draft.description"></textarea>
           </label>
 
           <section class="task-editor__comments">
-            <h4>Comments</h4>
+            <h6>Comments</h6>
             <p>Comments section will be implemented in a future iteration.</p>
           </section>
         </div>
 
         <aside class="task-editor__sidebar">
           <label class="task-editor__field">
-            <span>Task Priority</span>
+            <h6>Task Priority</h6>
             <div class="task-editor__tags">
               @for (option of priorityOptions; track option) {
                 <button
@@ -49,12 +49,12 @@
           </label>
 
           <label class="task-editor__field">
-            <span>Due Date (mandatory)</span>
+            <h6>Due Date *</h6>
             <input type="date" [(ngModel)]="draft.dueDate" />
           </label>
 
           <label class="task-editor__field">
-            <span>Estimated Hours (mandatory)</span>
+            <h6>Estimated Hours *</h6>
             <input type="number" min="0.5" step="0.5" [(ngModel)]="draft.estimatedHours" />
           </label>
 
