@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TaskPriority } from '../../../domain/board/entities/task.entity';
+import { AnimatedButton } from '../animated-button';
 
 export type TaskEditorMode = 'create' | 'edit';
 
@@ -28,7 +29,7 @@ export type TaskEditorFormValue = {
 
 @Component({
   selector: 'app-task-editor-modal',
-  imports: [FormsModule, NgClass],
+  imports: [FormsModule, NgClass, AnimatedButton],
   templateUrl: './task-editor-modal.html',
   styleUrl: './task-editor-modal.scss',
 })

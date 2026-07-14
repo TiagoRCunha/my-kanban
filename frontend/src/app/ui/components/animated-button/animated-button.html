@@ -1,0 +1,20 @@
+<button
+  type="button"
+  class="animated-button"
+  [ngClass]="{
+    'animated-button--danger': variant === 'danger',
+    'animated-button--confirm': variant === 'confirm',
+    'animated-button--neutral': variant === 'neutral'
+  }"
+  [disabled]="disabled"
+  [attr.title]="title || null"
+  [attr.aria-label]="ariaLabel || label"
+  (click)="onPress()"
+>
+  <span class="animated-button__text">{{ label }}</span>
+  <span class="animated-button__icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" [attr.width]="iconSize" [attr.height]="iconSize">
+      <path [attr.d]="iconPath"></path>
+    </svg>
+  </span>
+</button>

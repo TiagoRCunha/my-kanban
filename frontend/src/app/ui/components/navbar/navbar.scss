@@ -57,15 +57,8 @@
   }
 
   &__btn {
-    padding: t.$spacing-1 t.$spacing-4;
-    border: none;
-    border-radius: t.$radius-sm;
-    font-size: t.$font-size-md;
-    font-weight: t.$font-weight-medium;
-    cursor: pointer;
-    transition: background 0.15s;
-
     @include m.focus-ring;
+    @include m.button-variants;
 
     &--logout {
       background: rgba(255, 255, 255, 0.15);
