@@ -19,6 +19,7 @@ import com.tiagorcunha.mykanban.backend.user.application.port.in.UpdateUserUseCa
 import com.tiagorcunha.mykanban.backend.user.application.port.out.UserRepositoryPort;
 import com.tiagorcunha.mykanban.backend.user.application.response.UserResponse;
 import com.tiagorcunha.mykanban.backend.user.domain.model.User;
+import com.tiagorcunha.mykanban.backend.user.domain.model.UserRole;
 
 @Service
 public class UserUseCaseHandler
@@ -59,6 +60,7 @@ public class UserUseCaseHandler
     user.setEmail(command.email());
     user.setPasswordHash(encodePassword(command.passwordHash()));
     user.setAvatarUrl(command.avatarUrl());
+    user.setRole(UserRole.USER);
     user.setCreatedAt(now);
     user.setUpdatedAt(now);
 
