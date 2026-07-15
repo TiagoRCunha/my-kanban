@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.tiagorcunha.mykanban.backend.common.application.exception.ConflictException;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ResourceNotFoundException;
+import com.tiagorcunha.mykanban.backend.common.application.exception.UnauthorizedException;
 
 @RestControllerAdvice
 public class RestExceptionHandler {
@@ -25,6 +26,11 @@ public class RestExceptionHandler {
   @ExceptionHandler(ConflictException.class)
   public ResponseEntity<ApiErrorResponse> handleConflict(ConflictException exception) {
     return buildResponse(HttpStatus.CONFLICT, exception.getMessage(), Map.of());
+  }
+
+  @ExceptionHandler(UnauthorizedException.class)
+  public ResponseEntity<ApiErrorResponse> handleUnauthorized(UnauthorizedException exception) {
+    return buildResponse(HttpStatus.UNAUTHORIZED, exception.getMessage(), Map.of());
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
