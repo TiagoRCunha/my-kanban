@@ -25,7 +25,11 @@ describe('BoardColumn (unit)', () => {
       {
         id: 1,
         title: 'Implement board view',
+        description: 'Initial implementation task',
         priority: TaskPriority.MEDIUM,
+        dueDate: '2026-07-28',
+        estimatedHours: 3,
+        reportedById: 1,
         assigneeIds: [1],
       },
     ];

@@ -1,0 +1,105 @@
+@use '../../../../styles/abstracts/tokens' as t;
+@use '../../../../styles/abstracts/mixins' as m;
+
+.animated-button {
+  @include m.focus-ring;
+
+  position: relative;
+  width: 150px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  border-radius: t.$radius-sm;
+  box-shadow: 1px 1px 3px t.$shadow-card;
+  color: t.$color-surface;
+  overflow: hidden;
+  transition: background 0.2s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &--danger {
+    background: t.$color-danger;
+  }
+
+  &--danger:hover:not(:disabled) {
+    background: t.$color-danger-hover;
+  }
+
+  &--confirm {
+    background: t.$color-success;
+  }
+
+  &--confirm:hover:not(:disabled) {
+    background: t.$color-success-hover;
+  }
+
+  &--neutral {
+    background: t.$color-surface-alt;
+    color: t.$color-text;
+  }
+
+  &--neutral:hover:not(:disabled) {
+    background: t.$color-border;
+  }
+
+  &,
+  &__text,
+  &__icon,
+  &__icon svg {
+    transition: all 0.2s ease;
+  }
+
+  &__text {
+    transform: translateX(35px);
+    color: inherit;
+    font-weight: t.$font-weight-bold;
+  }
+
+  &__icon {
+    position: absolute;
+    right: 0;
+    top: 2px;
+    height: 40px;
+    width: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &--danger &__icon {
+    border-left: 1px solid t.$color-danger;
+  }
+
+  &--confirm &__icon {
+    border-left: 1px solid t.$color-success;
+  }
+
+  &--neutral &__icon {
+    border-left: 1px solid t.$color-border;
+  }
+
+  &__icon svg {
+    fill: t.$color-surface;
+  }
+
+  &--neutral &__icon svg {
+    fill: t.$color-text-muted;
+  }
+
+  &:hover:not(:disabled) &__text {
+    color: transparent;
+  }
+
+  &:hover:not(:disabled) &__icon {
+    width: 150px;
+    border-left: none;
+  }
+
+  &:active:not(:disabled) &__icon svg {
+    transform: scale(0.8);
+  }
+}

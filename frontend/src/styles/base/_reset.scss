@@ -30,7 +30,14 @@ a {
 
 button {
   font-family: inherit;
+
+  appearance: none;
   cursor: pointer;
+  border: none;
+
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 ul,

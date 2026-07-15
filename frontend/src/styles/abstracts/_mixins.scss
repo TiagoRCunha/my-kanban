@@ -51,6 +51,50 @@
   }
 }
 
+%button_base {
+  padding: t.$spacing-2 t.$spacing-4;
+  font-size: t.$font-size-md;
+  font-weight: t.$font-weight-medium;
+  transition: background 0.15s;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+@mixin button-variants {
+  &--primary {
+    @extend %button_base;
+    background: t.$color-primary;
+    border-color: t.$color-primary;
+    color: #ffffff;
+
+    &:hover:not(:disabled) {
+      background: t.$color-primary-hover;
+      border-color: t.$color-primary-hover;
+    }
+  }
+
+  &--secondary {
+    @extend %button_base;
+    background: t.$color-surface;
+    color: t.$color-text-muted;
+  }
+
+  &--danger {
+    @extend %button_base;
+    background: t.$color-danger;
+    border-color: t.$color-danger;
+    color: #ffffff;
+
+    &:hover:not(:disabled) {
+      background: t.$color-danger-hover;
+      border-color: t.$color-danger-hover;
+    }
+  }
+}
+
 // ─── Focus ring ───────────────────────────────────────────────────────────────
 
 @mixin focus-ring {

@@ -9,8 +9,14 @@ $color-primary: #0052cc;
 $color-primary-hover: #0747a6;
 $color-danger: #de350b;
 $color-danger-hover: #bf2600;
+$color-success: #00a600;
+$color-success-hover: #008f00;
 $color-text: #172b4d;
 $color-text-muted: #5e6c84;
+
+$priority-low: #2e7d32;
+$priority-medium: #ed6c02;
+$priority-high: #d32f2f;
 
 // ─── Spacing (4px base) ───────────────────────────────────────────────────────
 
@@ -41,6 +47,13 @@ $font-size-lg: 16px;
 $font-weight-normal: 400;
 $font-weight-medium: 500;
 $font-weight-bold: 600;
+
+$font-size-h1: 2.5rem;
+$font-size-h2: 2rem;
+$font-size-h3: 1.75rem;
+$font-size-h4: 1.5rem;
+$font-size-h5: 1.25rem;
+$font-size-h6: 1rem;
 
 // ─── Layout ───────────────────────────────────────────────────────────────────
 

@@ -1,0 +1,73 @@
+@if (isVisible) {
+<div class="task-editor" (click)="onClose()">
+  <section class="task-editor__modal" (click)="$event.stopPropagation()">
+    <header class="task-editor__header">
+      <h3 class="task-editor__title">{{ isEditMode ? 'Edit Task' : 'Create Task' }}</h3>
+      <button class="task-editor__close" type="button" aria-label="Close task editor" (click)="onClose()">
+        ×
+      </button>
+    </header>
+
+    <div class="task-editor__content">
+      <div class="task-editor__main">
+        <label class="task-editor__field">
+          <h6>Title</h6>
+          <input type="text" [(ngModel)]="draft.title" />
+        </label>
+
+        <label class="task-editor__field">
+          <h6>Description</h6>
+          <textarea rows="7" [(ngModel)]="draft.description"></textarea>
+        </label>
+
+        <section class="task-editor__comments">
+          <h6>Comments</h6>
+          <p>Comments section will be implemented in a future iteration.</p>
+        </section>
+      </div>
+
+      <aside class="task-editor__sidebar">
+        <label class="task-editor__field">
+          <h6>Task Priority</h6>
+          <div class="task-editor__tags">
+            @for (option of priorityOptions; track option) {
+            <button type="button" class="task-editor__tag" [ngClass]="{
+                  'task-editor__tag--active': draft.priority === option,
+                  'task-editor__tag--low': option === 'LOW',
+                  'task-editor__tag--medium': option === 'MEDIUM',
+                  'task-editor__tag--high': option === 'HIGH'
+                  }" (click)="draft.priority = option">
+              {{ option }}
+            </button>
+            }
+          </div>
+        </label>
+
+        <label class="task-editor__field">
+          <h6>Due Date *</h6>
+          <input type="date" [(ngModel)]="draft.dueDate" />
+        </label>
+
+        <label class="task-editor__field">
+          <h6>Estimated Hours *</h6>
+          <input type="number" min="0.5" step="0.5" [(ngModel)]="draft.estimatedHours" />
+        </label>
+
+        <div class="task-editor__meta">
+          <p>Assignees selection will be available in a future step.</p>
+        </div>
+
+
+      </aside>
+    </div>
+
+    <footer class="task-editor__actions">
+      @if (isEditMode) {
+      <app-animated-button label="Delete" variant="danger" title="Delete task" ariaLabel="Delete task" (pressed)="onDelete()" />
+      }
+      <app-animated-button label="Cancel" variant="neutral" (pressed)="onClose()" />
+      <app-animated-button label="Save" variant="confirm" [disabled]="!canSave" (pressed)="onSave()" />
+    </footer>
+  </section>
+</div>
+}
