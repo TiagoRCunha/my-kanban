@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.tiagorcunha.mykanban.backend.common.application.exception.ConflictException;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ResourceNotFoundException;
@@ -24,9 +25,11 @@ public class UserUseCaseHandler
     implements ListUsersUseCase, FindUserByIdUseCase, CreateUserUseCase, UpdateUserUseCase, DeleteUserUseCase {
 
   private final UserRepositoryPort userRepository;
+  private final PasswordEncoder passwordEncoder;
 
-  public UserUseCaseHandler(UserRepositoryPort userRepository) {
+  public UserUseCaseHandler(UserRepositoryPort userRepository, PasswordEncoder passwordEncoder) {
     this.userRepository = userRepository;
+    this.passwordEncoder = passwordEncoder;
   }
 
   @Override
@@ -54,7 +57,7 @@ public class UserUseCaseHandler
     User user = new User();
     user.setFullName(command.fullName());
     user.setEmail(command.email());
-    user.setPasswordHash(command.passwordHash());
+    user.setPasswordHash(encodePassword(command.passwordHash()));
     user.setAvatarUrl(command.avatarUrl());
     user.setCreatedAt(now);
     user.setUpdatedAt(now);
@@ -75,7 +78,7 @@ public class UserUseCaseHandler
 
     user.setFullName(command.fullName());
     user.setEmail(command.email());
-    user.setPasswordHash(command.passwordHash());
+    user.setPasswordHash(encodePassword(command.passwordHash()));
     user.setAvatarUrl(command.avatarUrl());
     user.setUpdatedAt(LocalDateTime.now());
 
@@ -94,5 +97,17 @@ public class UserUseCaseHandler
   private User getExistingUser(Long id) {
     return userRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+  }
+
+  private String encodePassword(String rawOrHashPassword) {
+    if (isBcryptHash(rawOrHashPassword)) {
+      return rawOrHashPassword;
+    }
+    return passwordEncoder.encode(rawOrHashPassword);
+  }
+
+  private boolean isBcryptHash(String value) {
+    return value != null
+        && (value.startsWith("$2a$") || value.startsWith("$2b$") || value.startsWith("$2y$"));
   }
 }

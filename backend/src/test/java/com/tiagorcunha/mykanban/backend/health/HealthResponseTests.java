@@ -25,7 +25,7 @@ public class HealthResponseTests {
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody()).contains("\"status\":\"UP\"");
-        assertThat(response.getBody()).contains("\"version\":\"1.0.1\"");
+        assertThat(response.getBody()).contains("\"version\":\"1.0.3\"");
     }
 
 }
