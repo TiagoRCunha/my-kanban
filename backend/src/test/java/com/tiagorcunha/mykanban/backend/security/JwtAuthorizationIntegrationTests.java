@@ -49,6 +49,7 @@ class JwtAuthorizationIntegrationTests {
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
   }
 
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   @Test
   void shouldAllowProtectedEndpointWithValidJwtToken() {
     persistUser("tiago@example.com", "test-password");

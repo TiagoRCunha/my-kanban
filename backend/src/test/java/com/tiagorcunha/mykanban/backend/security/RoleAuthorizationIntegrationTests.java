@@ -121,6 +121,7 @@ class RoleAuthorizationIntegrationTests {
   }
 
   @Test
+  @SuppressWarnings("rawtypes")
   void invitedCanCrudTaskAndComment() {
     User owner = createUser("owner2@example.com", "owner-pass", UserRole.USER);
     User invited = createUser("invited@example.com", "invited-pass", UserRole.USER);
@@ -296,6 +297,7 @@ class RoleAuthorizationIntegrationTests {
     return boardMemberRepository.save(boardMember);
   }
 
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   private String loginAndGetToken(String email, String password) {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
