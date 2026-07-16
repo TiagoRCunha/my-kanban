@@ -32,11 +32,12 @@ public class SecurityConfig {
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers("/health").permitAll()
             .requestMatchers("/auth/login").permitAll()
-            .requestMatchers(HttpMethod.POST, "/users").permitAll()
-            .requestMatchers(HttpMethod.GET, "/users/**").hasRole("ADMIN")
+            .requestMatchers("/auth/register").permitAll()
             .requestMatchers("/h2-console/**").permitAll()
             .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
-          .requestMatchers("/admin/**").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("SUPER_ADMIN", "ADMIN")
+            .requestMatchers(HttpMethod.POST, "/users").hasAnyRole("SUPER_ADMIN", "ADMIN")
+            .requestMatchers("/admin/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
             .anyRequest().authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

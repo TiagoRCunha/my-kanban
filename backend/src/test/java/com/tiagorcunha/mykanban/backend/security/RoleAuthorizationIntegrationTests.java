@@ -2,7 +2,6 @@ package com.tiagorcunha.mykanban.backend.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -25,9 +24,6 @@ import com.tiagorcunha.mykanban.backend.board.domain.model.Board;
 import com.tiagorcunha.mykanban.backend.board.domain.model.BoardColumn;
 import com.tiagorcunha.mykanban.backend.board.domain.model.BoardMember;
 import com.tiagorcunha.mykanban.backend.board.domain.model.BoardMemberRole;
-import com.tiagorcunha.mykanban.backend.board.domain.model.Comment;
-import com.tiagorcunha.mykanban.backend.board.domain.model.Task;
-import com.tiagorcunha.mykanban.backend.board.domain.model.TaskPriority;
 import com.tiagorcunha.mykanban.backend.board.infrastructure.persistence.SpringDataBoardColumnRepository;
 import com.tiagorcunha.mykanban.backend.board.infrastructure.persistence.SpringDataBoardMemberRepository;
 import com.tiagorcunha.mykanban.backend.board.infrastructure.persistence.SpringDataBoardRepository;
@@ -78,7 +74,7 @@ class RoleAuthorizationIntegrationTests {
   }
 
   @Test
-  void viewOnlyCanReadButCannotWrite() {
+  void nonOwnerCannotReadOrWriteBoardResources() {
     User owner = createUser("owner@example.com", "owner-pass", UserRole.USER);
     User viewer = createUser("viewer@example.com", "viewer-pass", UserRole.USER);
     Board board = createBoard(owner);
@@ -115,22 +111,22 @@ class RoleAuthorizationIntegrationTests {
         new HttpEntity<>(createTaskPayload, jsonHeaders),
         String.class);
 
-    assertThat(boardResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(columnResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(boardResponse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    assertThat(columnResponse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     assertThat(createTaskResponse.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
   }
 
   @Test
-  @SuppressWarnings("rawtypes")
-  void invitedCanCrudTaskAndComment() {
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  void ownerCanCrudTaskAndComment() {
     User owner = createUser("owner2@example.com", "owner-pass", UserRole.USER);
-    User invited = createUser("invited@example.com", "invited-pass", UserRole.USER);
+    User outsider = createUser("outsider@example.com", "outsider-pass", UserRole.USER);
 
     Board board = createBoard(owner);
     BoardColumn column = createColumn(board, "Doing", 0);
-    createMembership(board, invited, BoardMemberRole.INVITED);
+    createMembership(board, outsider, BoardMemberRole.INVITED);
 
-    HttpHeaders invitedJsonHeaders = bearerJsonHeaders(loginAndGetToken("invited@example.com", "invited-pass"));
+    HttpHeaders ownerJsonHeaders = bearerJsonHeaders(loginAndGetToken("owner2@example.com", "owner-pass"));
 
     Map<String, Object> createTaskPayload = Map.of(
         "title", "Invited task",
@@ -143,7 +139,7 @@ class RoleAuthorizationIntegrationTests {
     ResponseEntity<Map> createTaskResponse = restTemplate.exchange(
         url("/columns/" + column.getId() + "/tasks"),
         HttpMethod.POST,
-        new HttpEntity<>(createTaskPayload, invitedJsonHeaders),
+      new HttpEntity<>(createTaskPayload, ownerJsonHeaders),
         Map.class);
 
     assertThat(createTaskResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -160,7 +156,7 @@ class RoleAuthorizationIntegrationTests {
     ResponseEntity<String> updateTaskResponse = restTemplate.exchange(
         url("/columns/" + column.getId() + "/tasks/" + createdTaskId),
         HttpMethod.PUT,
-        new HttpEntity<>(updateTaskPayload, invitedJsonHeaders),
+      new HttpEntity<>(updateTaskPayload, ownerJsonHeaders),
         String.class);
 
     assertThat(updateTaskResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -169,7 +165,7 @@ class RoleAuthorizationIntegrationTests {
     ResponseEntity<Map> createCommentResponse = restTemplate.exchange(
         url("/tasks/" + createdTaskId + "/comments"),
         HttpMethod.POST,
-        new HttpEntity<>(createCommentPayload, invitedJsonHeaders),
+      new HttpEntity<>(createCommentPayload, ownerJsonHeaders),
         Map.class);
 
     assertThat(createCommentResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -179,7 +175,7 @@ class RoleAuthorizationIntegrationTests {
     ResponseEntity<String> updateCommentResponse = restTemplate.exchange(
         url("/tasks/" + createdTaskId + "/comments/" + commentId),
         HttpMethod.PUT,
-        new HttpEntity<>(updateCommentPayload, invitedJsonHeaders),
+      new HttpEntity<>(updateCommentPayload, ownerJsonHeaders),
         String.class);
 
     assertThat(updateCommentResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -187,13 +183,13 @@ class RoleAuthorizationIntegrationTests {
     ResponseEntity<String> deleteCommentResponse = restTemplate.exchange(
         url("/tasks/" + createdTaskId + "/comments/" + commentId),
         HttpMethod.DELETE,
-        new HttpEntity<>(invitedJsonHeaders),
+      new HttpEntity<>(ownerJsonHeaders),
         String.class);
 
     ResponseEntity<String> deleteTaskResponse = restTemplate.exchange(
         url("/columns/" + column.getId() + "/tasks/" + createdTaskId),
         HttpMethod.DELETE,
-        new HttpEntity<>(invitedJsonHeaders),
+      new HttpEntity<>(ownerJsonHeaders),
         String.class);
 
     assertThat(deleteCommentResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
@@ -265,30 +261,6 @@ class RoleAuthorizationIntegrationTests {
   }
 
   @SuppressWarnings("unused")
-  private Task createTask(BoardColumn column, User reporter) {
-    Task task = new Task();
-    task.setBoardColumn(column);
-    task.setTitle("Seed task");
-    task.setDescription("Seed description");
-    task.setPriority(TaskPriority.MEDIUM);
-    task.setPosition(0);
-    task.setEstimatedHours(BigDecimal.ONE);
-    task.setReportedBy(reporter);
-    task.setCreatedAt(LocalDateTime.now());
-    task.setUpdatedAt(LocalDateTime.now());
-    return taskRepository.save(task);
-  }
-
-  @SuppressWarnings("unused")
-  private Comment createComment(Task task, User author) {
-    Comment comment = new Comment();
-    comment.setTask(task);
-    comment.setAuthor(author);
-    comment.setContent("Seed comment");
-    comment.setCreatedAt(LocalDateTime.now());
-    return commentRepository.save(comment);
-  }
-
   private BoardMember createMembership(Board board, User user, BoardMemberRole role) {
     BoardMember boardMember = new BoardMember();
     boardMember.setBoard(board);

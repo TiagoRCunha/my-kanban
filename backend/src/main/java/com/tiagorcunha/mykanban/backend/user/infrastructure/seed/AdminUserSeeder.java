@@ -56,7 +56,7 @@ public class AdminUserSeeder implements ApplicationRunner {
     admin.setFullName(fullName);
     admin.setEmail(email);
     admin.setPasswordHash(passwordEncoder.encode(password));
-    admin.setRole(UserRole.ADMIN);
+    admin.setRole(UserRole.SUPER_ADMIN);
     admin.setCreatedAt(now);
     admin.setUpdatedAt(now);
 

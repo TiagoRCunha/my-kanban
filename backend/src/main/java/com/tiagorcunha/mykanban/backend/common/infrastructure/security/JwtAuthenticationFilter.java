@@ -49,15 +49,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     try {
       String email = jwtTokenService.extractSubject(token);
+      Long userId = jwtTokenService.extractUserId(token);
 
       if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        User user = userRepository.findByEmail(email).orElse(null);
-        boolean tokenValid = jwtTokenService.isTokenValid(token, email);
+        User user = userId == null ? null : userRepository.findById(userId).orElse(null);
+        boolean tokenValid = user != null
+            && jwtTokenService.isTokenValid(token, user.getEmail(), user.getId())
+            && user.getEmail().equals(email);
 
-        if (user != null && tokenValid) {
+        if (tokenValid) {
           UsernamePasswordAuthenticationToken authentication =
               new UsernamePasswordAuthenticationToken(
-                  email,
+                  new AuthenticatedUserPrincipal(user.getId(), user.getEmail()),
                   null,
                   java.util.List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())));
           authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

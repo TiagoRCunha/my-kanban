@@ -8,7 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.tiagorcunha.mykanban.backend.common.application.exception.ConflictException;
+import com.tiagorcunha.mykanban.backend.common.application.exception.ForbiddenException;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ResourceNotFoundException;
+import com.tiagorcunha.mykanban.backend.common.infrastructure.security.AuthenticatedUserProvider;
 import com.tiagorcunha.mykanban.backend.user.application.command.SaveUserCommand;
 import com.tiagorcunha.mykanban.backend.user.application.mapper.UserResponseMapper;
 import com.tiagorcunha.mykanban.backend.user.application.port.in.CreateUserUseCase;
@@ -27,10 +29,15 @@ public class UserUseCaseHandler
 
   private final UserRepositoryPort userRepository;
   private final PasswordEncoder passwordEncoder;
+  private final AuthenticatedUserProvider authenticatedUserProvider;
 
-  public UserUseCaseHandler(UserRepositoryPort userRepository, PasswordEncoder passwordEncoder) {
+  public UserUseCaseHandler(
+      UserRepositoryPort userRepository,
+      PasswordEncoder passwordEncoder,
+      AuthenticatedUserProvider authenticatedUserProvider) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
+    this.authenticatedUserProvider = authenticatedUserProvider;
   }
 
   @Override
@@ -70,6 +77,7 @@ public class UserUseCaseHandler
   @Override
   @Transactional
   public UserResponse update(Long id, SaveUserCommand command) {
+    assertCanManageUser(id);
     User user = getExistingUser(id);
 
     userRepository.findByEmail(command.email())
@@ -90,10 +98,21 @@ public class UserUseCaseHandler
   @Override
   @Transactional
   public void delete(Long id) {
+    assertCanManageUser(id);
     if (!userRepository.existsById(id)) {
       throw new ResourceNotFoundException("User not found");
     }
     userRepository.deleteById(id);
+  }
+
+  private void assertCanManageUser(Long requestedUserId) {
+    User currentUser = authenticatedUserProvider.getAuthenticatedUser();
+    if (currentUser.getRole().isSuperAdmin()) {
+      return;
+    }
+    if (!currentUser.getId().equals(requestedUserId)) {
+      throw new ForbiddenException("You can only manage your own user account");
+    }
   }
 
   private User getExistingUser(Long id) {

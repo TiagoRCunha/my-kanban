@@ -37,7 +37,7 @@ public class AuthUseCaseHandler {
       throw new UnauthorizedException("Invalid credentials");
     }
 
-    String token = jwtTokenService.generateToken(user.getEmail());
+    String token = jwtTokenService.generateToken(user);
     return new AuthTokenResponse(token, "Bearer", jwtProperties.getExpirationMinutes());
   }
 

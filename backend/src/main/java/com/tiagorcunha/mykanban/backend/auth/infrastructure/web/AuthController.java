@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tiagorcunha.mykanban.backend.auth.application.response.AuthTokenResponse;
 import com.tiagorcunha.mykanban.backend.auth.application.usecase.AuthUseCaseHandler;
+import com.tiagorcunha.mykanban.backend.user.application.port.in.CreateUserUseCase;
+import com.tiagorcunha.mykanban.backend.user.application.response.UserResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -21,9 +23,11 @@ import jakarta.validation.Valid;
 public class AuthController {
 
   private final AuthUseCaseHandler authUseCaseHandler;
+  private final CreateUserUseCase createUserUseCase;
 
-  public AuthController(AuthUseCaseHandler authUseCaseHandler) {
+  public AuthController(AuthUseCaseHandler authUseCaseHandler, CreateUserUseCase createUserUseCase) {
     this.authUseCaseHandler = authUseCaseHandler;
+    this.createUserUseCase = createUserUseCase;
   }
 
   @PostMapping("/login")
@@ -32,5 +36,13 @@ public class AuthController {
   @ApiResponse(responseCode = "401", description = "Invalid credentials")
   public AuthTokenResponse login(@Valid @RequestBody AuthLoginRequest request) {
     return authUseCaseHandler.authenticate(request.email(), request.password());
+  }
+
+  @PostMapping("/register")
+  @Operation(summary = "Register a new user")
+  @ApiResponse(responseCode = "200", description = "Registered")
+  @ApiResponse(responseCode = "409", description = "Email already in use")
+  public UserResponse register(@Valid @RequestBody AuthRegisterRequest request) {
+    return createUserUseCase.create(request.toCommand());
   }
 }

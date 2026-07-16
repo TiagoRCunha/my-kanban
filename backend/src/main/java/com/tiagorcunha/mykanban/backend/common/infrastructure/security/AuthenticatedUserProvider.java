@@ -26,11 +26,16 @@ public class AuthenticatedUserProvider {
     }
 
     Object principal = authentication.getPrincipal();
-    if (!(principal instanceof String email) || email.isBlank()) {
-      throw new UnauthorizedException("Authentication required");
+    if (principal instanceof AuthenticatedUserPrincipal authenticatedPrincipal) {
+      return userRepository.findById(authenticatedPrincipal.id())
+          .orElseThrow(() -> new UnauthorizedException("Authenticated user no longer exists"));
     }
 
-    return userRepository.findByEmail(email)
-        .orElseThrow(() -> new UnauthorizedException("Authenticated user no longer exists"));
+    if (principal instanceof String email && !email.isBlank()) {
+      return userRepository.findByEmail(email)
+          .orElseThrow(() -> new UnauthorizedException("Authenticated user no longer exists"));
+    }
+
+    throw new UnauthorizedException("Authentication required");
   }
 }
