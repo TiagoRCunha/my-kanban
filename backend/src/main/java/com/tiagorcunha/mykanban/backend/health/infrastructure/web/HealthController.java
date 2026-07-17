@@ -1,6 +1,7 @@
 package com.tiagorcunha.mykanban.backend.health.infrastructure.web;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,16 +15,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Health", description = "Service health and metadata")
 public class HealthController {
 
-  private final String apiVersion;
+  @Autowired
+  private final BuildProperties buildProperties;
 
-  public HealthController(@Value("${app.api.version}") String apiVersion) {
-    this.apiVersion = apiVersion;
+  public HealthController(BuildProperties buildProperties) {
+    this.buildProperties = buildProperties;
   }
 
   @GetMapping
   @Operation(summary = "Get API health")
   @ApiResponse(responseCode = "200", description = "Service is healthy")
   public HealthResponse health() {
-    return new HealthResponse("UP", apiVersion);
+    return new HealthResponse("UP", buildProperties.getVersion());
   }
 }

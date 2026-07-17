@@ -86,12 +86,10 @@ class JwtAuthorizationIntegrationTests {
     assertThat(boardsResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
   @Test
   void shouldRestrictUsersListingToSuperAdminAndAllowGetByIdForAnyAuthenticatedUser() {
     User superAdmin = persistUser("super-admin@example.com", "super-pass", UserRole.SUPER_ADMIN);
-    User normalUser = persistUser("normal@example.com", "normal-pass", UserRole.USER);
-
+    
     String normalToken = loginAndGetToken("normal@example.com", "normal-pass");
     String superToken = loginAndGetToken("super-admin@example.com", "super-pass");
 

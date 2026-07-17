@@ -117,7 +117,7 @@ class RoleAuthorizationIntegrationTests {
   }
 
   @Test
-  @SuppressWarnings({ "rawtypes", "unchecked" })
+  @SuppressWarnings({ "rawtypes" })
   void ownerCanCrudTaskAndComment() {
     User owner = createUser("owner2@example.com", "owner-pass", UserRole.USER);
     User outsider = createUser("outsider@example.com", "outsider-pass", UserRole.USER);
@@ -260,7 +260,6 @@ class RoleAuthorizationIntegrationTests {
     return boardColumnRepository.save(column);
   }
 
-  @SuppressWarnings("unused")
   private BoardMember createMembership(Board board, User user, BoardMemberRole role) {
     BoardMember boardMember = new BoardMember();
     boardMember.setBoard(board);

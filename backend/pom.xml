@@ -12,7 +12,7 @@
 
     <groupId>com.tiagorcunha.mykanban.backend</groupId>
     <artifactId>backend</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <name>backend</name>
     <description>Backend service for my-kanban</description>
 
@@ -91,6 +91,13 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>build-info</goal>
+                            </goals>
+                        </execution>
+                    </executions>
             </plugin>
         </plugins>
     </build>
