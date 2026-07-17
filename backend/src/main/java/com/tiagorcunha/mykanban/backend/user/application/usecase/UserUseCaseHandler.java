@@ -5,12 +5,12 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.tiagorcunha.mykanban.backend.common.application.exception.ConflictException;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ForbiddenException;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ResourceNotFoundException;
 import com.tiagorcunha.mykanban.backend.common.infrastructure.security.AuthenticatedUserProvider;
+import com.tiagorcunha.mykanban.backend.common.infrastructure.security.PasswordHashService;
 import com.tiagorcunha.mykanban.backend.user.application.command.SaveUserCommand;
 import com.tiagorcunha.mykanban.backend.user.application.mapper.UserResponseMapper;
 import com.tiagorcunha.mykanban.backend.user.application.port.in.CreateUserUseCase;
@@ -28,15 +28,15 @@ public class UserUseCaseHandler
     implements ListUsersUseCase, FindUserByIdUseCase, CreateUserUseCase, UpdateUserUseCase, DeleteUserUseCase {
 
   private final UserRepositoryPort userRepository;
-  private final PasswordEncoder passwordEncoder;
+  private final PasswordHashService passwordHashService;
   private final AuthenticatedUserProvider authenticatedUserProvider;
 
   public UserUseCaseHandler(
       UserRepositoryPort userRepository,
-      PasswordEncoder passwordEncoder,
+      PasswordHashService passwordHashService,
       AuthenticatedUserProvider authenticatedUserProvider) {
     this.userRepository = userRepository;
-    this.passwordEncoder = passwordEncoder;
+    this.passwordHashService = passwordHashService;
     this.authenticatedUserProvider = authenticatedUserProvider;
   }
 
@@ -65,7 +65,7 @@ public class UserUseCaseHandler
     User user = new User();
     user.setFullName(command.fullName());
     user.setEmail(command.email());
-    user.setPasswordHash(encodePassword(command.passwordHash()));
+    user.setPasswordHash(passwordHashService.encodeIfNeeded(command.passwordHash()));
     user.setAvatarUrl(command.avatarUrl());
     user.setRole(UserRole.USER);
     user.setCreatedAt(now);
@@ -88,7 +88,7 @@ public class UserUseCaseHandler
 
     user.setFullName(command.fullName());
     user.setEmail(command.email());
-    user.setPasswordHash(encodePassword(command.passwordHash()));
+    user.setPasswordHash(passwordHashService.encodeIfNeeded(command.passwordHash()));
     user.setAvatarUrl(command.avatarUrl());
     user.setUpdatedAt(LocalDateTime.now());
 
@@ -120,15 +120,4 @@ public class UserUseCaseHandler
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
   }
 
-  private String encodePassword(String rawOrHashPassword) {
-    if (isBcryptHash(rawOrHashPassword)) {
-      return rawOrHashPassword;
-    }
-    return passwordEncoder.encode(rawOrHashPassword);
-  }
-
-  private boolean isBcryptHash(String value) {
-    return value != null
-        && (value.startsWith("$2a$") || value.startsWith("$2b$") || value.startsWith("$2y$"));
-  }
 }
