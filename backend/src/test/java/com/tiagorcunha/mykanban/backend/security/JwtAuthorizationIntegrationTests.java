@@ -88,6 +88,7 @@ class JwtAuthorizationIntegrationTests {
 
   @Test
   void shouldRestrictUsersListingToSuperAdminAndAllowGetByIdForAnyAuthenticatedUser() {
+    persistUser("normal@example.com", "normal-pass", UserRole.USER);
     User superAdmin = persistUser("super-admin@example.com", "super-pass", UserRole.SUPER_ADMIN);
     
     String normalToken = loginAndGetToken("normal@example.com", "normal-pass");
