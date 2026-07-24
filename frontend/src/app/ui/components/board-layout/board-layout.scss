@@ -6,6 +6,15 @@
   height: 100%;
   position: relative;
 
+  &__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: t.$font-size-lg;
+  }
+
   &__columns {
     display: flex;
     gap: t.$spacing-3;

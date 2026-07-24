@@ -1,12 +1,14 @@
 <nav class="navbar">
   <div class="navbar__brand">
-    <span class="navbar__logo">MyKanban</span>
+    <a class="navbar__logo-link" routerLink="/boards">
+      <span class="navbar__logo">MyKanban</span>
+    </a>
   </div>
 
   <div class="navbar__actions">
-    <a class="navbar__link" routerLink="/settings" aria-label="Settings & Account">
-      Settings & Account
-    </a>
+    <a class="navbar__link" routerLink="/boards">Boards</a>
+
+    <span class="navbar__user">{{ userName }}</span>
 
     <button
       class="navbar__icon-btn"

@@ -1,7 +1,37 @@
 import { Routes } from '@angular/router';
-import { BoardPage } from './ui/pages/board/board';
+import { authGuard } from './infrastructure/auth/auth.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'board', pathMatch: 'full' },
-  { path: 'board', component: BoardPage },
+  {
+    path: '',
+    redirectTo: 'boards',
+    pathMatch: 'full',
+  },
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./ui/pages/login/login').then((m) => m.LoginPage),
+  },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./ui/pages/register/register').then((m) => m.RegisterPage),
+  },
+  {
+    path: 'boards',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./ui/pages/board-list/board-list').then((m) => m.BoardListPage),
+  },
+  {
+    path: 'boards/:boardId',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./ui/pages/board/board').then((m) => m.BoardPage),
+  },
+  {
+    path: '**',
+    loadComponent: () =>
+      import('./ui/pages/not-found/not-found').then((m) => m.NotFoundPage),
+  },
 ];

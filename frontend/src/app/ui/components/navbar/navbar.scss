@@ -19,6 +19,10 @@
     align-items: center;
   }
 
+  &__logo-link {
+    text-decoration: none;
+  }
+
   &__logo {
     font-size: t.$font-size-lg;
     font-weight: t.$font-weight-bold;
@@ -39,6 +43,7 @@
     padding: t.$spacing-1 t.$spacing-2;
     border-radius: t.$radius-sm;
     transition: color 0.15s, background 0.15s;
+    text-decoration: none;
 
     @include m.focus-ring;
 
@@ -46,6 +51,12 @@
       color: #ffffff;
       background: rgba(255, 255, 255, 0.12);
     }
+  }
+
+  &__user {
+    font-size: t.$font-size-sm;
+    font-weight: t.$font-weight-medium;
+    color: rgba(255, 255, 255, 0.75);
   }
 
   &__icon-btn {

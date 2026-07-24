@@ -1,7 +1,18 @@
 <app-navbar />
 
 <main class="board-page">
-  <div class="board-page__content">
-    <app-board-layout />
-  </div>
+  @if (isLoading) {
+    <div class="board-page__loading">Loading board...</div>
+  } @else if (errorMessage) {
+    <div class="board-page__error">
+      <p>{{ errorMessage }}</p>
+    </div>
+  } @else if (board) {
+    <div class="board-page__header">
+      <h1 class="board-page__title">{{ board.title }}</h1>
+    </div>
+    <div class="board-page__content">
+      <app-board-layout [boardId]="boardId" />
+    </div>
+  }
 </main>

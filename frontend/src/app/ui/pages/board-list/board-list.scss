@@ -1,0 +1,108 @@
+@use '../../../../styles/abstracts/tokens' as t;
+@use '../../../../styles/abstracts/mixins' as m;
+
+.board-list-page {
+  min-height: calc(100vh - t.$navbar-height);
+  background-color: t.$color-bg;
+  padding: t.$spacing-5;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: t.$spacing-5;
+  }
+
+  &__title {
+    font-size: t.$font-size-h4;
+    font-weight: t.$font-weight-bold;
+    color: t.$color-text;
+    margin: 0;
+  }
+
+  &__create-btn {
+    padding: t.$spacing-2 t.$spacing-4;
+    background-color: t.$color-primary;
+    color: #ffffff;
+    border: none;
+    border-radius: t.$radius-sm;
+    font-size: t.$font-size-md;
+    font-weight: t.$font-weight-medium;
+    cursor: pointer;
+    transition: background-color 0.15s;
+
+    &:hover:not(:disabled) {
+      background-color: t.$color-primary-hover;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    @include m.focus-ring;
+  }
+
+  &__loading,
+  &__error,
+  &__empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: t.$spacing-6;
+    font-size: t.$font-size-lg;
+    color: t.$color-text-muted;
+  }
+
+  &__error {
+    color: t.$color-danger;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: t.$spacing-4;
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: t.$spacing-2;
+    padding: t.$spacing-4;
+    background-color: t.$color-surface;
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-md;
+    box-shadow: t.$shadow-card;
+    cursor: pointer;
+    text-align: left;
+    transition: box-shadow 0.15s, border-color 0.15s;
+
+    &:hover {
+      box-shadow: t.$shadow-card-hover;
+      border-color: t.$color-primary;
+    }
+
+    @include m.focus-ring;
+  }
+
+  &__card-title {
+    font-size: t.$font-size-lg;
+    font-weight: t.$font-weight-bold;
+    color: t.$color-text;
+    margin: 0;
+  }
+
+  &__card-description {
+    font-size: t.$font-size-md;
+    color: t.$color-text-muted;
+    margin: 0;
+    @include m.truncate;
+  }
+
+  &__card-id {
+    font-size: t.$font-size-sm;
+    color: t.$color-text-muted;
+    margin-top: auto;
+  }
+}

@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, inject, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { BoardColumn } from '../board-column';
 import { TaskCardData } from '../task-card';
 import { ColumnController } from '../column-controller';
 import { TaskPriority } from '../../../domain/board/entities/task.entity';
 import { TaskEditorFormValue, TaskEditorModal, TaskEditorState } from '../task-editor-modal';
+import { HttpColumnRepository, HttpTaskRepository } from '../../../infrastructure/board';
 
 type BoardColumnData = {
   id: number;
@@ -20,65 +21,59 @@ type BoardColumnData = {
   templateUrl: './board-layout.html',
   styleUrl: './board-layout.scss',
 })
-export class BoardLayout {
+export class BoardLayout implements OnChanges {
+  @Input({ required: true }) boardId!: number;
+
+  private readonly columnRepository = inject(HttpColumnRepository);
+  private readonly taskRepository = inject(HttpTaskRepository);
+
   taskEditor: TaskEditorState | null = null;
 
-  columns: BoardColumnData[] = [
-    {
-      id: 1,
-      title: 'To Do',
-      position: 0,
-      pinned: false,
-      tasks: [
-        {
-          id: 1,
-          title: 'Design the navbar layout',
-          description: 'Prepare the first static navbar for board navigation.',
-          priority: TaskPriority.HIGH,
-          dueDate: '2026-07-20',
-          estimatedHours: 4,
-          reportedById: 1,
-          assigneeIds: [1, 2],
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: 'In Progress',
-      position: 1,
-      pinned: false,
-      tasks: [
-        {
-          id: 2,
-          title: 'Implement drag and drop',
-          description: 'Enable drag and drop across columns.',
-          priority: TaskPriority.MEDIUM,
-          dueDate: '2026-07-22',
-          estimatedHours: 6,
-          reportedById: 1,
-          assigneeIds: [1],
-        },
-      ],
-    },
-    {
-      id: 3,
-      title: 'Done',
-      position: 2,
-      pinned: false,
-      tasks: [
-        {
-          id: 3,
-          title: 'Scaffold board page layout',
-          description: 'Create board wrapper and mocked first column.',
-          priority: TaskPriority.LOW,
-          dueDate: '2026-07-25',
-          estimatedHours: 3,
-          reportedById: 1,
-          assigneeIds: [],
-        },
-      ],
-    },
-  ];
+  columns: BoardColumnData[] = [];
+  isLoading = true;
+
+  async ngOnChanges(changes: SimpleChanges): Promise<void> {
+    if (changes['boardId'] && this.boardId) {
+      await this.loadColumnsAndTasks();
+    }
+  }
+
+  private async loadColumnsAndTasks(): Promise<void> {
+    this.isLoading = true;
+
+    try {
+      const domainColumns = await this.columnRepository.findByBoardId(this.boardId);
+
+      const columnsWithTasks: BoardColumnData[] = await Promise.all(
+        domainColumns.map(async (col) => {
+          const tasks = await this.taskRepository.findByColumnId(col.id);
+
+          return {
+            id: col.id,
+            title: col.title,
+            position: col.position,
+            pinned: false,
+            tasks: tasks.map((task) => ({
+              id: task.id,
+              title: task.title,
+              description: task.description,
+              priority: task.priority,
+              dueDate: task.dueDate,
+              estimatedHours: task.estimatedHours,
+              reportedById: task.reportedById,
+              assigneeIds: task.assigneeIds,
+            })),
+          };
+        }),
+      );
+
+      this.columns = columnsWithTasks;
+    } catch {
+      this.columns = [];
+    } finally {
+      this.isLoading = false;
+    }
+  }
 
   get connectedDropListIds(): string[] {
     return this.columns.map((column) => this.getDropListId(column.id));
@@ -86,15 +81,6 @@ export class BoardLayout {
 
   getDropListId(columnId: number): string {
     return `column-drop-list-${columnId}`;
-  }
-
-  private getNextTaskId(): number {
-    const currentMaxTaskId = this.columns.reduce((maxTaskId, column) => {
-      const maxInColumn = column.tasks.reduce((maxId, task) => Math.max(maxId, task.id), 0);
-      return Math.max(maxTaskId, maxInColumn);
-    }, 0);
-
-    return currentMaxTaskId + 1;
   }
 
   onTaskDrop(event: CdkDragDrop<TaskCardData[]>): void {
@@ -250,7 +236,8 @@ export class BoardLayout {
       .filter((value) => Number.isInteger(value) && value > 0);
 
     if (this.taskEditor.mode === 'create') {
-      const taskId = this.getNextTaskId();
+      const taskId = Math.max(0, ...this.columns.flatMap((c) => c.tasks.map((t) => t.id))) + 1;
+
       this.columns = this.columns.map((column) => {
         if (column.id !== this.taskEditor?.columnId) {
           return column;
@@ -314,18 +301,26 @@ export class BoardLayout {
     this.onDeleteTask(this.taskEditor.columnId, this.taskEditor.taskId);
   }
 
-  onAddColumn(): void {
-    const nextId = this.columns.reduce((maxId, column) => Math.max(maxId, column.id), 0) + 1;
-
-    this.columns = [
-      ...this.columns,
-      {
-        id: nextId,
-        title: `New Column ${nextId}`,
+  async onAddColumn(): Promise<void> {
+    try {
+      const newColumn = await this.columnRepository.create({
+        title: `New Column`,
         position: this.columns.length,
-        pinned: false,
-        tasks: [],
-      },
-    ];
+        boardId: this.boardId,
+      });
+
+      this.columns = [
+        ...this.columns,
+        {
+          id: newColumn.id,
+          title: newColumn.title,
+          position: newColumn.position,
+          pinned: false,
+          tasks: [],
+        },
+      ];
+    } catch {
+      // Silently fail if backend is not available
+    }
   }
 }

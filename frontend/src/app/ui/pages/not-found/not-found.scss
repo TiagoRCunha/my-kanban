@@ -1,0 +1,45 @@
+@use '../../../../styles/abstracts/tokens' as t;
+@use '../../../../styles/abstracts/mixins' as m;
+
+.not-found-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: t.$color-bg;
+
+  &__content {
+    text-align: center;
+  }
+
+  &__code {
+    font-size: 6rem;
+    font-weight: t.$font-weight-bold;
+    color: t.$color-primary;
+    margin: 0;
+    line-height: 1;
+  }
+
+  &__message {
+    font-size: t.$font-size-h5;
+    color: t.$color-text-muted;
+    margin: t.$spacing-3 0 t.$spacing-5;
+  }
+
+  &__link {
+    display: inline-block;
+    padding: t.$spacing-2 t.$spacing-4;
+    background-color: t.$color-primary;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: t.$radius-sm;
+    font-weight: t.$font-weight-medium;
+    transition: background-color 0.15s;
+
+    &:hover {
+      background-color: t.$color-primary-hover;
+    }
+
+    @include m.focus-ring;
+  }
+}

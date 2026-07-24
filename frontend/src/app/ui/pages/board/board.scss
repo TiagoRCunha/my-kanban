@@ -8,6 +8,27 @@
   background-color: t.$color-primary;
   overflow: hidden;
 
+  &__loading,
+  &__error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    color: #ffffff;
+    font-size: t.$font-size-lg;
+  }
+
+  &__header {
+    padding: t.$spacing-3 t.$spacing-5 0;
+  }
+
+  &__title {
+    font-size: t.$font-size-h5;
+    font-weight: t.$font-weight-bold;
+    color: #ffffff;
+    margin: 0;
+  }
+
   &__content {
     display: flex;
     flex: 1;

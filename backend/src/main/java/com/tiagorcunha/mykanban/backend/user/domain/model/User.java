@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,6 +30,10 @@ public class User {
 
   @Column(name = "avatar_url", length = 255)
   private String avatarUrl;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "role", nullable = false, length = 20)
+  private UserRole role = UserRole.USER;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
@@ -73,6 +79,14 @@ public class User {
 
   public void setAvatarUrl(String avatarUrl) {
     this.avatarUrl = avatarUrl;
+  }
+
+  public UserRole getRole() {
+    return role;
+  }
+
+  public void setRole(UserRole role) {
+    this.role = role;
   }
 
   public LocalDateTime getCreatedAt() {

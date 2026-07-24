@@ -1,0 +1,84 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h1 class="auth-card__title">MyKanban</h1>
+    <p class="auth-card__subtitle">Create a new account</p>
+
+    @if (errorMessage) {
+      <div class="auth-card__error" role="alert">
+        {{ errorMessage }}
+      </div>
+    }
+
+    <form class="auth-card__form" (ngSubmit)="onSubmit()">
+      <div class="auth-card__field">
+        <label class="auth-card__label" for="fullName">Full name</label>
+        <input
+          class="auth-card__input"
+          id="fullName"
+          type="text"
+          [(ngModel)]="fullName"
+          name="fullName"
+          placeholder="Your full name"
+          required
+          autocomplete="name"
+        />
+      </div>
+
+      <div class="auth-card__field">
+        <label class="auth-card__label" for="email">Email</label>
+        <input
+          class="auth-card__input"
+          id="email"
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="you@example.com"
+          required
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="auth-card__field">
+        <label class="auth-card__label" for="password">Password</label>
+        <input
+          class="auth-card__input"
+          id="password"
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="At least 6 characters"
+          required
+          minlength="6"
+          autocomplete="new-password"
+        />
+      </div>
+
+      <div class="auth-card__field">
+        <label class="auth-card__label" for="confirmPassword">Confirm password</label>
+        <input
+          class="auth-card__input"
+          id="confirmPassword"
+          type="password"
+          [(ngModel)]="confirmPassword"
+          name="confirmPassword"
+          placeholder="Repeat your password"
+          required
+          autocomplete="new-password"
+        />
+      </div>
+
+      <button
+        class="auth-card__submit"
+        type="submit"
+        [disabled]="isLoading || !fullName || !email || !password || !confirmPassword"
+      >
+        {{ isLoading ? 'Creating account...' : 'Create account' }}
+      </button>
+    </form>
+
+    <p class="auth-card__footer">
+      Already have an account?
+      <a class="auth-card__link" routerLink="/login">Sign in</a>
+    </p>
+  </div>
+</div>

@@ -14,10 +14,12 @@ import com.tiagorcunha.mykanban.backend.board.application.port.in.TaskUseCase;
 import com.tiagorcunha.mykanban.backend.board.application.port.out.BoardColumnRepositoryPort;
 import com.tiagorcunha.mykanban.backend.board.application.port.out.TaskRepositoryPort;
 import com.tiagorcunha.mykanban.backend.board.application.response.TaskResponse;
+import com.tiagorcunha.mykanban.backend.board.domain.model.Board;
 import com.tiagorcunha.mykanban.backend.board.domain.model.BoardColumn;
 import com.tiagorcunha.mykanban.backend.board.domain.model.Task;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ConflictException;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ResourceNotFoundException;
+import com.tiagorcunha.mykanban.backend.common.infrastructure.security.AuthenticatedUserProvider;
 import com.tiagorcunha.mykanban.backend.user.application.port.out.UserRepositoryPort;
 import com.tiagorcunha.mykanban.backend.user.domain.model.User;
 
@@ -27,20 +29,28 @@ public class TaskUseCaseHandler implements TaskUseCase {
   private final TaskRepositoryPort taskRepository;
   private final BoardColumnRepositoryPort boardColumnRepository;
   private final UserRepositoryPort userRepository;
+  private final AuthenticatedUserProvider authenticatedUserProvider;
+  private final BoardAuthorizationService boardAuthorizationService;
 
   public TaskUseCaseHandler(
       TaskRepositoryPort taskRepository,
       BoardColumnRepositoryPort boardColumnRepository,
-      UserRepositoryPort userRepository) {
+      UserRepositoryPort userRepository,
+      AuthenticatedUserProvider authenticatedUserProvider,
+      BoardAuthorizationService boardAuthorizationService) {
     this.taskRepository = taskRepository;
     this.boardColumnRepository = boardColumnRepository;
     this.userRepository = userRepository;
+    this.authenticatedUserProvider = authenticatedUserProvider;
+    this.boardAuthorizationService = boardAuthorizationService;
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<TaskResponse> findByColumnId(Long columnId) {
-    requireBoardColumn(columnId);
+    User currentUser = authenticatedUserProvider.getAuthenticatedUser();
+    BoardColumn boardColumn = requireBoardColumn(columnId);
+    boardAuthorizationService.assertCanReadBoard(boardColumn.getBoard(), currentUser);
     return taskRepository.findByColumnId(columnId).stream()
         .map(TaskResponseMapper::toResponse)
         .toList();
@@ -49,7 +59,10 @@ public class TaskUseCaseHandler implements TaskUseCase {
   @Override
   @Transactional
   public TaskResponse create(Long columnId, SaveTaskCommand command) {
+    User currentUser = authenticatedUserProvider.getAuthenticatedUser();
     BoardColumn boardColumn = requireBoardColumn(columnId);
+    Board board = boardColumn.getBoard();
+    boardAuthorizationService.assertCanCreateTask(board, currentUser);
     if (taskRepository.existsByColumnIdAndPosition(columnId, command.position())) {
       throw new ConflictException("Task position already in use");
     }
@@ -63,7 +76,7 @@ public class TaskUseCaseHandler implements TaskUseCase {
     task.setEstimatedHours(command.estimatedHours());
     task.setPosition(command.position());
     task.setBoardColumn(boardColumn);
-    task.setReportedBy(getExistingUser(command.reportedById()));
+    task.setReportedBy(currentUser);
     task.setAssignees(resolveAssignees(command.assigneeIds()));
     task.setCreatedAt(now);
     task.setUpdatedAt(now);
@@ -73,7 +86,9 @@ public class TaskUseCaseHandler implements TaskUseCase {
   @Override
   @Transactional
   public TaskResponse update(Long columnId, Long taskId, SaveTaskCommand command) {
+    User currentUser = authenticatedUserProvider.getAuthenticatedUser();
     Task task = getExistingTask(columnId, taskId);
+    boardAuthorizationService.assertCanManageTask(task, currentUser);
     if (taskRepository.existsByColumnIdAndPositionAndIdNot(columnId, command.position(), taskId)) {
       throw new ConflictException("Task position already in use");
     }
@@ -84,7 +99,7 @@ public class TaskUseCaseHandler implements TaskUseCase {
     task.setDueDate(command.dueDate());
     task.setEstimatedHours(command.estimatedHours());
     task.setPosition(command.position());
-    task.setReportedBy(getExistingUser(command.reportedById()));
+    task.setReportedBy(task.getReportedBy());
     task.setAssignees(resolveAssignees(command.assigneeIds()));
     task.setUpdatedAt(LocalDateTime.now());
     return TaskResponseMapper.toResponse(taskRepository.save(task));
@@ -93,7 +108,10 @@ public class TaskUseCaseHandler implements TaskUseCase {
   @Override
   @Transactional
   public void delete(Long columnId, Long taskId) {
-    taskRepository.delete(getExistingTask(columnId, taskId));
+    User currentUser = authenticatedUserProvider.getAuthenticatedUser();
+    Task task = getExistingTask(columnId, taskId);
+    boardAuthorizationService.assertCanManageTask(task, currentUser);
+    taskRepository.delete(task);
   }
 
   private BoardColumn requireBoardColumn(Long columnId) {
@@ -108,11 +126,6 @@ public class TaskUseCaseHandler implements TaskUseCase {
       throw new ResourceNotFoundException("Task not found");
     }
     return task;
-  }
-
-  private User getExistingUser(Long userId) {
-    return userRepository.findById(userId)
-        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
   }
 
   private Set<User> resolveAssignees(List<Long> assigneeIds) {
