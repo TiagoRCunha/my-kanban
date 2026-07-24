@@ -45,7 +45,8 @@ By combining a realistic business domain with a modern technology stack and a st
 - [x] Creates drag and drop feature on frontend
 - [x] Add test to the project and starts to use TDD
 - [x] Uses Postgres with migration/seeders pattern
-- [ ] Uses token JWT for authentication and authorization
+- [x] Uses token JWT for authentication and authorization
+- [ ] Adds personalization to user such as settings and darkmode
 - [ ] Send email of create account
 - [ ] Manage more than one role type users
 - [ ] Have a full operation project
