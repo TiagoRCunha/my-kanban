@@ -1,0 +1,55 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h1 class="auth-card__title">MyKanban</h1>
+    <p class="auth-card__subtitle">Sign in to your account</p>
+
+    @if (errorMessage) {
+      <div class="auth-card__error" role="alert">
+        {{ errorMessage }}
+      </div>
+    }
+
+    <form class="auth-card__form" (ngSubmit)="onSubmit()">
+      <div class="auth-card__field">
+        <label class="auth-card__label" for="email">Email</label>
+        <input
+          class="auth-card__input"
+          id="email"
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="you@example.com"
+          required
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="auth-card__field">
+        <label class="auth-card__label" for="password">Password</label>
+        <input
+          class="auth-card__input"
+          id="password"
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="Enter your password"
+          required
+          autocomplete="current-password"
+        />
+      </div>
+
+      <button
+        class="auth-card__submit"
+        type="submit"
+        [disabled]="isLoading || !email || !password"
+      >
+        {{ isLoading ? 'Signing in...' : 'Sign in' }}
+      </button>
+    </form>
+
+    <p class="auth-card__footer">
+      Don't have an account?
+      <a class="auth-card__link" routerLink="/register">Create one</a>
+    </p>
+  </div>
+</div>
