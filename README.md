@@ -1,18 +1,10 @@
-<head>
-<style>
-    .imgs {
-        display: flex;
+# my-kanban
+
+<span style="display: flex;
         align-items: center;
         justify-content: center;
         gap: 30px;
-        margin: 0 0 30px 0;
-    }
-</style>
-</head>
-
-# my-kanban
-
-<span class="imgs">
+        margin: 0 0 30px 0;">
     <img width="50" src="https://raw.githubusercontent.com/marwin1991/profile-technology-icons/refs/heads/main/icons/sass.png"/>
     <img width="50" src="https://raw.githubusercontent.com/marwin1991/profile-technology-icons/refs/heads/main/icons/swagger.png"/>
     <img width="50" src="https://raw.githubusercontent.com/marwin1991/profile-technology-icons/refs/heads/main/icons/angular.png"/>
