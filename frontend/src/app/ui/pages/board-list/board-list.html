@@ -1,0 +1,43 @@
+<app-navbar />
+
+<main class="board-list-page">
+  <div class="board-list-page__header">
+    <h1 class="board-list-page__title">My Boards</h1>
+    <button
+      class="board-list-page__create-btn"
+      type="button"
+      (click)="openCreatorDialog()"
+      [disabled]="isCreating"
+    >
+      + Create Board
+    </button>
+  </div>
+
+  @if (isLoading) {
+    <div class="board-list-page__loading">Loading boards...</div>
+  } @else if (errorMessage) {
+    <div class="board-list-page__error">{{ errorMessage }}</div>
+  } @else if (boards.length === 0) {
+    <div class="board-list-page__empty">
+      <p>No boards yet. Create your first board to get started.</p>
+    </div>
+  } @else {
+    <div class="board-list-page__grid">
+      @for (board of boards; track trackByBoardId($index, board)) {
+        <button
+          class="board-list-page__card"
+          type="button"
+          (click)="navigateToBoard(board.id)"
+        >
+          <h2 class="board-list-page__card-title">{{ board.title }}</h2>
+          @if (board.description) {
+            <p class="board-list-page__card-description">{{ board.description }}</p>
+          }
+          <span class="board-list-page__card-id">Board #{{ board.id }}</span>
+        </button>
+      }
+    </div>
+  }
+</main>
+
+<app-board-creator-dialog (save)="onCreateBoard($event)" />
