@@ -1,0 +1,103 @@
+@use '../../../../styles/abstracts/tokens' as t;
+@use '../../../../styles/abstracts/mixins' as m;
+
+$overlay-bg: rgba(9, 30, 66, 0.45);
+
+.board-creator {
+  position: fixed;
+  inset: 0;
+  background: $overlay-bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: t.$spacing-4;
+  z-index: 1200;
+
+  &__modal {
+    width: min(480px, 100%);
+    max-height: 92vh;
+    overflow: auto;
+    background: t.$color-surface;
+    border-radius: t.$radius-md;
+    box-shadow: t.$shadow-drag;
+    padding: t.$spacing-4;
+    display: flex;
+    flex-direction: column;
+    gap: t.$spacing-4;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: t.$spacing-2;
+  }
+
+  &__title {
+    margin: 0;
+    color: t.$color-text;
+    font-size: 20px;
+    font-weight: t.$font-weight-bold;
+  }
+
+  &__close {
+    border: 1px solid t.$color-border;
+    background: t.$color-surface;
+    color: t.$color-text-muted;
+    border-radius: t.$radius-sm;
+    width: 32px;
+    height: 32px;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover {
+      background: t.$color-surface-alt;
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: t.$spacing-3;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: t.$spacing-1;
+    color: t.$color-text;
+    font-size: t.$font-size-sm;
+
+    h6 {
+      margin: 0;
+    }
+
+    input,
+    textarea {
+      border: 1px solid t.$color-border;
+      border-radius: t.$radius-sm;
+      padding: t.$spacing-2;
+      font: inherit;
+      color: t.$color-text;
+      background: t.$color-surface;
+      resize: vertical;
+      transition: border-color 0.15s;
+
+      &:focus {
+        outline: none;
+        border-color: t.$color-primary;
+      }
+
+      &::placeholder {
+        color: t.$color-text-muted;
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: t.$spacing-2;
+  }
+}
