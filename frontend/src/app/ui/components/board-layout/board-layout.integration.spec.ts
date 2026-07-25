@@ -4,7 +4,8 @@ import { BoardColumn } from '../board-column';
 import { BoardLayout } from './board-layout';
 import { HttpColumnRepository } from '../../../infrastructure/board/adapters/http-column.repository';
 import { HttpTaskRepository } from '../../../infrastructure/board/adapters/task-http.repository';
-import { TaskPriority } from '../../../domain/board/entities/task.entity';
+import { HttpUserConfigRepository } from '../../../infrastructure/user-config/adapters/http-user-config.repository';
+import { AuthService } from '../../../infrastructure/auth/auth.service';
 
 describe('BoardLayout (integration)', () => {
   let fixture: ComponentFixture<BoardLayout>;
@@ -18,12 +19,21 @@ describe('BoardLayout (integration)', () => {
       position: 4,
     });
     const taskRepoSpy = jasmine.createSpyObj('HttpTaskRepository', ['findByColumnId', 'create', 'delete']);
+    const userConfigRepoSpy = jasmine.createSpyObj('HttpUserConfigRepository', ['getCustomTags']);
+    userConfigRepoSpy.getCustomTags.and.resolveTo([
+      { id: 1, name: 'Low', color: '#2e7d32' },
+      { id: 2, name: 'Medium', color: '#ed6c02' },
+      { id: 3, name: 'High', color: '#d32f2f' },
+    ]);
+    const authServiceSpy = jasmine.createSpyObj('AuthService', [], { user: { id: 1 } });
 
     await TestBed.configureTestingModule({
       imports: [BoardLayout],
       providers: [
         { provide: HttpColumnRepository, useValue: columnRepoSpy },
         { provide: HttpTaskRepository, useValue: taskRepoSpy },
+        { provide: HttpUserConfigRepository, useValue: userConfigRepoSpy },
+        { provide: AuthService, useValue: authServiceSpy },
       ],
     }).compileComponents();
 
@@ -43,7 +53,9 @@ describe('BoardLayout (integration)', () => {
             id: 1,
             title: 'Design the navbar layout',
             description: 'Prepare the first static navbar for board navigation.',
-            priority: TaskPriority.HIGH,
+            tagId: 3,
+            tagName: 'High',
+            tagColor: '#d32f2f',
             dueDate: '2026-07-20',
             estimatedHours: 4,
             reportedById: 1,
@@ -61,7 +73,9 @@ describe('BoardLayout (integration)', () => {
             id: 2,
             title: 'Implement drag and drop',
             description: 'Enable drag and drop across columns.',
-            priority: TaskPriority.MEDIUM,
+            tagId: 2,
+            tagName: 'Medium',
+            tagColor: '#ed6c02',
             dueDate: '2026-07-22',
             estimatedHours: 6,
             reportedById: 1,
@@ -79,7 +93,9 @@ describe('BoardLayout (integration)', () => {
             id: 3,
             title: 'Scaffold board page layout',
             description: 'Create board wrapper and mocked first column.',
-            priority: TaskPriority.LOW,
+            tagId: 1,
+            tagName: 'Low',
+            tagColor: '#2e7d32',
             dueDate: '2026-07-25',
             estimatedHours: 3,
             reportedById: 1,
@@ -126,7 +142,9 @@ describe('BoardLayout (integration)', () => {
     component.onSaveTaskChanges({
       title: 'Created via modal',
       description: 'Task description',
-      priority: component.columns[0].tasks[0].priority,
+      tagId: component.columns[0].tasks[0].tagId,
+      tagName: component.columns[0].tasks[0].tagName,
+      tagColor: component.columns[0].tasks[0].tagColor,
       dueDate: '2026-08-01',
       estimatedHours: 3,
       assigneeIdsText: '10,11',
@@ -174,7 +192,9 @@ describe('BoardLayout (integration)', () => {
     component.onSaveTaskChanges({
       title: 'Edited task title',
       description: 'Edited description',
-      priority: component.taskEditor.priority,
+      tagId: component.taskEditor.tagId,
+      tagName: component.taskEditor.tagName,
+      tagColor: component.taskEditor.tagColor,
       dueDate: '2026-07-30',
       estimatedHours: 5,
       assigneeIdsText: '5, 7',

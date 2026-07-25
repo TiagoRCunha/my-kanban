@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 import { API_BASE_URL } from '../config/api.config';
+import { ThemeService } from '../theme/theme.service';
 import { AuthLoginRequestDto } from './dto/auth-login-request.dto';
 import { AuthRegisterRequestDto } from './dto/auth-register-request.dto';
 import { AuthTokenResponseDto } from './dto/auth-token-response.dto';
@@ -22,6 +23,7 @@ const USER_KEY = 'mykanban_user';
 export class AuthService {
   private readonly httpClient = inject(HttpClient);
   private readonly apiBaseUrl = inject(API_BASE_URL);
+  private readonly themeService = inject(ThemeService);
 
   private currentUser: AuthUser | null = this.loadStoredUser();
 
@@ -49,6 +51,8 @@ export class AuthService {
     const user = await this.fetchCurrentUser();
     this.storeUser(user);
     this.currentUser = user;
+
+    this.themeService.loadFromBackend(user.id);
 
     return user;
   }

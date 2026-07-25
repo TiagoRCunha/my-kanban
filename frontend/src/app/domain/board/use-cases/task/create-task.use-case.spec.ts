@@ -1,4 +1,4 @@
-import { CreateTaskInput, Task, TaskPriority } from '../../entities/task.entity';
+import { CreateTaskInput, Task } from '../../entities/task.entity';
 import { TaskRepository } from '../../ports/task-repository.port';
 import { CreateTaskUseCase } from './create-task.use-case';
 
@@ -8,7 +8,7 @@ describe('CreateTaskUseCase', () => {
     const input: CreateTaskInput = {
       title: 'Implement task creation',
       description: 'Create the new task flow',
-      priority: TaskPriority.HIGH,
+      tagId: 3,
       dueDate: '2026-08-15',
       estimatedHours: 4,
       position: 1,
@@ -21,7 +21,9 @@ describe('CreateTaskUseCase', () => {
       id: 10,
       title: 'Implement task creation',
       description: 'Create the new task flow',
-      priority: TaskPriority.HIGH,
+      tagId: 3,
+      tagName: 'High',
+      tagColor: '#d32f2f',
       dueDate: '2026-08-15',
       estimatedHours: 4,
       position: 1,

@@ -116,6 +116,21 @@ describe('AuthService', () => {
         updatedAt: '2026-07-05T10:00:00',
       });
 
+      // ThemeService.loadFromBackend() triggers a GET /users/{id}/config
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+      const configReq = httpMock.expectOne((req) => req.url.endsWith('/config'));
+      expect(configReq.request.method).toBe('GET');
+      configReq.flush({
+        id: 1,
+        userId: 1,
+        darkMode: false,
+        startupColumns: [],
+        customTags: [],
+        createdAt: '2026-07-05T10:00:00',
+        updatedAt: '2026-07-05T10:00:00',
+      });
+
       const user = await loginPromise;
 
       expect(user.id).toBe(1);

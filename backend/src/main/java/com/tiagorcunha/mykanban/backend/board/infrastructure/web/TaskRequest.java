@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.tiagorcunha.mykanban.backend.board.application.command.SaveTaskCommand;
-import com.tiagorcunha.mykanban.backend.board.domain.model.TaskPriority;
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,8 +20,8 @@ public record TaskRequest(
     @NotBlank @Size(max = 150) String title,
   @Schema(description = "Task description", example = "Add JWT-based authentication")
     String description,
-  @Schema(description = "Task priority", example = "HIGH")
-    @jakarta.validation.constraints.NotNull TaskPriority priority,
+  @Schema(description = "Custom tag ID (from user's custom tags)", example = "3")
+    Long tagId,
   @Schema(description = "Task due date", example = "2026-08-15")
     LocalDate dueDate,
   @Schema(description = "Estimated effort in hours", example = "6.50")
@@ -35,6 +34,6 @@ public record TaskRequest(
     List<Long> assigneeIds) {
 
   public SaveTaskCommand toCommand() {
-    return new SaveTaskCommand(title, description, priority, dueDate, estimatedHours, position, reportedById, assigneeIds);
+    return new SaveTaskCommand(title, description, tagId, dueDate, estimatedHours, position, reportedById, assigneeIds);
   }
 }

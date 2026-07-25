@@ -1,8 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TaskPriority } from '../../../domain/board/entities/task.entity';
 import { AnimatedButton } from '../animated-button';
+import { CustomTag } from '../../../domain/board/entities/task.entity';
 
 export type TaskEditorMode = 'create' | 'edit';
 
@@ -12,7 +11,9 @@ export type TaskEditorState = {
   taskId: number | null;
   title: string;
   description: string;
-  priority: TaskPriority;
+  tagId: number | null;
+  tagName: string;
+  tagColor: string;
   dueDate: string;
   estimatedHours: number | null;
   assigneeIdsText: string;
@@ -21,7 +22,9 @@ export type TaskEditorState = {
 export type TaskEditorFormValue = {
   title: string;
   description: string;
-  priority: TaskPriority;
+  tagId: number | null;
+  tagName: string;
+  tagColor: string;
   dueDate: string;
   estimatedHours: number;
   assigneeIdsText: string;
@@ -29,22 +32,23 @@ export type TaskEditorFormValue = {
 
 @Component({
   selector: 'app-task-editor-modal',
-  imports: [FormsModule, NgClass, AnimatedButton],
+  imports: [FormsModule, AnimatedButton],
   templateUrl: './task-editor-modal.html',
   styleUrl: './task-editor-modal.scss',
 })
 export class TaskEditorModal implements OnChanges {
   @Input() state: TaskEditorState | null = null;
+  @Input() availableTags: CustomTag[] = [];
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<TaskEditorFormValue>();
   @Output() deleteTask = new EventEmitter<void>();
 
-  readonly priorityOptions = Object.values(TaskPriority);
-
   draft: TaskEditorFormValue = {
     title: '',
     description: '',
-    priority: TaskPriority.MEDIUM,
+    tagId: null,
+    tagName: '',
+    tagColor: '',
     dueDate: '',
     estimatedHours: null as unknown as number,
     assigneeIdsText: '',
@@ -62,7 +66,9 @@ export class TaskEditorModal implements OnChanges {
     this.draft = {
       title: this.state.title,
       description: this.state.description,
-      priority: this.state.priority,
+      tagId: this.state.tagId,
+      tagName: this.state.tagName,
+      tagColor: this.state.tagColor,
       dueDate: this.state.dueDate,
       estimatedHours: this.state.estimatedHours ?? (null as unknown as number),
       assigneeIdsText: this.state.assigneeIdsText,
@@ -87,6 +93,22 @@ export class TaskEditorModal implements OnChanges {
     );
   }
 
+  selectTag(tag: CustomTag): void {
+    this.draft.tagId = tag.id;
+    this.draft.tagName = tag.name;
+    this.draft.tagColor = tag.color;
+  }
+
+  clearTag(): void {
+    this.draft.tagId = null;
+    this.draft.tagName = '';
+    this.draft.tagColor = '';
+  }
+
+  isTagSelected(tag: CustomTag): boolean {
+    return this.draft.tagId === tag.id;
+  }
+
   onClose(): void {
     this.close.emit();
   }
@@ -99,7 +121,9 @@ export class TaskEditorModal implements OnChanges {
     this.save.emit({
       title: this.draft.title,
       description: this.draft.description,
-      priority: this.draft.priority,
+      tagId: this.draft.tagId,
+      tagName: this.draft.tagName,
+      tagColor: this.draft.tagColor,
       dueDate: this.draft.dueDate,
       estimatedHours: this.draft.estimatedHours,
       assigneeIdsText: this.draft.assigneeIdsText,

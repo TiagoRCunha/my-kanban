@@ -24,6 +24,12 @@ export const routes: Routes = [
       import('./ui/pages/board-list/board-list').then((m) => m.BoardListPage),
   },
   {
+    path: 'settings',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./ui/pages/settings/settings').then((m) => m.SettingsPage),
+  },
+  {
     path: 'boards/:boardId',
     canActivate: [authGuard],
     loadComponent: () =>

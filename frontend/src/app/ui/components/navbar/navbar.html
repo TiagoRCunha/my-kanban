@@ -7,16 +7,17 @@
 
   <div class="navbar__actions">
     <a class="navbar__link" routerLink="/boards">Boards</a>
+    <a class="navbar__link" routerLink="/settings">Settings</a>
 
     <span class="navbar__user">{{ userName }}</span>
 
     <button
       class="navbar__icon-btn"
       type="button"
-      aria-label="Toggle dark mode"
+      [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
       (click)="onToggleDarkMode()"
     >
-      ☀
+      {{ themeIcon }}
     </button>
 
     <button

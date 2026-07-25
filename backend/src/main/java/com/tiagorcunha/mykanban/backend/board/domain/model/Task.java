@@ -7,11 +7,10 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import com.tiagorcunha.mykanban.backend.user.domain.model.User;
+import com.tiagorcunha.mykanban.backend.user.domain.model.UserCustomTag;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -36,9 +35,9 @@ public class Task {
   @Column(columnDefinition = "TEXT")
   private String description;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 10)
-  private TaskPriority priority = TaskPriority.MEDIUM;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "tag_id")
+  private UserCustomTag tag;
 
   @Column(name = "due_date")
   private LocalDate dueDate;
@@ -94,12 +93,12 @@ public class Task {
     this.description = description;
   }
 
-  public TaskPriority getPriority() {
-    return priority;
+  public UserCustomTag getTag() {
+    return tag;
   }
 
-  public void setPriority(TaskPriority priority) {
-    this.priority = priority;
+  public void setTag(UserCustomTag tag) {
+    this.tag = tag;
   }
 
   public LocalDate getDueDate() {

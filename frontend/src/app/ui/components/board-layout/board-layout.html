@@ -38,6 +38,7 @@
 
     <app-task-editor-modal
       [state]="taskEditor"
+      [availableTags]="availableTags"
       (close)="onCloseTaskModal()"
       (save)="onSaveTaskChanges($event)"
       (deleteTask)="onDeleteTaskFromModal()"

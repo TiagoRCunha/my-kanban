@@ -3,9 +3,11 @@ import { CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem } from 
 import { BoardColumn } from '../board-column';
 import { TaskCardData } from '../task-card';
 import { ColumnController } from '../column-controller';
-import { TaskPriority } from '../../../domain/board/entities/task.entity';
+import { CustomTag } from '../../../domain/board/entities/task.entity';
 import { TaskEditorFormValue, TaskEditorModal, TaskEditorState } from '../task-editor-modal';
 import { HttpColumnRepository, HttpTaskRepository } from '../../../infrastructure/board';
+import { HttpUserConfigRepository } from '../../../infrastructure/user-config/adapters/http-user-config.repository';
+import { AuthService } from '../../../infrastructure/auth/auth.service';
 
 type BoardColumnData = {
   id: number;
@@ -26,8 +28,11 @@ export class BoardLayout implements OnChanges {
 
   private readonly columnRepository = inject(HttpColumnRepository);
   private readonly taskRepository = inject(HttpTaskRepository);
+  private readonly userConfigRepository = inject(HttpUserConfigRepository);
+  private readonly authService = inject(AuthService);
 
   taskEditor: TaskEditorState | null = null;
+  availableTags: CustomTag[] = [];
 
   columns: BoardColumnData[] = [];
   isLoading = true;
@@ -42,6 +47,11 @@ export class BoardLayout implements OnChanges {
     this.isLoading = true;
 
     try {
+      const userId = this.authService.user?.id;
+      if (userId) {
+        this.availableTags = await this.userConfigRepository.getCustomTags(userId);
+      }
+
       const domainColumns = await this.columnRepository.findByBoardId(this.boardId);
 
       const columnsWithTasks: BoardColumnData[] = await Promise.all(
@@ -57,7 +67,9 @@ export class BoardLayout implements OnChanges {
               id: task.id,
               title: task.title,
               description: task.description,
-              priority: task.priority,
+              tagId: task.tagId,
+              tagName: task.tagName,
+              tagColor: task.tagColor,
               dueDate: task.dueDate,
               estimatedHours: task.estimatedHours,
               reportedById: task.reportedById,
@@ -169,7 +181,9 @@ export class BoardLayout implements OnChanges {
       taskId: null,
       title: '',
       description: '',
-      priority: TaskPriority.MEDIUM,
+      tagId: null,
+      tagName: '',
+      tagColor: '',
       dueDate: '',
       estimatedHours: null,
       assigneeIdsText: '',
@@ -207,7 +221,9 @@ export class BoardLayout implements OnChanges {
       taskId,
       title: task.title,
       description: task.description,
-      priority: task.priority,
+      tagId: task.tagId,
+      tagName: task.tagName,
+      tagColor: task.tagColor,
       dueDate: task.dueDate,
       estimatedHours: task.estimatedHours,
       assigneeIdsText: task.assigneeIds.join(', '),
@@ -251,7 +267,9 @@ export class BoardLayout implements OnChanges {
               id: taskId,
               title,
               description: form.description.trim(),
-              priority: form.priority,
+              tagId: form.tagId,
+              tagName: form.tagName,
+              tagColor: form.tagColor,
               dueDate: form.dueDate,
               estimatedHours: form.estimatedHours,
               reportedById: 1,
@@ -281,7 +299,9 @@ export class BoardLayout implements OnChanges {
             ...task,
             title,
             description: form.description.trim(),
-            priority: form.priority,
+            tagId: form.tagId,
+            tagName: form.tagName,
+            tagColor: form.tagColor,
             dueDate: form.dueDate,
             estimatedHours: form.estimatedHours,
             assigneeIds,

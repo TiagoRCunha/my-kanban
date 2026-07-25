@@ -20,8 +20,10 @@ import com.tiagorcunha.mykanban.backend.board.domain.model.Task;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ConflictException;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ResourceNotFoundException;
 import com.tiagorcunha.mykanban.backend.common.infrastructure.security.AuthenticatedUserProvider;
+import com.tiagorcunha.mykanban.backend.user.application.port.out.UserCustomTagRepositoryPort;
 import com.tiagorcunha.mykanban.backend.user.application.port.out.UserRepositoryPort;
 import com.tiagorcunha.mykanban.backend.user.domain.model.User;
+import com.tiagorcunha.mykanban.backend.user.domain.model.UserCustomTag;
 
 @Service
 public class TaskUseCaseHandler implements TaskUseCase {
@@ -29,6 +31,7 @@ public class TaskUseCaseHandler implements TaskUseCase {
   private final TaskRepositoryPort taskRepository;
   private final BoardColumnRepositoryPort boardColumnRepository;
   private final UserRepositoryPort userRepository;
+  private final UserCustomTagRepositoryPort customTagRepository;
   private final AuthenticatedUserProvider authenticatedUserProvider;
   private final BoardAuthorizationService boardAuthorizationService;
 
@@ -36,11 +39,13 @@ public class TaskUseCaseHandler implements TaskUseCase {
       TaskRepositoryPort taskRepository,
       BoardColumnRepositoryPort boardColumnRepository,
       UserRepositoryPort userRepository,
+      UserCustomTagRepositoryPort customTagRepository,
       AuthenticatedUserProvider authenticatedUserProvider,
       BoardAuthorizationService boardAuthorizationService) {
     this.taskRepository = taskRepository;
     this.boardColumnRepository = boardColumnRepository;
     this.userRepository = userRepository;
+    this.customTagRepository = customTagRepository;
     this.authenticatedUserProvider = authenticatedUserProvider;
     this.boardAuthorizationService = boardAuthorizationService;
   }
@@ -71,7 +76,7 @@ public class TaskUseCaseHandler implements TaskUseCase {
     Task task = new Task();
     task.setTitle(command.title());
     task.setDescription(command.description());
-    task.setPriority(command.priority());
+    task.setTag(resolveTag(command.tagId()));
     task.setDueDate(command.dueDate());
     task.setEstimatedHours(command.estimatedHours());
     task.setPosition(command.position());
@@ -95,7 +100,7 @@ public class TaskUseCaseHandler implements TaskUseCase {
 
     task.setTitle(command.title());
     task.setDescription(command.description());
-    task.setPriority(command.priority());
+    task.setTag(resolveTag(command.tagId()));
     task.setDueDate(command.dueDate());
     task.setEstimatedHours(command.estimatedHours());
     task.setPosition(command.position());
@@ -137,5 +142,14 @@ public class TaskUseCaseHandler implements TaskUseCase {
       throw new ResourceNotFoundException("One or more assignees were not found");
     }
     return new LinkedHashSet<>(assignees);
+  }
+
+  private UserCustomTag resolveTag(Long tagId) {
+    if (tagId == null) {
+      return null;
+    }
+    User currentUser = authenticatedUserProvider.getAuthenticatedUser();
+    return customTagRepository.findByIdAndUserId(tagId, currentUser.getId())
+        .orElseThrow(() -> new ResourceNotFoundException("Custom tag not found"));
   }
 }

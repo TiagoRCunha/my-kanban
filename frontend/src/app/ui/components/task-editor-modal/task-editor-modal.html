@@ -28,16 +28,21 @@
 
       <aside class="task-editor__sidebar">
         <label class="task-editor__field">
-          <h6>Task Priority</h6>
+          <h6>Tag</h6>
           <div class="task-editor__tags">
-            @for (option of priorityOptions; track option) {
-            <button type="button" class="task-editor__tag" [ngClass]="{
-                  'task-editor__tag--active': draft.priority === option,
-                  'task-editor__tag--low': option === 'LOW',
-                  'task-editor__tag--medium': option === 'MEDIUM',
-                  'task-editor__tag--high': option === 'HIGH'
-                  }" (click)="draft.priority = option">
-              {{ option }}
+            @for (tag of availableTags; track tag.id) {
+            <button type="button" class="task-editor__tag" [class.task-editor__tag--active]="isTagSelected(tag)"
+              [style.border-color]="isTagSelected(tag) ? tag.color : ''"
+              [style.background]="isTagSelected(tag) ? tag.color + '20' : ''"
+              [style.color]="isTagSelected(tag) ? tag.color : ''"
+              (click)="selectTag(tag)">
+              <span class="task-editor__tag-dot" [style.background]="tag.color"></span>
+              {{ tag.name }}
+            </button>
+            }
+            @if (draft.tagId !== null) {
+            <button type="button" class="task-editor__tag task-editor__tag--clear" (click)="clearTag()">
+              Clear
             </button>
             }
           </div>

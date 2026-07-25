@@ -1,12 +1,12 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgClass } from '@angular/common';
-import { TaskPriority } from '../../../domain/board/entities/task.entity';
 
 export type TaskCardData = {
   id: number;
   title: string;
   description: string;
-  priority: TaskPriority;
+  tagId: number | null;
+  tagName: string;
+  tagColor: string;
   dueDate: string;
   estimatedHours: number;
   reportedById: number;
@@ -15,7 +15,6 @@ export type TaskCardData = {
 
 @Component({
   selector: 'app-task-card',
-  imports: [NgClass],
   templateUrl: './task-card.html',
   styleUrl: './task-card.scss',
 })
@@ -23,10 +22,6 @@ export class TaskCard {
   @Input() task!: TaskCardData;
   @Output() openTask = new EventEmitter<number>();
   @Output() deleteTask = new EventEmitter<number>();
-
-  getPriorityClass(): string {
-    return `task-card--priority-${this.task.priority.toLowerCase()}`;
-  }
 
   onOpenTask(): void {
     this.openTask.emit(this.task.id);

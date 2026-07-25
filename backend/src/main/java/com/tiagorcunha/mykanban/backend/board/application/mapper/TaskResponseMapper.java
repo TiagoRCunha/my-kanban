@@ -4,6 +4,7 @@ import java.util.Comparator;
 
 import com.tiagorcunha.mykanban.backend.board.application.response.TaskResponse;
 import com.tiagorcunha.mykanban.backend.board.domain.model.Task;
+import com.tiagorcunha.mykanban.backend.user.domain.model.UserCustomTag;
 
 public final class TaskResponseMapper {
 
@@ -11,11 +12,14 @@ public final class TaskResponseMapper {
   }
 
   public static TaskResponse toResponse(Task task) {
+    UserCustomTag tag = task.getTag();
     return new TaskResponse(
         task.getId(),
         task.getTitle(),
         task.getDescription(),
-        task.getPriority(),
+        tag != null ? tag.getId() : null,
+        tag != null ? tag.getName() : null,
+        tag != null ? tag.getColor() : null,
         task.getDueDate(),
         task.getEstimatedHours(),
         task.getPosition(),
