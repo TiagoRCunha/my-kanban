@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tiagorcunha.mykanban.backend.board.application.command.ReorderItemCommand;
 import com.tiagorcunha.mykanban.backend.board.application.command.SaveBoardColumnCommand;
 import com.tiagorcunha.mykanban.backend.board.application.mapper.BoardColumnResponseMapper;
 import com.tiagorcunha.mykanban.backend.board.application.port.in.BoardColumnUseCase;
@@ -55,13 +56,12 @@ public class BoardColumnUseCaseHandler implements BoardColumnUseCase {
     User currentUser = authenticatedUserProvider.getAuthenticatedUser();
     Board board = requireBoard(boardId);
     boardAuthorizationService.assertCanManageColumn(board, currentUser);
-    if (boardColumnRepository.existsByBoardIdAndPosition(boardId, command.position())) {
-      throw new ConflictException("Board column position already in use");
-    }
+
+    int nextPosition = boardColumnRepository.findByBoardId(boardId).size();
 
     BoardColumn boardColumn = new BoardColumn();
     boardColumn.setTitle(command.title());
-    boardColumn.setPosition(command.position());
+    boardColumn.setPosition(nextPosition);
     boardColumn.setBoard(board);
     boardColumn.setCreatedAt(LocalDateTime.now());
     return BoardColumnResponseMapper.toResponse(boardColumnRepository.save(boardColumn));
@@ -89,6 +89,42 @@ public class BoardColumnUseCaseHandler implements BoardColumnUseCase {
     BoardColumn boardColumn = getExistingBoardColumn(boardId, columnId);
     boardAuthorizationService.assertCanManageColumn(boardColumn.getBoard(), currentUser);
     boardColumnRepository.delete(boardColumn);
+  }
+
+  @Override
+  @Transactional
+  public void reorder(Long boardId, List<ReorderItemCommand> items) {
+    User currentUser = authenticatedUserProvider.getAuthenticatedUser();
+    Board board = requireBoard(boardId);
+    boardAuthorizationService.assertCanManageColumn(board, currentUser);
+
+    List<BoardColumn> columns = boardColumnRepository.findByBoardId(boardId);
+
+    java.util.Set<Long> validIds = columns.stream()
+        .map(BoardColumn::getId)
+        .collect(java.util.stream.Collectors.toSet());
+    for (ReorderItemCommand item : items) {
+      if (!validIds.contains(item.id())) {
+        throw new ResourceNotFoundException("Column not found in board");
+      }
+    }
+
+    java.util.Map<Long, Integer> positionById = items.stream()
+        .collect(java.util.stream.Collectors.toMap(ReorderItemCommand::id, ReorderItemCommand::position));
+
+    for (BoardColumn col : columns) {
+      col.setPosition(col.getPosition() + 10000);
+    }
+    boardColumnRepository.saveAll(columns);
+    boardColumnRepository.flush();
+
+    for (BoardColumn col : columns) {
+      Integer newPosition = positionById.get(col.getId());
+      if (newPosition != null) {
+        col.setPosition(newPosition);
+      }
+    }
+    boardColumnRepository.saveAll(columns);
   }
 
   private Board requireBoard(Long boardId) {

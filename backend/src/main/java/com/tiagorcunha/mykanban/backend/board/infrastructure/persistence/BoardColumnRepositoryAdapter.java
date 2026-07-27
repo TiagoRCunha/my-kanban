@@ -43,6 +43,16 @@ public class BoardColumnRepositoryAdapter implements BoardColumnRepositoryPort {
   }
 
   @Override
+  public List<BoardColumn> saveAll(List<BoardColumn> boardColumns) {
+    return repository.saveAll(boardColumns);
+  }
+
+  @Override
+  public void flush() {
+    repository.flush();
+  }
+
+  @Override
   public void delete(BoardColumn boardColumn) {
     repository.delete(boardColumn);
   }

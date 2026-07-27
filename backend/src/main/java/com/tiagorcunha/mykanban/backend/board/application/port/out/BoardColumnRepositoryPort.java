@@ -17,5 +17,9 @@ public interface BoardColumnRepositoryPort {
 
   BoardColumn save(BoardColumn boardColumn);
 
+  List<BoardColumn> saveAll(List<BoardColumn> boardColumns);
+
+  void flush();
+
   void delete(BoardColumn boardColumn);
 }
