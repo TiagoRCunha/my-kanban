@@ -1,0 +1,53 @@
+@use '../../../../styles/abstracts/tokens' as t;
+@use '../../../../styles/abstracts/mixins' as m;
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$spacing-3;
+  cursor: pointer;
+  user-select: none;
+
+  &--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &__label {
+    font-size: t.$font-size-md;
+    font-weight: t.$font-weight-medium;
+    color: t.$color-text;
+  }
+
+  &__track {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    background-color: t.$color-border;
+    border-radius: 12px;
+    transition: background-color 0.2s;
+
+    &--on {
+      background-color: t.$color-primary;
+    }
+
+    @include m.focus-ring;
+  }
+
+  &__thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+
+    .toggle__track--on & {
+      transform: translateX(20px);
+    }
+  }
+}

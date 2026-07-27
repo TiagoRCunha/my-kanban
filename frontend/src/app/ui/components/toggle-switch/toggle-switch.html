@@ -1,0 +1,8 @@
+<span class="toggle" [class.toggle--disabled]="disabled" (click)="onToggle()">
+  @if (label) {
+    <span class="toggle__label">{{ label }}</span>
+  }
+  <span class="toggle__track" [class.toggle__track--on]="checked" role="switch" [attr.aria-checked]="checked" [attr.tabindex]="disabled ? -1 : 0" (keydown.enter)="onToggle()" (keydown.space)="onToggle()">
+    <span class="toggle__thumb"></span>
+  </span>
+</span>

@@ -1,0 +1,154 @@
+@use '../../../../styles/abstracts/tokens' as t;
+@use '../../../../styles/abstracts/mixins' as m;
+
+.settings {
+  min-height: calc(100vh - t.$navbar-height);
+  background-color: t.$color-bg;
+  padding: t.$spacing-5;
+  max-width: 720px;
+  margin: 0 auto;
+
+  &__title {
+    font-size: t.$font-size-h4;
+    font-weight: t.$font-weight-bold;
+    color: t.$color-text;
+    margin: 0 0 t.$spacing-4;
+  }
+
+  // ─── Tabs ─────────────────────────────────────────────────────────────
+
+  &__tabs {
+    display: flex;
+    gap: t.$spacing-1;
+    border-bottom: 1px solid t.$color-border;
+    margin-bottom: t.$spacing-5;
+  }
+
+  &__tab {
+    padding: t.$spacing-2 t.$spacing-4;
+    font-size: t.$font-size-md;
+    font-weight: t.$font-weight-medium;
+    color: t.$color-text-muted;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+
+    &:hover {
+      color: t.$color-text;
+    }
+
+    &--active {
+      color: t.$color-primary;
+      border-bottom-color: t.$color-primary;
+    }
+
+    @include m.focus-ring;
+  }
+
+  // ─── States ───────────────────────────────────────────────────────────
+
+  &__loading,
+  &__error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: t.$spacing-6;
+    font-size: t.$font-size-lg;
+    color: t.$color-text-muted;
+  }
+
+  &__error {
+    color: t.$color-danger;
+  }
+
+  &__success {
+    padding: t.$spacing-2 t.$spacing-3;
+    margin-bottom: t.$spacing-4;
+    font-size: t.$font-size-md;
+    font-weight: t.$font-weight-medium;
+    color: t.$color-success;
+    background-color: t.$color-surface;
+    border: 1px solid t.$color-success;
+    border-radius: t.$radius-sm;
+  }
+
+  // ─── Section ──────────────────────────────────────────────────────────
+
+  &__section {
+    margin-bottom: t.$spacing-5;
+  }
+
+  &__section-title {
+    font-size: t.$font-size-h6;
+    font-weight: t.$font-weight-bold;
+    color: t.$color-text;
+    margin: 0 0 t.$spacing-1;
+  }
+
+  &__section-description {
+    font-size: t.$font-size-md;
+    color: t.$color-text-muted;
+    margin: 0 0 t.$spacing-4;
+  }
+
+  // ─── Card ─────────────────────────────────────────────────────────────
+
+  &__card {
+    background-color: t.$color-surface;
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-md;
+    box-shadow: t.$shadow-card;
+    padding: t.$spacing-4;
+  }
+
+  &__card-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: t.$spacing-3;
+  }
+
+  &__card-info {
+    display: flex;
+    flex-direction: column;
+    gap: t.$spacing-1;
+  }
+
+  &__card-label {
+    font-size: t.$font-size-md;
+    font-weight: t.$font-weight-bold;
+    color: t.$color-text;
+  }
+
+  &__card-hint {
+    font-size: t.$font-size-sm;
+    color: t.$color-text-muted;
+  }
+
+  &__card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: t.$spacing-2;
+    margin-top: t.$spacing-3;
+    padding-top: t.$spacing-3;
+    border-top: 1px solid t.$color-border;
+  }
+
+  // ─── List ─────────────────────────────────────────────────────────────
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: t.$spacing-2;
+  }
+
+  &__empty-text {
+    font-size: t.$font-size-md;
+    color: t.$color-text-muted;
+    text-align: center;
+    padding: t.$spacing-4;
+    margin: 0;
+  }
+}

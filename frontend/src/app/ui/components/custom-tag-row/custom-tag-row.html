@@ -1,0 +1,37 @@
+<div class="tag-row">
+  <span class="tag-row__position">{{ position + 1 }}.</span>
+
+  <input
+    class="tag-row__color-input"
+    type="color"
+    [(ngModel)]="editedColor"
+    [disabled]="disabled"
+    aria-label="Tag color"
+  />
+
+  <input
+    class="tag-row__name-input"
+    type="text"
+    [(ngModel)]="editedName"
+    placeholder="Tag name"
+    maxlength="50"
+    [disabled]="disabled"
+  />
+
+  <div class="tag-row__actions">
+    @if (hasChanges) {
+      <app-animated-button label="Save" variant="confirm" [disabled]="!canSave" (pressed)="onSave()" />
+      <app-animated-button label="Cancel" variant="neutral" (pressed)="onCancel()" />
+    }
+
+    <button
+      class="tag-row__icon-btn tag-row__icon-btn--danger"
+      type="button"
+      aria-label="Remove tag"
+      [disabled]="disabled"
+      (click)="remove.emit()"
+    >
+      &times;
+    </button>
+  </div>
+</div>
