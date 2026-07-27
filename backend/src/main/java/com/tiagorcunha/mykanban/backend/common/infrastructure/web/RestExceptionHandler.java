@@ -10,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import com.tiagorcunha.mykanban.backend.common.application.exception.ConflictException;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ForbiddenException;
@@ -46,6 +47,11 @@ public class RestExceptionHandler {
       fieldErrors.put(fieldError.getField(), fieldError.getDefaultMessage());
     }
     return buildResponse(HttpStatus.BAD_REQUEST, "Validation failed", fieldErrors);
+  }
+
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  public ResponseEntity<ApiErrorResponse> handleDataIntegrity(DataIntegrityViolationException exception) {
+    return buildResponse(HttpStatus.CONFLICT, "Data integrity violation", Map.of());
   }
 
   private ResponseEntity<ApiErrorResponse> buildResponse(

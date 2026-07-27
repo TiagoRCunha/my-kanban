@@ -3,8 +3,6 @@ package com.tiagorcunha.mykanban.backend.user.application.mapper;
 import java.util.Collections;
 import java.util.List;
 
-import com.tiagorcunha.mykanban.backend.user.application.response.CustomTagResponse;
-import com.tiagorcunha.mykanban.backend.user.application.response.StartupColumnResponse;
 import com.tiagorcunha.mykanban.backend.user.application.response.UserConfigResponse;
 import com.tiagorcunha.mykanban.backend.user.domain.model.UserConfig;
 import com.tiagorcunha.mykanban.backend.user.domain.model.UserCustomTag;
