@@ -8,6 +8,8 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tiagorcunha.mykanban.backend.board.application.command.MoveTaskCommand;
+import com.tiagorcunha.mykanban.backend.board.application.command.ReorderItemCommand;
 import com.tiagorcunha.mykanban.backend.board.application.command.SaveTaskCommand;
 import com.tiagorcunha.mykanban.backend.board.application.mapper.TaskResponseMapper;
 import com.tiagorcunha.mykanban.backend.board.application.port.in.TaskUseCase;
@@ -117,6 +119,93 @@ public class TaskUseCaseHandler implements TaskUseCase {
     Task task = getExistingTask(columnId, taskId);
     boardAuthorizationService.assertCanManageTask(task, currentUser);
     taskRepository.delete(task);
+  }
+
+  @Override
+  @Transactional
+  public void reorder(Long columnId, List<ReorderItemCommand> items) {
+    User currentUser = authenticatedUserProvider.getAuthenticatedUser();
+    BoardColumn boardColumn = requireBoardColumn(columnId);
+    boardAuthorizationService.assertCanManageColumn(boardColumn.getBoard(), currentUser);
+
+    List<Task> tasks = taskRepository.findByColumnId(columnId);
+
+    java.util.Set<Long> validIds = tasks.stream()
+        .map(Task::getId)
+        .collect(java.util.stream.Collectors.toSet());
+    for (ReorderItemCommand item : items) {
+      if (!validIds.contains(item.id())) {
+        throw new ResourceNotFoundException("Task not found in column");
+      }
+    }
+
+    java.util.Map<Long, Integer> positionById = items.stream()
+        .collect(java.util.stream.Collectors.toMap(ReorderItemCommand::id, ReorderItemCommand::position));
+
+    for (Task task : tasks) {
+      task.setPosition(task.getPosition() + 10000);
+    }
+    taskRepository.saveAll(tasks);
+    taskRepository.flush();
+
+    for (Task task : tasks) {
+      Integer newPosition = positionById.get(task.getId());
+      if (newPosition != null) {
+        task.setPosition(newPosition);
+      }
+    }
+    taskRepository.saveAll(tasks);
+  }
+
+  @Override
+  @Transactional
+  public void move(Long taskId, MoveTaskCommand command) {
+    User currentUser = authenticatedUserProvider.getAuthenticatedUser();
+    Task task = taskRepository.findById(taskId)
+        .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+    boardAuthorizationService.assertCanManageTask(task, currentUser);
+
+    BoardColumn sourceColumn = task.getBoardColumn();
+    boardAuthorizationService.assertCanManageColumn(sourceColumn.getBoard(), currentUser);
+
+    BoardColumn targetColumn = boardColumnRepository.findById(command.targetColumnId())
+        .orElseThrow(() -> new ResourceNotFoundException("Target column not found"));
+
+    if (!sourceColumn.getBoard().getId().equals(targetColumn.getBoard().getId())) {
+      throw new ResourceNotFoundException("Target column not found in the same board");
+    }
+
+    task.setBoardColumn(targetColumn);
+    task.setPosition(command.position());
+    task.setUpdatedAt(LocalDateTime.now());
+    taskRepository.save(task);
+
+    if (command.reorderedSourceTasks() != null && !sourceColumn.getId().equals(targetColumn.getId())) {
+      reorderColumnTasks(sourceColumn, command.reorderedSourceTasks());
+    }
+
+    reorderColumnTasks(targetColumn, command.reorderedTargetTasks());
+  }
+
+  private void reorderColumnTasks(BoardColumn column, List<ReorderItemCommand> items) {
+    List<Task> tasks = taskRepository.findByColumnId(column.getId());
+
+    java.util.Map<Long, Integer> positionById = items.stream()
+        .collect(java.util.stream.Collectors.toMap(ReorderItemCommand::id, ReorderItemCommand::position));
+
+    for (Task task : tasks) {
+      task.setPosition(task.getPosition() + 10000);
+    }
+    taskRepository.saveAll(tasks);
+    taskRepository.flush();
+
+    for (Task task : tasks) {
+      Integer newPosition = positionById.get(task.getId());
+      if (newPosition != null) {
+        task.setPosition(newPosition);
+      }
+    }
+    taskRepository.saveAll(tasks);
   }
 
   private BoardColumn requireBoardColumn(Long columnId) {

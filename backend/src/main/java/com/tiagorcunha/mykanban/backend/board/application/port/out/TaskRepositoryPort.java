@@ -17,5 +17,9 @@ public interface TaskRepositoryPort {
 
   Task save(Task task);
 
+  List<Task> saveAll(List<Task> tasks);
+
+  void flush();
+
   void delete(Task task);
 }

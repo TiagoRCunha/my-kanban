@@ -43,6 +43,16 @@ public class TaskRepositoryAdapter implements TaskRepositoryPort {
   }
 
   @Override
+  public List<Task> saveAll(List<Task> tasks) {
+    return repository.saveAll(tasks);
+  }
+
+  @Override
+  public void flush() {
+    repository.flush();
+  }
+
+  @Override
   public void delete(Task task) {
     repository.delete(task);
   }

@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tiagorcunha.mykanban.backend.board.application.command.MoveTaskCommand;
+import com.tiagorcunha.mykanban.backend.board.application.command.ReorderItemCommand;
 import com.tiagorcunha.mykanban.backend.board.application.port.in.TaskUseCase;
 import com.tiagorcunha.mykanban.backend.board.application.response.TaskResponse;
 import com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse;
@@ -109,5 +112,57 @@ public class TaskController {
   })
   public void delete(@PathVariable Long columnId, @PathVariable Long taskId) {
     taskUseCase.delete(columnId, taskId);
+  }
+
+  @PatchMapping("/reorder")
+  @Operation(summary = "Reorder tasks within a column")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Tasks reordered"),
+      @ApiResponse(
+          responseCode = "400",
+          description = "Invalid payload",
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
+      @ApiResponse(
+          responseCode = "404",
+          description = "Column not found",
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+  })
+  public void reorder(
+      @PathVariable Long columnId,
+      @Valid @RequestBody ReorderRequest request) {
+    List<ReorderItemCommand> commands = request.items().stream()
+        .map(item -> new ReorderItemCommand(item.id(), item.position()))
+        .toList();
+    taskUseCase.reorder(columnId, commands);
+  }
+
+  @PatchMapping("/{taskId}/move")
+  @Operation(summary = "Move task to a different column")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Task moved"),
+      @ApiResponse(
+          responseCode = "400",
+          description = "Invalid payload",
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
+      @ApiResponse(
+          responseCode = "404",
+          description = "Task or target column not found",
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+  })
+  public void move(
+      @PathVariable Long taskId,
+      @Valid @RequestBody MoveTaskRequest request) {
+    MoveTaskCommand command = new MoveTaskCommand(
+        request.targetColumnId(),
+        request.position(),
+        request.reorderedSourceTasks() != null
+            ? request.reorderedSourceTasks().stream()
+                .map(item -> new ReorderItemCommand(item.id(), item.position()))
+                .toList()
+            : null,
+        request.reorderedTargetTasks().stream()
+            .map(item -> new ReorderItemCommand(item.id(), item.position()))
+            .toList());
+    taskUseCase.move(taskId, command);
   }
 }
