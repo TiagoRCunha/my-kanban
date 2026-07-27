@@ -34,7 +34,7 @@
       }
     </div>
 
-    <app-column-controller (onAdd)="onAddColumn()" />
+    <app-column-controller (onAdd)="onAddColumn($event)" />
 
     <app-task-editor-modal
       [state]="taskEditor"

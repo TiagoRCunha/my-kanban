@@ -62,7 +62,7 @@ export class Column {
   }
 
   private static ensurePosition(position: number): number {
-    return DomainValidators.positiveInteger(position, 'Position');
+    return DomainValidators.nonNegativeInteger(position, 'Position');
   }
 
   private static ensureDate(raw: string, fieldName: string): Date {

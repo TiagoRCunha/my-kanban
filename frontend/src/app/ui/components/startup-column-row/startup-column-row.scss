@@ -1,0 +1,91 @@
+@use '../../../../styles/abstracts/tokens' as t;
+@use '../../../../styles/abstracts/mixins' as m;
+
+.col-row {
+  display: flex;
+  align-items: center;
+  gap: t.$spacing-2;
+  padding: t.$spacing-2 t.$spacing-3;
+  background: t.$color-surface;
+  border: 1px solid t.$color-border;
+  border-radius: t.$radius-sm;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: t.$color-primary;
+  }
+
+  &__position {
+    font-size: t.$font-size-md;
+    font-weight: t.$font-weight-bold;
+    color: t.$color-text-muted;
+    min-width: 24px;
+    text-align: center;
+  }
+
+  &__input {
+    flex: 1;
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-sm;
+    padding: t.$spacing-1 t.$spacing-2;
+    font: inherit;
+    font-size: t.$font-size-md;
+    color: t.$color-text;
+    background: t.$color-surface;
+    transition: border-color 0.15s;
+
+    &:focus {
+      outline: none;
+      border-color: t.$color-primary;
+    }
+
+    &::placeholder {
+      color: t.$color-text-muted;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: t.$spacing-1;
+  }
+
+  &__icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid t.$color-border;
+    background: t.$color-surface;
+    color: t.$color-text-muted;
+    border-radius: t.$radius-sm;
+    font-size: t.$font-size-sm;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover:not(:disabled) {
+      background: t.$color-surface-alt;
+      color: t.$color-text;
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    &--danger {
+      color: t.$color-danger;
+
+      &:hover:not(:disabled) {
+        background: t.$color-danger;
+        color: #ffffff;
+      }
+    }
+  }
+}

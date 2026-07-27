@@ -57,4 +57,34 @@ export class HttpTaskRepository {
       this.httpClient.delete<void>(`${this.apiBaseUrl}/columns/${columnId}/tasks/${id}`),
     );
   }
+
+  public reorder(columnId: number, items: { id: number; position: number }[]): Promise<void> {
+    return firstValueFrom(
+      this.httpClient.patch<void>(
+        `${this.apiBaseUrl}/columns/${columnId}/tasks/reorder`,
+        { items },
+      ),
+    );
+  }
+
+  public moveTask(
+    taskId: number,
+    sourceColumnId: number,
+    targetColumnId: number,
+    position: number,
+    reorderedSourceTasks: { id: number; position: number }[] | null,
+    reorderedTargetTasks: { id: number; position: number }[],
+  ): Promise<void> {
+    return firstValueFrom(
+      this.httpClient.patch<void>(
+        `${this.apiBaseUrl}/columns/${sourceColumnId}/tasks/${taskId}/move`,
+        {
+          targetColumnId,
+          position,
+          reorderedSourceTasks,
+          reorderedTargetTasks,
+        },
+      ),
+    );
+  }
 }

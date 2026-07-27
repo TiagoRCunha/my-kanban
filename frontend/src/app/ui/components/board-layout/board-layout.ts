@@ -98,6 +98,12 @@ export class BoardLayout implements OnChanges {
   onTaskDrop(event: CdkDragDrop<TaskCardData[]>): void {
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+
+      const sourceColumn = this.columns.find((col) => col.tasks === event.container.data);
+      if (sourceColumn) {
+        const taskOrder = event.container.data.map((task, index) => ({ id: task.id, position: index }));
+        this.taskRepository.reorder(sourceColumn.id, taskOrder).catch(() => {});
+      }
       return;
     }
 
@@ -107,6 +113,25 @@ export class BoardLayout implements OnChanges {
       event.previousIndex,
       event.currentIndex,
     );
+
+    const sourceColumn = this.findColumnByTasks(event.previousContainer.data);
+    const targetColumn = this.findColumnByTasks(event.container.data);
+
+    if (sourceColumn && targetColumn) {
+      const reorderedSourceTasks = event.previousContainer.data.map((task, index) => ({ id: task.id, position: index }));
+      const reorderedTargetTasks = event.container.data.map((task, index) => ({ id: task.id, position: index }));
+
+      const movedTask = event.item.data as TaskCardData;
+
+      this.taskRepository.moveTask(
+        movedTask.id,
+        sourceColumn.id,
+        targetColumn.id,
+        event.currentIndex,
+        reorderedSourceTasks,
+        reorderedTargetTasks,
+      ).catch(() => {});
+    }
   }
 
   onColumnDrop(event: CdkDragDrop<BoardColumnData[]>): void {
@@ -140,6 +165,9 @@ export class BoardLayout implements OnChanges {
     this.columns.forEach((column, index) => {
       column.position = index;
     });
+
+    const columnOrder = this.columns.map((col, index) => ({ id: col.id, position: index }));
+    this.columnRepository.reorder(this.boardId, columnOrder).catch(() => {});
   }
 
   onToggleColumnPin(columnId: number): void {
@@ -321,10 +349,14 @@ export class BoardLayout implements OnChanges {
     this.onDeleteTask(this.taskEditor.columnId, this.taskEditor.taskId);
   }
 
-  async onAddColumn(): Promise<void> {
+  private findColumnByTasks(tasks: TaskCardData[]): BoardColumnData | undefined {
+    return this.columns.find((col) => col.tasks === tasks);
+  }
+
+  async onAddColumn(title: string): Promise<void> {
     try {
       const newColumn = await this.columnRepository.create({
-        title: `New Column`,
+        title,
         position: this.columns.length,
         boardId: this.boardId,
       });
@@ -339,7 +371,8 @@ export class BoardLayout implements OnChanges {
           tasks: [],
         },
       ];
-    } catch {
+    } catch (err) {
+      console.error('Failed to create column', err);
       // Silently fail if backend is not available
     }
   }

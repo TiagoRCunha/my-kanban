@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
 import { BoardColumn } from '../board-column';
 import { BoardLayout } from './board-layout';
+import { ColumnController } from '../column-controller';
 import { HttpColumnRepository } from '../../../infrastructure/board/adapters/http-column.repository';
 import { HttpTaskRepository } from '../../../infrastructure/board/adapters/task-http.repository';
 import { HttpUserConfigRepository } from '../../../infrastructure/user-config/adapters/http-user-config.repository';
@@ -12,13 +14,18 @@ describe('BoardLayout (integration)', () => {
   let component: BoardLayout;
 
   beforeEach(async () => {
-    const columnRepoSpy = jasmine.createSpyObj('HttpColumnRepository', ['findByBoardId', 'create', 'delete']);
-    columnRepoSpy.create.and.resolveTo({
-      id: 4,
-      title: 'New Column',
-      position: 4,
-    });
-    const taskRepoSpy = jasmine.createSpyObj('HttpTaskRepository', ['findByColumnId', 'create', 'delete']);
+    const columnRepoSpy = jasmine.createSpyObj('HttpColumnRepository', ['findByBoardId', 'create', 'delete', 'reorder']);
+    columnRepoSpy.create.and.callFake((input: { title: string; position: number; boardId: number }) =>
+      Promise.resolve({
+        id: 4,
+        title: input.title,
+        position: input.position,
+      }),
+    );
+    columnRepoSpy.reorder.and.returnValue(Promise.resolve());
+    const taskRepoSpy = jasmine.createSpyObj('HttpTaskRepository', ['findByColumnId', 'create', 'delete', 'reorder', 'moveTask']);
+    taskRepoSpy.reorder.and.returnValue(Promise.resolve());
+    taskRepoSpy.moveTask.and.returnValue(Promise.resolve());
     const userConfigRepoSpy = jasmine.createSpyObj('HttpUserConfigRepository', ['getCustomTags']);
     userConfigRepoSpy.getCustomTags.and.resolveTo([
       { id: 1, name: 'Low', color: '#2e7d32' },
@@ -28,7 +35,7 @@ describe('BoardLayout (integration)', () => {
     const authServiceSpy = jasmine.createSpyObj('AuthService', [], { user: { id: 1 } });
 
     await TestBed.configureTestingModule({
-      imports: [BoardLayout],
+      imports: [FormsModule, BoardLayout],
       providers: [
         { provide: HttpColumnRepository, useValue: columnRepoSpy },
         { provide: HttpTaskRepository, useValue: taskRepoSpy },
@@ -116,13 +123,29 @@ describe('BoardLayout (integration)', () => {
   });
 
   it('adds a new column through the controller button', async () => {
+    // Click to enter editing mode
     const addButton = fixture.nativeElement.querySelector('[aria-label="Add a new column"]') as HTMLButtonElement;
-
     await addButton.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // Verify the input appeared
+    const input = fixture.nativeElement.querySelector('.column-controller__input') as HTMLInputElement;
+    expect(input).toBeTruthy();
+
+    // Set the title via the ColumnController component instance (reliable for testing)
+    const controllerDebug = fixture.debugElement.query(By.directive(ColumnController));
+    const controller = controllerDebug.componentInstance as ColumnController;
+    controller.title = 'Review';
+    fixture.detectChanges();
+
+    // Confirm the column
+    controller.confirmColumn();
     await fixture.whenStable();
     fixture.detectChanges();
 
     expect(component.columns.length).toBe(4);
+    expect(component.columns[3].title).toBe('Review');
   });
 
   it('updates parent state when a child emits rename event', () => {
@@ -218,5 +241,86 @@ describe('BoardLayout (integration)', () => {
 
     expect(component.columns[0].tasks.find((task) => task.id === taskId)).toBeUndefined();
     expect(component.taskEditor).toBeNull();
+  });
+
+  it('persists column reorder to backend when columns are reordered', () => {
+    const columnRepoSpy = TestBed.inject(HttpColumnRepository) as jasmine.SpyObj<HttpColumnRepository>;
+
+    const mockEvent = {
+      previousIndex: 0,
+      currentIndex: 2,
+      previousContainer: { data: component.columns },
+      container: { data: component.columns },
+      item: { data: component.columns[0] },
+    } as any;
+
+    component.onColumnDrop(mockEvent);
+
+    expect(columnRepoSpy.reorder).toHaveBeenCalledWith(1, [
+      { id: 2, position: 0 },
+      { id: 3, position: 1 },
+      { id: 1, position: 2 },
+    ]);
+  });
+
+  it('persists same-column task reorder to backend', () => {
+    const taskRepoSpy = TestBed.inject(HttpTaskRepository) as jasmine.SpyObj<HttpTaskRepository>;
+    const sourceColumn = component.columns[0];
+
+    // Add a second task to make reordering meaningful
+    sourceColumn.tasks.push({
+      id: 10,
+      title: 'Second task',
+      description: '',
+      tagId: null,
+      tagName: '',
+      tagColor: '',
+      dueDate: '',
+      estimatedHours: 0,
+      reportedById: 1,
+      assigneeIds: [],
+    });
+
+    const container = { data: sourceColumn.tasks };
+    const mockEvent = {
+      previousIndex: 0,
+      currentIndex: 1,
+      previousContainer: container,
+      container: container,
+      item: { data: sourceColumn.tasks[0] },
+    } as any;
+
+    component.onTaskDrop(mockEvent);
+
+    expect(taskRepoSpy.reorder).toHaveBeenCalledWith(sourceColumn.id, [
+      { id: 10, position: 0 },
+      { id: 1, position: 1 },
+    ]);
+  });
+
+  it('persists cross-column task move to backend', () => {
+    const taskRepoSpy = TestBed.inject(HttpTaskRepository) as jasmine.SpyObj<HttpTaskRepository>;
+    const sourceColumn = component.columns[0];
+    const targetColumn = component.columns[1];
+    const movedTask = sourceColumn.tasks[0];
+
+    const mockEvent = {
+      previousIndex: 0,
+      currentIndex: 0,
+      previousContainer: { data: sourceColumn.tasks },
+      container: { data: targetColumn.tasks },
+      item: { data: movedTask },
+    } as any;
+
+    component.onTaskDrop(mockEvent);
+
+    expect(taskRepoSpy.moveTask).toHaveBeenCalledWith(
+      movedTask.id,
+      sourceColumn.id,
+      targetColumn.id,
+      0,
+      jasmine.any(Array),
+      jasmine.any(Array),
+    );
   });
 });

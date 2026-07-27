@@ -1,11 +1,43 @@
 <div class="column-controller">
-  <button
-    class="column-controller__btn"
-    type="button"
-    (click)="addColumn()"
-    aria-label="Add a new column"
-  >
-    <span class="column-controller__icon">+</span>
-    <span class="column-controller__text">Add a new column</span>
-  </button>
+  @if (isEditing) {
+    <div class="column-controller__input-wrapper">
+      <input
+        #columnTitleInput
+        class="column-controller__input"
+        type="text"
+        [(ngModel)]="title"
+        placeholder="Enter column title..."
+        maxlength="50"
+        (keydown)="onKeydown($event)"
+        (blur)="confirmColumn()"
+      />
+      <div class="column-controller__input-actions">
+        <button
+          class="column-controller__confirm-btn"
+          type="button"
+          [disabled]="!title.trim()"
+          (mousedown)="confirmColumn()"
+        >
+          &#10003;
+        </button>
+        <button
+          class="column-controller__cancel-btn"
+          type="button"
+          (mousedown)="cancelEditing()"
+        >
+          &times;
+        </button>
+      </div>
+    </div>
+  } @else {
+    <button
+      class="column-controller__btn"
+      type="button"
+      (click)="startEditing()"
+      aria-label="Add a new column"
+    >
+      <span class="column-controller__icon">+</span>
+      <span class="column-controller__text">Add a new column</span>
+    </button>
+  }
 </div>
