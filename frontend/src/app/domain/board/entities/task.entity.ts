@@ -126,7 +126,7 @@ export class Task {
   }
 
   private static ensurePosition(position: number): number {
-    return DomainValidators.positiveInteger(position, 'Task position');
+    return DomainValidators.nonNegativeInteger(position, 'Task position');
   }
 
   private static ensureAssigneeIds(assigneeIds: number[]): number[] {
