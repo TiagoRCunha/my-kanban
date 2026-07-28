@@ -8,13 +8,14 @@ import { HttpColumnRepository } from '../../../infrastructure/board/adapters/htt
 import { HttpTaskRepository } from '../../../infrastructure/board/adapters/task-http.repository';
 import { HttpUserConfigRepository } from '../../../infrastructure/user-config/adapters/http-user-config.repository';
 import { AuthService } from '../../../infrastructure/auth/auth.service';
+import { Task } from '../../../domain/board/entities/task.entity';
 
 describe('BoardLayout (integration)', () => {
   let fixture: ComponentFixture<BoardLayout>;
   let component: BoardLayout;
 
   beforeEach(async () => {
-    const columnRepoSpy = jasmine.createSpyObj('HttpColumnRepository', ['findByBoardId', 'create', 'delete', 'reorder']);
+    const columnRepoSpy = jasmine.createSpyObj('HttpColumnRepository', ['findByBoardId', 'create', 'delete', 'reorder', 'update']);
     columnRepoSpy.create.and.callFake((input: { title: string; position: number; boardId: number }) =>
       Promise.resolve({
         id: 4,
@@ -23,7 +24,49 @@ describe('BoardLayout (integration)', () => {
       }),
     );
     columnRepoSpy.reorder.and.returnValue(Promise.resolve());
-    const taskRepoSpy = jasmine.createSpyObj('HttpTaskRepository', ['findByColumnId', 'create', 'delete', 'reorder', 'moveTask']);
+    columnRepoSpy.update.and.returnValue(Promise.resolve());
+    const taskRepoSpy = jasmine.createSpyObj('HttpTaskRepository', ['findByColumnId', 'create', 'delete', 'reorder', 'moveTask', 'update']);
+    taskRepoSpy.create.and.callFake((input: { title: string; description: string; tagId: number | null; dueDate: string | null; estimatedHours: number | null; position: number; assigneeIds: number[]; columnId: number }) =>
+      Promise.resolve(
+        Task.fromSnapshot({
+          id: 10,
+          title: input.title,
+          description: input.description ?? '',
+          tagId: input.tagId ?? null,
+          tagName: 'Test Tag',
+          tagColor: '#ff0000',
+          dueDate: input.dueDate,
+          estimatedHours: input.estimatedHours,
+          position: input.position,
+          columnId: input.columnId,
+          reportedById: 1,
+          assigneeIds: input.assigneeIds,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }),
+      ),
+    );
+    taskRepoSpy.update.and.callFake((_id: number, input: { title: string; description: string; tagId: number | null; dueDate: string | null; estimatedHours: number | null; position: number; assigneeIds: number[]; columnId: number }) =>
+      Promise.resolve(
+        Task.fromSnapshot({
+          id: _id,
+          title: input.title,
+          description: input.description ?? '',
+          tagId: input.tagId ?? null,
+          tagName: '',
+          tagColor: '',
+          dueDate: input.dueDate,
+          estimatedHours: input.estimatedHours,
+          position: input.position,
+          columnId: input.columnId,
+          reportedById: 1,
+          assigneeIds: input.assigneeIds,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }),
+      ),
+    );
+    taskRepoSpy.delete.and.returnValue(Promise.resolve());
     taskRepoSpy.reorder.and.returnValue(Promise.resolve());
     taskRepoSpy.moveTask.and.returnValue(Promise.resolve());
     const userConfigRepoSpy = jasmine.createSpyObj('HttpUserConfigRepository', ['getCustomTags']);
@@ -65,6 +108,7 @@ describe('BoardLayout (integration)', () => {
             tagColor: '#d32f2f',
             dueDate: '2026-07-20',
             estimatedHours: 4,
+            position: 0,
             reportedById: 1,
             assigneeIds: [1, 2],
           },
@@ -85,6 +129,7 @@ describe('BoardLayout (integration)', () => {
             tagColor: '#ed6c02',
             dueDate: '2026-07-22',
             estimatedHours: 6,
+            position: 0,
             reportedById: 1,
             assigneeIds: [1],
           },
@@ -105,6 +150,7 @@ describe('BoardLayout (integration)', () => {
             tagColor: '#2e7d32',
             dueDate: '2026-07-25',
             estimatedHours: 3,
+            position: 0,
             reportedById: 1,
             assigneeIds: [],
           },
@@ -148,17 +194,18 @@ describe('BoardLayout (integration)', () => {
     expect(component.columns[3].title).toBe('Review');
   });
 
-  it('updates parent state when a child emits rename event', () => {
+  it('updates parent state when a child emits rename event', async () => {
     const firstColumn = fixture.debugElement.queryAll(By.directive(BoardColumn))[0];
     const childComponent = firstColumn.componentInstance as BoardColumn;
 
     childComponent.renameColumn.emit('Backlog');
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(component.columns[0].title).toBe('Backlog');
   });
 
-  it('creates a task in the selected column', () => {
+  it('creates a task in the selected column', async () => {
     component.onCreateTask(component.columns[0].id);
     expect(component.taskEditor).toBeTruthy();
 
@@ -172,18 +219,20 @@ describe('BoardLayout (integration)', () => {
       estimatedHours: 3,
       assigneeIdsText: '10,11',
     });
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(component.columns[0].tasks.length).toBe(2);
     expect(component.columns[0].tasks[1].title).toBe('Created via modal');
   });
 
-  it('deletes a task from the selected column', () => {
+  it('deletes a task from the selected column', async () => {
     const firstColumn = fixture.debugElement.queryAll(By.directive(BoardColumn))[0];
     const childComponent = firstColumn.componentInstance as BoardColumn;
     const taskIdToDelete = component.columns[0].tasks[0].id;
 
     childComponent.deleteTask.emit(taskIdToDelete);
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(component.columns[0].tasks.find((task) => task.id === taskIdToDelete)).toBeUndefined();
@@ -203,7 +252,7 @@ describe('BoardLayout (integration)', () => {
     expect(component.taskEditor?.title).toBe(component.columns[0].tasks[0].title);
   });
 
-  it('updates task values when saving through task editor modal', () => {
+  it('updates task values when saving through task editor modal', async () => {
     const taskId = component.columns[0].tasks[0].id;
     component.onOpenTask(component.columns[0].id, taskId);
 
@@ -222,6 +271,7 @@ describe('BoardLayout (integration)', () => {
       estimatedHours: 5,
       assigneeIdsText: '5, 7',
     });
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(component.taskEditor).toBeNull();
@@ -232,11 +282,12 @@ describe('BoardLayout (integration)', () => {
     expect(component.columns[0].tasks[0].assigneeIds).toEqual([5, 7]);
   });
 
-  it('deletes current task from modal in edit mode', () => {
+  it('deletes current task from modal in edit mode', async () => {
     const taskId = component.columns[0].tasks[0].id;
     component.onOpenTask(component.columns[0].id, taskId);
 
     component.onDeleteTaskFromModal();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(component.columns[0].tasks.find((task) => task.id === taskId)).toBeUndefined();
@@ -277,6 +328,7 @@ describe('BoardLayout (integration)', () => {
       tagColor: '',
       dueDate: '',
       estimatedHours: 0,
+      position: 1,
       reportedById: 1,
       assigneeIds: [],
     });

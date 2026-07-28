@@ -176,9 +176,12 @@ public class TaskUseCaseHandler implements TaskUseCase {
     }
 
     task.setBoardColumn(targetColumn);
-    task.setPosition(command.position());
+    // Save at a temporary high position to avoid unique constraint violations
+    // reorderColumnTasks will later assign the correct position
+    task.setPosition(Integer.MAX_VALUE / 2);
     task.setUpdatedAt(LocalDateTime.now());
     taskRepository.save(task);
+    taskRepository.flush();
 
     if (command.reorderedSourceTasks() != null && !sourceColumn.getId().equals(targetColumn.getId())) {
       reorderColumnTasks(sourceColumn, command.reorderedSourceTasks());

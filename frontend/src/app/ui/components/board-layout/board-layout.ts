@@ -72,6 +72,7 @@ export class BoardLayout implements OnChanges {
               tagColor: task.tagColor,
               dueDate: task.dueDate,
               estimatedHours: task.estimatedHours,
+              position: task.position,
               reportedById: task.reportedById,
               assigneeIds: task.assigneeIds,
             })),
@@ -183,10 +184,24 @@ export class BoardLayout implements OnChanges {
     });
   }
 
-  onRenameColumn(columnId: number, newTitle: string): void {
+  async onRenameColumn(columnId: number, newTitle: string): Promise<void> {
     const title = newTitle.trim();
 
     if (!title) {
+      return;
+    }
+
+    try {
+      const column = this.columns.find((c) => c.id === columnId);
+      if (column) {
+        await this.columnRepository.update(columnId, {
+          title,
+          position: column.position,
+          boardId: this.boardId,
+        });
+      }
+    } catch (err) {
+      console.error('Failed to rename column', err);
       return;
     }
 
@@ -218,7 +233,14 @@ export class BoardLayout implements OnChanges {
     };
   }
 
-  onDeleteTask(columnId: number, taskId: number): void {
+  async onDeleteTask(columnId: number, taskId: number): Promise<void> {
+    try {
+      await this.taskRepository.delete(taskId, columnId);
+    } catch (err) {
+      console.error('Failed to delete task', err);
+      return;
+    }
+
     this.columns = this.columns.map((column) => {
       if (column.id !== columnId) {
         return column;
@@ -262,7 +284,7 @@ export class BoardLayout implements OnChanges {
     this.taskEditor = null;
   }
 
-  onSaveTaskChanges(form: TaskEditorFormValue): void {
+  async onSaveTaskChanges(form: TaskEditorFormValue): Promise<void> {
     if (!this.taskEditor) {
       return;
     }
@@ -280,7 +302,76 @@ export class BoardLayout implements OnChanges {
       .filter((value) => Number.isInteger(value) && value > 0);
 
     if (this.taskEditor.mode === 'create') {
-      const taskId = Math.max(0, ...this.columns.flatMap((c) => c.tasks.map((t) => t.id))) + 1;
+      try {
+        const position = this.taskEditor.columnId
+          ? (this.columns.find((c) => c.id === this.taskEditor!.columnId)?.tasks.length ?? 0)
+          : 0;
+
+        const createdTask = await this.taskRepository.create({
+          title,
+          description: form.description.trim() || null,
+          tagId: form.tagId,
+          dueDate: form.dueDate || null,
+          estimatedHours: form.estimatedHours || null,
+          position,
+          reportedById: this.authService.user?.id ?? 0,
+          columnId: this.taskEditor.columnId,
+          assigneeIds,
+        });
+
+        this.columns = this.columns.map((column) => {
+          if (column.id !== this.taskEditor?.columnId) {
+            return column;
+          }
+
+          return {
+            ...column,
+            tasks: [
+              ...column.tasks,
+              {
+                id: createdTask.id,
+                title: createdTask.title,
+                description: createdTask.description,
+                tagId: createdTask.tagId,
+                tagName: createdTask.tagName,
+                tagColor: createdTask.tagColor,
+                dueDate: createdTask.dueDate,
+                estimatedHours: createdTask.estimatedHours,
+                position: createdTask.position,
+                reportedById: createdTask.reportedById,
+                assigneeIds: createdTask.assigneeIds,
+              },
+            ],
+          };
+        });
+
+        this.onCloseTaskModal();
+      } catch (err) {
+        console.error('Failed to create task', err);
+      }
+      return;
+    }
+
+    try {
+      const column = this.columns.find((c) => c.id === this.taskEditor!.columnId);
+      const task = column?.tasks.find((t) => t.id === this.taskEditor!.taskId);
+      if (!column || !task) {
+        return;
+      }
+
+        const position = column.tasks.findIndex((t) => t.id === this.taskEditor!.taskId);
+
+        const updatedTask = await this.taskRepository.update(this.taskEditor.taskId!, {
+          title,
+          description: form.description.trim() || null,
+          tagId: form.tagId,
+          dueDate: form.dueDate || null,
+          estimatedHours: form.estimatedHours || null,
+          position,
+          reportedById: task.reportedById,
+          assigneeIds,
+          columnId: this.taskEditor.columnId,
+        });
 
       this.columns = this.columns.map((column) => {
         if (column.id !== this.taskEditor?.columnId) {
@@ -289,56 +380,32 @@ export class BoardLayout implements OnChanges {
 
         return {
           ...column,
-          tasks: [
-            ...column.tasks,
-            {
-              id: taskId,
-              title,
-              description: form.description.trim(),
-              tagId: form.tagId,
-              tagName: form.tagName,
-              tagColor: form.tagColor,
-              dueDate: form.dueDate,
-              estimatedHours: form.estimatedHours,
-              reportedById: 1,
-              assigneeIds,
-            },
-          ],
+          tasks: column.tasks.map((t) => {
+            if (t.id !== this.taskEditor?.taskId) {
+              return t;
+            }
+
+            return {
+              id: updatedTask.id,
+              title: updatedTask.title,
+              description: updatedTask.description,
+              tagId: updatedTask.tagId,
+              tagName: updatedTask.tagName,
+              tagColor: updatedTask.tagColor,
+              dueDate: updatedTask.dueDate,
+              estimatedHours: updatedTask.estimatedHours,
+              position: updatedTask.position,
+              reportedById: updatedTask.reportedById,
+              assigneeIds: updatedTask.assigneeIds,
+            };
+          }),
         };
       });
 
       this.onCloseTaskModal();
-      return;
+    } catch (err) {
+      console.error('Failed to update task', err);
     }
-
-    this.columns = this.columns.map((column) => {
-      if (column.id !== this.taskEditor?.columnId) {
-        return column;
-      }
-
-      return {
-        ...column,
-        tasks: column.tasks.map((task) => {
-          if (task.id !== this.taskEditor?.taskId) {
-            return task;
-          }
-
-          return {
-            ...task,
-            title,
-            description: form.description.trim(),
-            tagId: form.tagId,
-            tagName: form.tagName,
-            tagColor: form.tagColor,
-            dueDate: form.dueDate,
-            estimatedHours: form.estimatedHours,
-            assigneeIds,
-          };
-        }),
-      };
-    });
-
-    this.onCloseTaskModal();
   }
 
   onDeleteTaskFromModal(): void {

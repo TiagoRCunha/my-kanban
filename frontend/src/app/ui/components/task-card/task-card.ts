@@ -9,6 +9,7 @@ export type TaskCardData = {
   tagColor: string;
   dueDate: string;
   estimatedHours: number;
+  position: number;
   reportedById: number;
   assigneeIds: number[];
 };

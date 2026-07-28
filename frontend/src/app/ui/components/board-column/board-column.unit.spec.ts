@@ -30,6 +30,7 @@ describe('BoardColumn (unit)', () => {
         tagColor: '#ed6c02',
         dueDate: '2026-07-28',
         estimatedHours: 3,
+        position: 0,
         reportedById: 1,
         assigneeIds: [1],
       },

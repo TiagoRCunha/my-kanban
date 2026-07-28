@@ -107,7 +107,8 @@ class TaskUseCaseHandlerTest {
     when(taskRepository.findByColumnId(1L)).thenReturn(List.of(remainingTask));
 
     Task targetTask = createTask(30L, targetColumn, 0);
-    when(taskRepository.findByColumnId(2L)).thenReturn(List.of(targetTask));
+    // After the flush, the moved task is persisted in the target column
+    when(taskRepository.findByColumnId(2L)).thenReturn(List.of(targetTask, task));
 
     MoveTaskCommand command = new MoveTaskCommand(
         2L,
