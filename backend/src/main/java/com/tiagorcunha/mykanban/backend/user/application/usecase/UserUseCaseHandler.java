@@ -111,10 +111,9 @@ public class UserUseCaseHandler
 
     // Seed default custom tags
     String[][] defaultTags = {
-        { "Low", "#2e7d32" },
-        { "Medium", "#ed6c02" },
-        { "High", "#d32f2f" },
-        { "Urgent", "#b71c1c" }
+        { "EASY", "#4CAF50" },
+        { "MEDIUM", "#FFC107" },
+        { "HARD", "#F44336" }
     };
     for (int i = 0; i < defaultTags.length; i++) {
       UserCustomTag tag = new UserCustomTag();

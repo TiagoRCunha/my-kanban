@@ -41,8 +41,8 @@ export class CustomTagSettings {
   ): CustomTagSettings {
     return new CustomTagSettings(
       tempId,
-      CustomTagSettings.ensureName(input.name),
-      CustomTagSettings.ensureColor(input.color),
+      (input.name ?? '').trim(),
+      input.color?.trim() || '#0052CC',
       input.position,
     );
   }

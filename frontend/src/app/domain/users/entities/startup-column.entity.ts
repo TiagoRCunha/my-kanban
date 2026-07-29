@@ -34,7 +34,11 @@ export class StartupColumn {
     input: CreateStartupColumnInput,
     tempId: number,
   ): StartupColumn {
-    return new StartupColumn(tempId, StartupColumn.ensureTitle(input.title), input.position);
+    return new StartupColumn(
+      tempId,
+      (input.title ?? '').trim(),
+      input.position,
+    );
   }
 
   public static toCommand(input: CreateStartupColumnInput): StartupColumnCommand {
