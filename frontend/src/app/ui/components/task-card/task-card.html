@@ -1,4 +1,4 @@
-<div class="task-card" [ngClass]="getPriorityClass()" (click)="onOpenTask()">
+<div class="task-card" [style.border-left-color]="task.tagColor || '#ccc'" (click)="onOpenTask()">
   <div class="task-card__content">
     <div class="task-card__header">
       <h3 class="task-card__title">{{ task.title }}</h3>
@@ -12,7 +12,11 @@
       </button>
     </div>
     <div class="task-card__meta">
-      <span class="task-card__priority">{{ task.priority }}</span>
+      @if (task.tagName) {
+        <span class="task-card__tag" [style.background]="task.tagColor" [style.color]="'#fff'">
+          {{ task.tagName }}
+        </span>
+      }
       @if (task.assigneeIds.length > 0) {
         <span class="task-card__assignees">{{ task.assigneeIds.length }} assignee(s)</span>
       }

@@ -1,4 +1,4 @@
-import { Task, TaskCommand, TaskPriority } from '../../../domain/board/entities/task.entity';
+import { Task, TaskCommand } from '../../../domain/board/entities/task.entity';
 import { TaskRequestDto, TaskResponseDto } from '../dto/task.dto';
 
 export class TaskMapper {
@@ -7,7 +7,9 @@ export class TaskMapper {
       id: dto.id,
       title: dto.title,
       description: dto.description,
-      priority: dto.priority as TaskPriority,
+      tagId: dto.tagId,
+      tagName: dto.tagName,
+      tagColor: dto.tagColor,
       dueDate: dto.dueDate,
       estimatedHours: dto.estimatedHours,
       position: dto.position,
@@ -23,7 +25,7 @@ export class TaskMapper {
     return {
       title: command.title,
       description: command.description,
-      priority: command.priority,
+      tagId: command.tagId,
       dueDate: command.dueDate || null,
       estimatedHours: command.estimatedHours || null,
       position: command.position,

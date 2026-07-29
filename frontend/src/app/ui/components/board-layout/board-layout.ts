@@ -3,9 +3,11 @@ import { CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem } from 
 import { BoardColumn } from '../board-column';
 import { TaskCardData } from '../task-card';
 import { ColumnController } from '../column-controller';
-import { TaskPriority } from '../../../domain/board/entities/task.entity';
+import { CustomTag } from '../../../domain/board/entities/task.entity';
 import { TaskEditorFormValue, TaskEditorModal, TaskEditorState } from '../task-editor-modal';
 import { HttpColumnRepository, HttpTaskRepository } from '../../../infrastructure/board';
+import { HttpUserConfigRepository } from '../../../infrastructure/user-config/adapters/http-user-config.repository';
+import { AuthService } from '../../../infrastructure/auth/auth.service';
 
 type BoardColumnData = {
   id: number;
@@ -26,8 +28,11 @@ export class BoardLayout implements OnChanges {
 
   private readonly columnRepository = inject(HttpColumnRepository);
   private readonly taskRepository = inject(HttpTaskRepository);
+  private readonly userConfigRepository = inject(HttpUserConfigRepository);
+  private readonly authService = inject(AuthService);
 
   taskEditor: TaskEditorState | null = null;
+  availableTags: CustomTag[] = [];
 
   columns: BoardColumnData[] = [];
   isLoading = true;
@@ -42,6 +47,11 @@ export class BoardLayout implements OnChanges {
     this.isLoading = true;
 
     try {
+      const userId = this.authService.user?.id;
+      if (userId) {
+        this.availableTags = await this.userConfigRepository.getCustomTags(userId);
+      }
+
       const domainColumns = await this.columnRepository.findByBoardId(this.boardId);
 
       const columnsWithTasks: BoardColumnData[] = await Promise.all(
@@ -57,9 +67,12 @@ export class BoardLayout implements OnChanges {
               id: task.id,
               title: task.title,
               description: task.description,
-              priority: task.priority,
+              tagId: task.tagId,
+              tagName: task.tagName,
+              tagColor: task.tagColor,
               dueDate: task.dueDate,
               estimatedHours: task.estimatedHours,
+              position: task.position,
               reportedById: task.reportedById,
               assigneeIds: task.assigneeIds,
             })),
@@ -86,6 +99,12 @@ export class BoardLayout implements OnChanges {
   onTaskDrop(event: CdkDragDrop<TaskCardData[]>): void {
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+
+      const sourceColumn = this.columns.find((col) => col.tasks === event.container.data);
+      if (sourceColumn) {
+        const taskOrder = event.container.data.map((task, index) => ({ id: task.id, position: index }));
+        this.taskRepository.reorder(sourceColumn.id, taskOrder).catch(() => {});
+      }
       return;
     }
 
@@ -95,6 +114,25 @@ export class BoardLayout implements OnChanges {
       event.previousIndex,
       event.currentIndex,
     );
+
+    const sourceColumn = this.findColumnByTasks(event.previousContainer.data);
+    const targetColumn = this.findColumnByTasks(event.container.data);
+
+    if (sourceColumn && targetColumn) {
+      const reorderedSourceTasks = event.previousContainer.data.map((task, index) => ({ id: task.id, position: index }));
+      const reorderedTargetTasks = event.container.data.map((task, index) => ({ id: task.id, position: index }));
+
+      const movedTask = event.item.data as TaskCardData;
+
+      this.taskRepository.moveTask(
+        movedTask.id,
+        sourceColumn.id,
+        targetColumn.id,
+        event.currentIndex,
+        reorderedSourceTasks,
+        reorderedTargetTasks,
+      ).catch(() => {});
+    }
   }
 
   onColumnDrop(event: CdkDragDrop<BoardColumnData[]>): void {
@@ -128,6 +166,9 @@ export class BoardLayout implements OnChanges {
     this.columns.forEach((column, index) => {
       column.position = index;
     });
+
+    const columnOrder = this.columns.map((col, index) => ({ id: col.id, position: index }));
+    this.columnRepository.reorder(this.boardId, columnOrder).catch(() => {});
   }
 
   onToggleColumnPin(columnId: number): void {
@@ -143,10 +184,24 @@ export class BoardLayout implements OnChanges {
     });
   }
 
-  onRenameColumn(columnId: number, newTitle: string): void {
+  async onRenameColumn(columnId: number, newTitle: string): Promise<void> {
     const title = newTitle.trim();
 
     if (!title) {
+      return;
+    }
+
+    try {
+      const column = this.columns.find((c) => c.id === columnId);
+      if (column) {
+        await this.columnRepository.update(columnId, {
+          title,
+          position: column.position,
+          boardId: this.boardId,
+        });
+      }
+    } catch (err) {
+      console.error('Failed to rename column', err);
       return;
     }
 
@@ -169,14 +224,23 @@ export class BoardLayout implements OnChanges {
       taskId: null,
       title: '',
       description: '',
-      priority: TaskPriority.MEDIUM,
+      tagId: null,
+      tagName: '',
+      tagColor: '',
       dueDate: '',
       estimatedHours: null,
       assigneeIdsText: '',
     };
   }
 
-  onDeleteTask(columnId: number, taskId: number): void {
+  async onDeleteTask(columnId: number, taskId: number): Promise<void> {
+    try {
+      await this.taskRepository.delete(taskId, columnId);
+    } catch (err) {
+      console.error('Failed to delete task', err);
+      return;
+    }
+
     this.columns = this.columns.map((column) => {
       if (column.id !== columnId) {
         return column;
@@ -207,7 +271,9 @@ export class BoardLayout implements OnChanges {
       taskId,
       title: task.title,
       description: task.description,
-      priority: task.priority,
+      tagId: task.tagId,
+      tagName: task.tagName,
+      tagColor: task.tagColor,
       dueDate: task.dueDate,
       estimatedHours: task.estimatedHours,
       assigneeIdsText: task.assigneeIds.join(', '),
@@ -218,7 +284,7 @@ export class BoardLayout implements OnChanges {
     this.taskEditor = null;
   }
 
-  onSaveTaskChanges(form: TaskEditorFormValue): void {
+  async onSaveTaskChanges(form: TaskEditorFormValue): Promise<void> {
     if (!this.taskEditor) {
       return;
     }
@@ -236,7 +302,76 @@ export class BoardLayout implements OnChanges {
       .filter((value) => Number.isInteger(value) && value > 0);
 
     if (this.taskEditor.mode === 'create') {
-      const taskId = Math.max(0, ...this.columns.flatMap((c) => c.tasks.map((t) => t.id))) + 1;
+      try {
+        const position = this.taskEditor.columnId
+          ? (this.columns.find((c) => c.id === this.taskEditor!.columnId)?.tasks.length ?? 0)
+          : 0;
+
+        const createdTask = await this.taskRepository.create({
+          title,
+          description: form.description.trim() || null,
+          tagId: form.tagId,
+          dueDate: form.dueDate || null,
+          estimatedHours: form.estimatedHours || null,
+          position,
+          reportedById: this.authService.user?.id ?? 0,
+          columnId: this.taskEditor.columnId,
+          assigneeIds,
+        });
+
+        this.columns = this.columns.map((column) => {
+          if (column.id !== this.taskEditor?.columnId) {
+            return column;
+          }
+
+          return {
+            ...column,
+            tasks: [
+              ...column.tasks,
+              {
+                id: createdTask.id,
+                title: createdTask.title,
+                description: createdTask.description,
+                tagId: createdTask.tagId,
+                tagName: createdTask.tagName,
+                tagColor: createdTask.tagColor,
+                dueDate: createdTask.dueDate,
+                estimatedHours: createdTask.estimatedHours,
+                position: createdTask.position,
+                reportedById: createdTask.reportedById,
+                assigneeIds: createdTask.assigneeIds,
+              },
+            ],
+          };
+        });
+
+        this.onCloseTaskModal();
+      } catch (err) {
+        console.error('Failed to create task', err);
+      }
+      return;
+    }
+
+    try {
+      const column = this.columns.find((c) => c.id === this.taskEditor!.columnId);
+      const task = column?.tasks.find((t) => t.id === this.taskEditor!.taskId);
+      if (!column || !task) {
+        return;
+      }
+
+        const position = column.tasks.findIndex((t) => t.id === this.taskEditor!.taskId);
+
+        const updatedTask = await this.taskRepository.update(this.taskEditor.taskId!, {
+          title,
+          description: form.description.trim() || null,
+          tagId: form.tagId,
+          dueDate: form.dueDate || null,
+          estimatedHours: form.estimatedHours || null,
+          position,
+          reportedById: task.reportedById,
+          assigneeIds,
+          columnId: this.taskEditor.columnId,
+        });
 
       this.columns = this.columns.map((column) => {
         if (column.id !== this.taskEditor?.columnId) {
@@ -245,52 +380,32 @@ export class BoardLayout implements OnChanges {
 
         return {
           ...column,
-          tasks: [
-            ...column.tasks,
-            {
-              id: taskId,
-              title,
-              description: form.description.trim(),
-              priority: form.priority,
-              dueDate: form.dueDate,
-              estimatedHours: form.estimatedHours,
-              reportedById: 1,
-              assigneeIds,
-            },
-          ],
+          tasks: column.tasks.map((t) => {
+            if (t.id !== this.taskEditor?.taskId) {
+              return t;
+            }
+
+            return {
+              id: updatedTask.id,
+              title: updatedTask.title,
+              description: updatedTask.description,
+              tagId: updatedTask.tagId,
+              tagName: updatedTask.tagName,
+              tagColor: updatedTask.tagColor,
+              dueDate: updatedTask.dueDate,
+              estimatedHours: updatedTask.estimatedHours,
+              position: updatedTask.position,
+              reportedById: updatedTask.reportedById,
+              assigneeIds: updatedTask.assigneeIds,
+            };
+          }),
         };
       });
 
       this.onCloseTaskModal();
-      return;
+    } catch (err) {
+      console.error('Failed to update task', err);
     }
-
-    this.columns = this.columns.map((column) => {
-      if (column.id !== this.taskEditor?.columnId) {
-        return column;
-      }
-
-      return {
-        ...column,
-        tasks: column.tasks.map((task) => {
-          if (task.id !== this.taskEditor?.taskId) {
-            return task;
-          }
-
-          return {
-            ...task,
-            title,
-            description: form.description.trim(),
-            priority: form.priority,
-            dueDate: form.dueDate,
-            estimatedHours: form.estimatedHours,
-            assigneeIds,
-          };
-        }),
-      };
-    });
-
-    this.onCloseTaskModal();
   }
 
   onDeleteTaskFromModal(): void {
@@ -301,10 +416,14 @@ export class BoardLayout implements OnChanges {
     this.onDeleteTask(this.taskEditor.columnId, this.taskEditor.taskId);
   }
 
-  async onAddColumn(): Promise<void> {
+  private findColumnByTasks(tasks: TaskCardData[]): BoardColumnData | undefined {
+    return this.columns.find((col) => col.tasks === tasks);
+  }
+
+  async onAddColumn(title: string): Promise<void> {
     try {
       const newColumn = await this.columnRepository.create({
-        title: `New Column`,
+        title,
         position: this.columns.length,
         boardId: this.boardId,
       });
@@ -319,7 +438,8 @@ export class BoardLayout implements OnChanges {
           tasks: [],
         },
       ];
-    } catch {
+    } catch (err) {
+      console.error('Failed to create column', err);
       // Silently fail if backend is not available
     }
   }

@@ -6,6 +6,13 @@ export class DomainValidators {
     return value;
   }
 
+  static nonNegativeInteger(value: number, fieldName: string): number {
+    if (!Number.isInteger(value) || value < 0) {
+      throw new Error(`${fieldName} must be a non-negative integer.`);
+    }
+    return value;
+  }
+
   static requiredString(value: string, fieldName: string, maxLength: number = 100): string {
     const trimmed = value.trim();
     if (!trimmed) {

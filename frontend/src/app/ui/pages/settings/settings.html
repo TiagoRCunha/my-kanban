@@ -1,0 +1,140 @@
+<app-navbar />
+
+<main class="settings">
+  <h1 class="settings__title">Settings</h1>
+
+  <!-- ─── Tab Bar ──────────────────────────────────────────────────────── -->
+  <nav class="settings__tabs">
+    <button
+      class="settings__tab"
+      [class.settings__tab--active]="activeTab === 'appearance'"
+      type="button"
+      (click)="setTab('appearance')"
+    >
+      Appearance
+    </button>
+    <button
+      class="settings__tab"
+      [class.settings__tab--active]="activeTab === 'startup-columns'"
+      type="button"
+      (click)="setTab('startup-columns')"
+    >
+      Startup Columns
+    </button>
+    <button
+      class="settings__tab"
+      [class.settings__tab--active]="activeTab === 'custom-tags'"
+      type="button"
+      (click)="setTab('custom-tags')"
+    >
+      Custom Tags
+    </button>
+  </nav>
+
+  <!-- ─── Content ──────────────────────────────────────────────────────── -->
+  @if (isLoading) {
+    <div class="settings__loading">Loading settings...</div>
+  } @else if (errorMessage) {
+    <div class="settings__error">{{ errorMessage }}</div>
+  } @else {
+    <!-- Appearance Tab -->
+    @if (activeTab === 'appearance') {
+      <section class="settings__section">
+        <h2 class="settings__section-title">Appearance</h2>
+        <p class="settings__section-description">Customize how MyKanban looks on this device.</p>
+
+        <div class="settings__card">
+          <div class="settings__card-row">
+            <div class="settings__card-info">
+              <span class="settings__card-label">Dark Mode</span>
+              <span class="settings__card-hint">Switch between light and dark themes</span>
+            </div>
+            <app-toggle-switch [checked]="isDarkMode" (toggled)="onToggleDarkMode()" />
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- Startup Columns Tab -->
+    @if (activeTab === 'startup-columns') {
+      <section class="settings__section">
+        <h2 class="settings__section-title">Startup Columns</h2>
+        <p class="settings__section-description">
+          Define the default columns used when creating a new board.
+        </p>
+
+        @if (columnsSuccessMessage) {
+          <div class="settings__success">{{ columnsSuccessMessage }}</div>
+        }
+
+        <div class="settings__card">
+          <div class="settings__list">
+            @for (col of startupColumnsDraft; track col.id; let i = $index) {
+              <app-startup-column-row
+                [title]="col.title"
+                [position]="i"
+                [isFirst]="i === 0"
+                [isLast]="i === startupColumnsDraft.length - 1"
+                [disabled]="isSavingColumns"
+                (moveUp)="moveStartupColumnUp(i)"
+                (moveDown)="moveStartupColumnDown(i)"
+                (remove)="removeStartupColumn(i)"
+              />
+            } @empty {
+              <p class="settings__empty-text">
+                No startup columns defined. Add columns to set defaults for new boards.
+              </p>
+            }
+          </div>
+
+          <div class="settings__card-actions">
+            <app-animated-button label="+ Add Column" variant="neutral" (pressed)="addStartupColumn()" />
+            <app-animated-button
+              label="Save All"
+              variant="confirm"
+              [disabled]="isSavingColumns || startupColumnsDraft.length === 0"
+              (pressed)="saveStartupColumns()"
+            />
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- Custom Tags Tab -->
+    @if (activeTab === 'custom-tags') {
+      <section class="settings__section">
+        <h2 class="settings__section-title">Custom Tags</h2>
+        <p class="settings__section-description">
+          Create custom priority tags with personalized names and colors.
+        </p>
+
+        @if (tagsSuccessMessage) {
+          <div class="settings__success">{{ tagsSuccessMessage }}</div>
+        }
+
+        <div class="settings__card">
+          <div class="settings__list">
+            @for (tag of customTagsDraft; track tag.id; let i = $index) {
+              <app-custom-tag-row
+                [name]="tag.name"
+                [color]="tag.color"
+                [position]="i"
+                [disabled]="isSavingTags"
+                (save)="saveCustomTag(i, $event)"
+                (remove)="deleteCustomTag(i)"
+              />
+            } @empty {
+              <p class="settings__empty-text">
+                No custom tags defined. Add tags to use them on tasks.
+              </p>
+            }
+          </div>
+
+          <div class="settings__card-actions">
+            <app-animated-button label="+ Add Tag" variant="neutral" (pressed)="addCustomTag()" />
+          </div>
+        </div>
+      </section>
+    }
+  }
+</main>

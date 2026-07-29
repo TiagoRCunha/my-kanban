@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tiagorcunha.mykanban.backend.board.application.command.ReorderItemCommand;
 import com.tiagorcunha.mykanban.backend.board.application.port.in.BoardColumnUseCase;
 import com.tiagorcunha.mykanban.backend.board.application.response.BoardColumnResponse;
 import com.tiagorcunha.mykanban.backend.common.infrastructure.web.ApiErrorResponse;
@@ -111,5 +113,27 @@ public class BoardColumnController {
   })
   public void delete(@PathVariable Long boardId, @PathVariable Long columnId) {
     boardColumnUseCase.delete(boardId, columnId);
+  }
+
+  @PatchMapping("/reorder")
+  @Operation(summary = "Reorder columns within a board")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Columns reordered"),
+      @ApiResponse(
+          responseCode = "400",
+          description = "Invalid payload",
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
+      @ApiResponse(
+          responseCode = "404",
+          description = "Board not found",
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+  })
+  public void reorder(
+      @PathVariable Long boardId,
+      @Valid @RequestBody ReorderRequest request) {
+    List<ReorderItemCommand> commands = request.items().stream()
+        .map(item -> new ReorderItemCommand(item.id(), item.position()))
+        .toList();
+    boardColumnUseCase.reorder(boardId, commands);
   }
 }

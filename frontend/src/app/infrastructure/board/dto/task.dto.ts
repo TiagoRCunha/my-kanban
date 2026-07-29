@@ -2,7 +2,9 @@ export type TaskResponseDto = {
   id: number;
   title: string;
   description: string | null;
-  priority: string;
+  tagId: number | null;
+  tagName: string | null;
+  tagColor: string | null;
   dueDate: string | null;
   estimatedHours: number | null;
   position: number;
@@ -16,7 +18,7 @@ export type TaskResponseDto = {
 export type TaskRequestDto = {
   title: string;
   description?: string | null;
-  priority: string;
+  tagId: number | null;
   dueDate?: string | null;
   estimatedHours?: number | null;
   position: number;

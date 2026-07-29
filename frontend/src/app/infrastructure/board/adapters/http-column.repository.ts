@@ -60,4 +60,13 @@ export class HttpColumnRepository {
       this.httpClient.delete<void>(`${this.apiBaseUrl}/boards/${boardId}/columns/${id}`),
     );
   }
+
+  public reorder(boardId: number, items: { id: number; position: number }[]): Promise<void> {
+    return firstValueFrom(
+      this.httpClient.patch<void>(
+        `${this.apiBaseUrl}/boards/${boardId}/columns/reorder`,
+        { items },
+      ),
+    );
+  }
 }

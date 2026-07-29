@@ -98,6 +98,9 @@ $overlay-bg: rgba(9, 30, 66, 0.45);
   }
 
   &__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     border: 1px solid t.$color-border;
     background: t.$color-surface;
     color: t.$color-text-muted;
@@ -106,35 +109,20 @@ $overlay-bg: rgba(9, 30, 66, 0.45);
     font-size: t.$font-size-sm;
     cursor: pointer;
 
-    /*  &--active {
-      border-color: t.$color-primary;
-      background: rgba(0, 82, 204, 0.12);
-      color: t.$color-primary;
-      font-weight: t.$font-weight-medium;
-    } */
-
-    &--low#{&}--active {
-      border-color: t.$priority-low;
-      background: rgba(t.$priority-low, 0.12);
-      color: t.$priority-low;
+    &--active {
       font-weight: t.$font-weight-medium;
     }
 
-    // active + MEDIUM
-    &--medium#{&}--active {
-      border-color: t.$priority-medium;
-      background: rgba(t.$priority-medium, 0.12);
-      color: t.$priority-medium;
-      font-weight: t.$font-weight-medium;
+    &--clear {
+      border-style: dashed;
     }
+  }
 
-    // active + HIGH
-    &--high#{&}--active {
-      border-color: t.$priority-high;
-      background: rgba(t.$priority-high, 0.12);
-      color: t.$priority-high;
-      font-weight: t.$font-weight-medium;
-    }
+  &__tag-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
   }
 
   &__comments {

@@ -8,6 +8,8 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tiagorcunha.mykanban.backend.board.application.command.MoveTaskCommand;
+import com.tiagorcunha.mykanban.backend.board.application.command.ReorderItemCommand;
 import com.tiagorcunha.mykanban.backend.board.application.command.SaveTaskCommand;
 import com.tiagorcunha.mykanban.backend.board.application.mapper.TaskResponseMapper;
 import com.tiagorcunha.mykanban.backend.board.application.port.in.TaskUseCase;
@@ -20,8 +22,10 @@ import com.tiagorcunha.mykanban.backend.board.domain.model.Task;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ConflictException;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ResourceNotFoundException;
 import com.tiagorcunha.mykanban.backend.common.infrastructure.security.AuthenticatedUserProvider;
+import com.tiagorcunha.mykanban.backend.user.application.port.out.UserCustomTagRepositoryPort;
 import com.tiagorcunha.mykanban.backend.user.application.port.out.UserRepositoryPort;
 import com.tiagorcunha.mykanban.backend.user.domain.model.User;
+import com.tiagorcunha.mykanban.backend.user.domain.model.UserCustomTag;
 
 @Service
 public class TaskUseCaseHandler implements TaskUseCase {
@@ -29,6 +33,7 @@ public class TaskUseCaseHandler implements TaskUseCase {
   private final TaskRepositoryPort taskRepository;
   private final BoardColumnRepositoryPort boardColumnRepository;
   private final UserRepositoryPort userRepository;
+  private final UserCustomTagRepositoryPort customTagRepository;
   private final AuthenticatedUserProvider authenticatedUserProvider;
   private final BoardAuthorizationService boardAuthorizationService;
 
@@ -36,11 +41,13 @@ public class TaskUseCaseHandler implements TaskUseCase {
       TaskRepositoryPort taskRepository,
       BoardColumnRepositoryPort boardColumnRepository,
       UserRepositoryPort userRepository,
+      UserCustomTagRepositoryPort customTagRepository,
       AuthenticatedUserProvider authenticatedUserProvider,
       BoardAuthorizationService boardAuthorizationService) {
     this.taskRepository = taskRepository;
     this.boardColumnRepository = boardColumnRepository;
     this.userRepository = userRepository;
+    this.customTagRepository = customTagRepository;
     this.authenticatedUserProvider = authenticatedUserProvider;
     this.boardAuthorizationService = boardAuthorizationService;
   }
@@ -71,7 +78,7 @@ public class TaskUseCaseHandler implements TaskUseCase {
     Task task = new Task();
     task.setTitle(command.title());
     task.setDescription(command.description());
-    task.setPriority(command.priority());
+    task.setTag(resolveTag(command.tagId()));
     task.setDueDate(command.dueDate());
     task.setEstimatedHours(command.estimatedHours());
     task.setPosition(command.position());
@@ -95,7 +102,7 @@ public class TaskUseCaseHandler implements TaskUseCase {
 
     task.setTitle(command.title());
     task.setDescription(command.description());
-    task.setPriority(command.priority());
+    task.setTag(resolveTag(command.tagId()));
     task.setDueDate(command.dueDate());
     task.setEstimatedHours(command.estimatedHours());
     task.setPosition(command.position());
@@ -112,6 +119,96 @@ public class TaskUseCaseHandler implements TaskUseCase {
     Task task = getExistingTask(columnId, taskId);
     boardAuthorizationService.assertCanManageTask(task, currentUser);
     taskRepository.delete(task);
+  }
+
+  @Override
+  @Transactional
+  public void reorder(Long columnId, List<ReorderItemCommand> items) {
+    User currentUser = authenticatedUserProvider.getAuthenticatedUser();
+    BoardColumn boardColumn = requireBoardColumn(columnId);
+    boardAuthorizationService.assertCanManageColumn(boardColumn.getBoard(), currentUser);
+
+    List<Task> tasks = taskRepository.findByColumnId(columnId);
+
+    java.util.Set<Long> validIds = tasks.stream()
+        .map(Task::getId)
+        .collect(java.util.stream.Collectors.toSet());
+    for (ReorderItemCommand item : items) {
+      if (!validIds.contains(item.id())) {
+        throw new ResourceNotFoundException("Task not found in column");
+      }
+    }
+
+    java.util.Map<Long, Integer> positionById = items.stream()
+        .collect(java.util.stream.Collectors.toMap(ReorderItemCommand::id, ReorderItemCommand::position));
+
+    for (Task task : tasks) {
+      task.setPosition(task.getPosition() + 10000);
+    }
+    taskRepository.saveAll(tasks);
+    taskRepository.flush();
+
+    for (Task task : tasks) {
+      Integer newPosition = positionById.get(task.getId());
+      if (newPosition != null) {
+        task.setPosition(newPosition);
+      }
+    }
+    taskRepository.saveAll(tasks);
+  }
+
+  @Override
+  @Transactional
+  public void move(Long taskId, MoveTaskCommand command) {
+    User currentUser = authenticatedUserProvider.getAuthenticatedUser();
+    Task task = taskRepository.findById(taskId)
+        .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+    boardAuthorizationService.assertCanManageTask(task, currentUser);
+
+    BoardColumn sourceColumn = task.getBoardColumn();
+    boardAuthorizationService.assertCanManageColumn(sourceColumn.getBoard(), currentUser);
+
+    BoardColumn targetColumn = boardColumnRepository.findById(command.targetColumnId())
+        .orElseThrow(() -> new ResourceNotFoundException("Target column not found"));
+
+    if (!sourceColumn.getBoard().getId().equals(targetColumn.getBoard().getId())) {
+      throw new ResourceNotFoundException("Target column not found in the same board");
+    }
+
+    task.setBoardColumn(targetColumn);
+    // Save at a temporary high position to avoid unique constraint violations
+    // reorderColumnTasks will later assign the correct position
+    task.setPosition(Integer.MAX_VALUE / 2);
+    task.setUpdatedAt(LocalDateTime.now());
+    taskRepository.save(task);
+    taskRepository.flush();
+
+    if (command.reorderedSourceTasks() != null && !sourceColumn.getId().equals(targetColumn.getId())) {
+      reorderColumnTasks(sourceColumn, command.reorderedSourceTasks());
+    }
+
+    reorderColumnTasks(targetColumn, command.reorderedTargetTasks());
+  }
+
+  private void reorderColumnTasks(BoardColumn column, List<ReorderItemCommand> items) {
+    List<Task> tasks = taskRepository.findByColumnId(column.getId());
+
+    java.util.Map<Long, Integer> positionById = items.stream()
+        .collect(java.util.stream.Collectors.toMap(ReorderItemCommand::id, ReorderItemCommand::position));
+
+    for (Task task : tasks) {
+      task.setPosition(task.getPosition() + 10000);
+    }
+    taskRepository.saveAll(tasks);
+    taskRepository.flush();
+
+    for (Task task : tasks) {
+      Integer newPosition = positionById.get(task.getId());
+      if (newPosition != null) {
+        task.setPosition(newPosition);
+      }
+    }
+    taskRepository.saveAll(tasks);
   }
 
   private BoardColumn requireBoardColumn(Long columnId) {
@@ -137,5 +234,14 @@ public class TaskUseCaseHandler implements TaskUseCase {
       throw new ResourceNotFoundException("One or more assignees were not found");
     }
     return new LinkedHashSet<>(assignees);
+  }
+
+  private UserCustomTag resolveTag(Long tagId) {
+    if (tagId == null) {
+      return null;
+    }
+    User currentUser = authenticatedUserProvider.getAuthenticatedUser();
+    return customTagRepository.findByIdAndUserId(tagId, currentUser.getId())
+        .orElseThrow(() -> new ResourceNotFoundException("Custom tag not found"));
   }
 }

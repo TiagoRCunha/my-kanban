@@ -18,10 +18,16 @@ import com.tiagorcunha.mykanban.backend.user.application.port.in.DeleteUserUseCa
 import com.tiagorcunha.mykanban.backend.user.application.port.in.FindUserByIdUseCase;
 import com.tiagorcunha.mykanban.backend.user.application.port.in.ListUsersUseCase;
 import com.tiagorcunha.mykanban.backend.user.application.port.in.UpdateUserUseCase;
+import com.tiagorcunha.mykanban.backend.user.application.port.out.UserConfigRepositoryPort;
+import com.tiagorcunha.mykanban.backend.user.application.port.out.UserCustomTagRepositoryPort;
 import com.tiagorcunha.mykanban.backend.user.application.port.out.UserRepositoryPort;
+import com.tiagorcunha.mykanban.backend.user.application.port.out.UserStartupColumnRepositoryPort;
 import com.tiagorcunha.mykanban.backend.user.application.response.UserResponse;
 import com.tiagorcunha.mykanban.backend.user.domain.model.User;
+import com.tiagorcunha.mykanban.backend.user.domain.model.UserConfig;
+import com.tiagorcunha.mykanban.backend.user.domain.model.UserCustomTag;
 import com.tiagorcunha.mykanban.backend.user.domain.model.UserRole;
+import com.tiagorcunha.mykanban.backend.user.domain.model.UserStartupColumn;
 
 @Service
 public class UserUseCaseHandler
@@ -30,14 +36,23 @@ public class UserUseCaseHandler
   private final UserRepositoryPort userRepository;
   private final PasswordHashService passwordHashService;
   private final AuthenticatedUserProvider authenticatedUserProvider;
+  private final UserConfigRepositoryPort userConfigRepository;
+  private final UserStartupColumnRepositoryPort startupColumnRepository;
+  private final UserCustomTagRepositoryPort customTagRepository;
 
   public UserUseCaseHandler(
       UserRepositoryPort userRepository,
       PasswordHashService passwordHashService,
-      AuthenticatedUserProvider authenticatedUserProvider) {
+      AuthenticatedUserProvider authenticatedUserProvider,
+      UserConfigRepositoryPort userConfigRepository,
+      UserStartupColumnRepositoryPort startupColumnRepository,
+      UserCustomTagRepositoryPort customTagRepository) {
     this.userRepository = userRepository;
     this.passwordHashService = passwordHashService;
     this.authenticatedUserProvider = authenticatedUserProvider;
+    this.userConfigRepository = userConfigRepository;
+    this.startupColumnRepository = startupColumnRepository;
+    this.customTagRepository = customTagRepository;
   }
 
   @Override
@@ -71,7 +86,46 @@ public class UserUseCaseHandler
     user.setCreatedAt(now);
     user.setUpdatedAt(now);
 
-    return UserResponseMapper.toResponse(userRepository.save(user));
+    User savedUser = userRepository.save(user);
+
+    // Seed default user config
+    UserConfig config = new UserConfig();
+    config.setUser(savedUser);
+    config.setDarkMode(false);
+    config.setCreatedAt(now);
+    config.setUpdatedAt(now);
+    userConfigRepository.save(config);
+
+    // Seed default startup columns
+    String[] defaultColumnTitles = { "Backlog", "In Progress", "Testing", "Done" };
+    List<UserStartupColumn> startupColumns = new java.util.ArrayList<>();
+    for (int i = 0; i < defaultColumnTitles.length; i++) {
+      UserStartupColumn col = new UserStartupColumn();
+      col.setUser(savedUser);
+      col.setTitle(defaultColumnTitles[i]);
+      col.setPosition(i);
+      col.setCreatedAt(now);
+      startupColumns.add(col);
+    }
+    startupColumnRepository.saveAll(startupColumns);
+
+    // Seed default custom tags
+    String[][] defaultTags = {
+        { "EASY", "#4CAF50" },
+        { "MEDIUM", "#FFC107" },
+        { "HARD", "#F44336" }
+    };
+    for (int i = 0; i < defaultTags.length; i++) {
+      UserCustomTag tag = new UserCustomTag();
+      tag.setUser(savedUser);
+      tag.setName(defaultTags[i][0]);
+      tag.setColor(defaultTags[i][1]);
+      tag.setPosition(i);
+      tag.setCreatedAt(now);
+      customTagRepository.save(tag);
+    }
+
+    return UserResponseMapper.toResponse(savedUser);
   }
 
   @Override

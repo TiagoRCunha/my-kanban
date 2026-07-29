@@ -3,7 +3,7 @@
 
 .column-controller {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   padding: 0 t.$spacing-3;
   flex-shrink: 0;
 }
@@ -11,6 +11,7 @@
 .column-controller__btn {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: t.$spacing-2;
   padding: t.$spacing-3;
   background: rgba(255, 255, 255, 0.1);
@@ -22,6 +23,8 @@
   cursor: pointer;
   transition: all 0.15s;
   min-width: fit-content;
+  width: 100%;
+  height: 40px;
 
   @include m.focus-ring;
 
@@ -39,4 +42,78 @@
 
 .column-controller__text {
   white-space: nowrap;
+}
+
+.column-controller__input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: t.$spacing-1;
+  min-width: 200px;
+}
+
+.column-controller__input {
+  padding: t.$spacing-2 t.$spacing-3;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: t.$radius-md;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font: inherit;
+  font-size: t.$font-size-md;
+  font-weight: t.$font-weight-medium;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  &:focus {
+    border-color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.column-controller__input-actions {
+  display: flex;
+  gap: t.$spacing-1;
+}
+
+.column-controller__confirm-btn,
+.column-controller__cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: t.$radius-sm;
+  font-size: t.$font-size-md;
+  font-weight: t.$font-weight-bold;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.column-controller__confirm-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.column-controller__cancel-btn {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+  }
 }

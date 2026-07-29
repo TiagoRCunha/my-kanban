@@ -1,16 +1,18 @@
 import { DomainValidators } from "../../shared/domain-validators";
 
-export enum TaskPriority {
-  LOW = 'LOW',
-  MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH',
-}
+export type CustomTag = {
+  id: number;
+  name: string;
+  color: string;
+};
 
 export type TaskSnapshot = {
   id: number;
   title: string;
   description: string | null;
-  priority: TaskPriority;
+  tagId: number | null;
+  tagName: string | null;
+  tagColor: string | null;
   dueDate: string | null;
   estimatedHours: number | null;
   position: number;
@@ -24,7 +26,7 @@ export type TaskSnapshot = {
 export type CreateTaskInput = {
   title: string;
   description?: string | null;
-  priority: TaskPriority;
+  tagId: number | null;
   dueDate?: string | null;
   estimatedHours?: number | null;
   position: number;
@@ -36,7 +38,7 @@ export type CreateTaskInput = {
 export type UpdateTaskInput = {
   title: string;
   description?: string | null;
-  priority: TaskPriority;
+  tagId: number | null;
   dueDate?: string | null;
   estimatedHours?: number | null;
   position: number;
@@ -47,7 +49,7 @@ export type UpdateTaskInput = {
 export type TaskCommand = {
   title: string;
   description: string;
-  priority: TaskPriority;
+  tagId: number | null;
   dueDate: string;
   estimatedHours: number;
   position: number;
@@ -60,7 +62,9 @@ export class Task {
     public readonly id: number,
     public readonly title: string,
     public readonly description: string,
-    public readonly priority: TaskPriority,
+    public readonly tagId: number | null,
+    public readonly tagName: string,
+    public readonly tagColor: string,
     public readonly dueDate: string,
     public readonly estimatedHours: number,
     public readonly position: number,
@@ -79,7 +83,9 @@ export class Task {
       snapshot.id,
       title,
       snapshot.description?.trim() ?? '',
-      snapshot.priority,
+      snapshot.tagId ?? null,
+      snapshot.tagName?.trim() ?? '',
+      snapshot.tagColor?.trim() ?? '',
       snapshot.dueDate?.trim() ?? '',
       snapshot.estimatedHours ?? 0,
       position,
@@ -94,7 +100,7 @@ export class Task {
     return {
       title: Task.ensureTitle(input.title),
       description: input.description?.trim() ?? '',
-      priority: Task.ensurePriority(input.priority),
+      tagId: input.tagId ?? null,
       dueDate: Task.ensureDueDate(input.dueDate),
       estimatedHours: Task.ensureEstimatedHours(input.estimatedHours),
       position: Task.ensurePosition(input.position),
@@ -111,13 +117,6 @@ export class Task {
     return DomainValidators.requiredString(title, 'Task title', 100);
   }
 
-  private static ensurePriority(priority: TaskPriority): TaskPriority {
-    if (!Object.values(TaskPriority).includes(priority)) {
-      return TaskPriority.LOW; // Default to LOW if invalid
-    }
-    return priority;
-  }
-
   private static ensureDueDate(dueDate: string | null | undefined): string {
     return dueDate?.trim() ?? '';
   }
@@ -127,7 +126,7 @@ export class Task {
   }
 
   private static ensurePosition(position: number): number {
-    return DomainValidators.positiveInteger(position, 'Task position');
+    return DomainValidators.nonNegativeInteger(position, 'Task position');
   }
 
   private static ensureAssigneeIds(assigneeIds: number[]): number[] {

@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TaskPriority } from '../../../domain/board/entities/task.entity';
 import { BoardColumn } from './board-column';
 
 describe('BoardColumn (unit)', () => {
@@ -26,9 +25,12 @@ describe('BoardColumn (unit)', () => {
         id: 1,
         title: 'Implement board view',
         description: 'Initial implementation task',
-        priority: TaskPriority.MEDIUM,
+        tagId: 2,
+        tagName: 'Medium',
+        tagColor: '#ed6c02',
         dueDate: '2026-07-28',
         estimatedHours: 3,
+        position: 0,
         reportedById: 1,
         assigneeIds: [1],
       },

@@ -5,8 +5,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.tiagorcunha.mykanban.backend.board.domain.model.TaskPriority;
-
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -18,8 +16,12 @@ public record TaskResponse(
     String title,
     @Schema(example = "Add JWT-based authentication")
     String description,
-    @Schema(example = "HIGH")
-    TaskPriority priority,
+    @Schema(description = "Custom tag ID", example = "3")
+    Long tagId,
+    @Schema(description = "Custom tag name", example = "High")
+    String tagName,
+    @Schema(description = "Custom tag hex color", example = "#d32f2f")
+    String tagColor,
     @Schema(example = "2026-08-15")
     LocalDate dueDate,
     @Schema(example = "6.50")
