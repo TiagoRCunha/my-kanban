@@ -27,6 +27,9 @@ public class UserConfig {
   @Column(name = "dark_mode", nullable = false)
   private Boolean darkMode = false;
 
+  @Column(name = "default_task_limit", nullable = false)
+  private Integer defaultTaskLimit = 10;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
 
@@ -55,6 +58,14 @@ public class UserConfig {
 
   public void setDarkMode(Boolean darkMode) {
     this.darkMode = darkMode;
+  }
+
+  public Integer getDefaultTaskLimit() {
+    return defaultTaskLimit;
+  }
+
+  public void setDefaultTaskLimit(Integer defaultTaskLimit) {
+    this.defaultTaskLimit = defaultTaskLimit;
   }
 
   public LocalDateTime getCreatedAt() {

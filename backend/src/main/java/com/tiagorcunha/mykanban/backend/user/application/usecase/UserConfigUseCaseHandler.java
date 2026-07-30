@@ -92,6 +92,9 @@ public class UserConfigUseCaseHandler
 
     UserConfig config = getOrCreateConfig(userId);
     config.setDarkMode(command.darkMode());
+    if (command.defaultTaskLimit() != null) {
+      config.setDefaultTaskLimit(command.defaultTaskLimit());
+    }
     config.setUpdatedAt(LocalDateTime.now());
     userConfigRepository.save(config);
 
@@ -228,6 +231,7 @@ public class UserConfigUseCaseHandler
       UserConfig config = new UserConfig();
       config.setUser(user);
       config.setDarkMode(false);
+      config.setDefaultTaskLimit(10);
       config.setCreatedAt(now);
       config.setUpdatedAt(now);
       return userConfigRepository.save(config);
