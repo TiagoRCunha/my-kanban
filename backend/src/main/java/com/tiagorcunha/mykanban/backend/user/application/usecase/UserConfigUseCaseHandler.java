@@ -70,7 +70,7 @@ public class UserConfigUseCaseHandler
   // ─── User Config ───────────────────────────────────────────────────────────
 
   @Override
-  @Transactional(readOnly = true)
+  @Transactional
   public UserConfigResponse findByUserId(Long userId) {
     User currentUser = authenticatedUserProvider.getAuthenticatedUser();
     assertCanManageUser(currentUser, userId);
@@ -124,6 +124,7 @@ public class UserConfigUseCaseHandler
 
     User user = getExistingUser(userId);
     startupColumnRepository.deleteAllByUserId(userId);
+    startupColumnRepository.flush();
 
     LocalDateTime now = LocalDateTime.now();
     List<UserStartupColumn> entities = columns.stream()
@@ -132,6 +133,7 @@ public class UserConfigUseCaseHandler
           entity.setUser(user);
           entity.setTitle(cmd.title());
           entity.setPosition(cmd.position());
+          entity.setType(cmd.type() != null ? cmd.type() : "NORMAL");
           entity.setCreatedAt(now);
           return entity;
         })

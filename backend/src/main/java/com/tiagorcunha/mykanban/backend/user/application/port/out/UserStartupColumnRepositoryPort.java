@@ -13,4 +13,6 @@ public interface UserStartupColumnRepositoryPort {
   void deleteAllByUserId(Long userId);
 
   void saveAll(List<UserStartupColumn> columns);
+
+  void flush();
 }

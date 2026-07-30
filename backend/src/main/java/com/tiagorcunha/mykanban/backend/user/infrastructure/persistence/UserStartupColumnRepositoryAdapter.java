@@ -35,4 +35,9 @@ public class UserStartupColumnRepositoryAdapter implements UserStartupColumnRepo
   public void saveAll(List<UserStartupColumn> columns) {
     repository.saveAll(columns);
   }
+
+  @Override
+  public void flush() {
+    repository.flush();
+  }
 }
