@@ -4,6 +4,8 @@ export type ColumnSnapshot = {
   id: number;
   title: string;
   position: number;
+  archived: boolean;
+  isDone: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -11,16 +13,22 @@ export type ColumnSnapshot = {
 export type CreateColumnInput = {
   title: string;
   position: number;
+  archived?: boolean;
+  isDone?: boolean;
 };
 
 export type UpdateColumnInput = {
   title: string;
   position: number;
+  archived?: boolean;
+  isDone?: boolean;
 };
 
 export type ColumnCommand = {
   title: string;
   position: number;
+  archived?: boolean;
+  isDone?: boolean;
 };
 
 export class Column {
@@ -28,6 +36,8 @@ export class Column {
     public readonly id: number,
     public readonly title: string,
     public readonly position: number,
+    public readonly archived: boolean,
+    public readonly isDone: boolean,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
   ) { }
@@ -41,16 +51,25 @@ export class Column {
       snapshot.id,
       title,
       position,
+      snapshot.archived ?? false,
+      snapshot.isDone ?? false,
       Column.ensureDate(snapshot.createdAt, 'createdAt'),
       Column.ensureDate(snapshot.updatedAt, 'updatedAt'),
     );
   }
 
   public static toCommand(input: CreateColumnInput | UpdateColumnInput): ColumnCommand {
-    return {
+    const command: ColumnCommand = {
       title: Column.ensureTitle(input.title),
       position: Column.ensurePosition(input.position),
     };
+    if (input.archived !== undefined) {
+      command.archived = input.archived;
+    }
+    if (input.isDone !== undefined) {
+      command.isDone = input.isDone;
+    }
+    return command;
   }
 
   private static ensureId(id: number): number | void {

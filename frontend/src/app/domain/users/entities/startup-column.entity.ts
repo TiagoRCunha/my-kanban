@@ -4,16 +4,19 @@ export type StartupColumnSnapshot = {
   id: number;
   title: string;
   position: number;
+  type: string;
 };
 
 export type CreateStartupColumnInput = {
   title: string;
   position: number;
+  type?: string;
 };
 
 export type StartupColumnCommand = {
   title: string;
   position: number;
+  type: string;
 };
 
 export class StartupColumn {
@@ -21,13 +24,14 @@ export class StartupColumn {
     public readonly id: number,
     public readonly title: string,
     public readonly position: number,
+    public readonly type: string,
   ) {}
 
   public static fromSnapshot(snapshot: StartupColumnSnapshot): StartupColumn {
     StartupColumn.ensureId(snapshot.id);
     const title = StartupColumn.ensureTitle(snapshot.title);
 
-    return new StartupColumn(snapshot.id, title, snapshot.position);
+    return new StartupColumn(snapshot.id, title, snapshot.position, snapshot.type ?? 'NORMAL');
   }
 
   public static fromCreateInput(
@@ -38,6 +42,7 @@ export class StartupColumn {
       tempId,
       (input.title ?? '').trim(),
       input.position,
+      input.type ?? 'NORMAL',
     );
   }
 
@@ -45,15 +50,20 @@ export class StartupColumn {
     return {
       title: StartupColumn.ensureTitle(input.title),
       position: input.position,
+      type: input.type ?? 'NORMAL',
     };
   }
 
   public withTitle(title: string): StartupColumn {
-    return new StartupColumn(this.id, StartupColumn.ensureTitle(title), this.position);
+    return new StartupColumn(this.id, StartupColumn.ensureTitle(title), this.position, this.type);
   }
 
   public withPosition(position: number): StartupColumn {
-    return new StartupColumn(this.id, this.title, position);
+    return new StartupColumn(this.id, this.title, position, this.type);
+  }
+
+  public withType(type: string): StartupColumn {
+    return new StartupColumn(this.id, this.title, this.position, type);
   }
 
   private static ensureId(id: number): number {

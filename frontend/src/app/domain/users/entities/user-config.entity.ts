@@ -16,6 +16,7 @@ type StartupColumnSnapshot = {
   id: number;
   title: string;
   position: number;
+  type: string;
 };
 
 type CustomTagSettingsSnapshot = {
