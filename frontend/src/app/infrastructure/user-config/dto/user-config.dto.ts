@@ -16,6 +16,7 @@ export type UserConfigResponseDto = {
   id: number;
   userId: number;
   darkMode: boolean;
+  defaultTaskLimit: number;
   startupColumns: StartupColumnResponseDto[];
   customTags: CustomTagResponseDto[];
   createdAt: string;

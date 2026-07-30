@@ -7,6 +7,7 @@ export class UserConfigMapper {
       id: dto.id,
       userId: dto.userId,
       darkMode: dto.darkMode,
+      defaultTaskLimit: dto.defaultTaskLimit,
       startupColumns: dto.startupColumns.map((sc) => ({
         id: sc.id,
         title: sc.title,

@@ -29,6 +29,12 @@ export class HttpUserConfigAdapter implements UserConfigRepositoryPort {
     );
   }
 
+  async updateConfig(userId: number, config: { darkMode?: boolean; defaultTaskLimit?: number }): Promise<void> {
+    await firstValueFrom(
+      this.httpClient.put(`${this.apiBaseUrl}/users/${userId}/config`, config),
+    );
+  }
+
   async saveStartupColumns(
     userId: number,
     columns: StartupColumnCommand[],
