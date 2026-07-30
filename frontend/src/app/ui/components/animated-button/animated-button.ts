@@ -13,6 +13,7 @@ export class AnimatedButton {
   @Input() label = '';
   @Input() variant: AnimatedButtonVariant = 'confirm';
   @Input() disabled = false;
+  @Input() compact = false;
   @Input() title?: string;
   @Input() ariaLabel?: string;
 

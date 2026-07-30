@@ -21,6 +21,27 @@
     cursor: not-allowed;
   }
 
+  &--compact {
+    width: auto;
+    height: 28px;
+    padding: 0 t.$spacing-2;
+    box-shadow: none;
+    border: 1px solid transparent;
+
+    .animated-button__text {
+      transform: none;
+      font-size: t.$font-size-sm;
+    }
+
+    .animated-button__icon {
+      display: none;
+    }
+
+    &:hover:not(:disabled) .animated-button__text {
+      color: inherit;
+    }
+  }
+
   &--danger {
     background: t.$color-danger;
   }
