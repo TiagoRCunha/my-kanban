@@ -33,7 +33,7 @@
   &__actions {
     display: flex;
     align-items: center;
-    gap: t.$spacing-3;
+    gap: t.$spacing-4;
   }
 
   &__link {
@@ -62,9 +62,14 @@
   &__icon-btn {
     @include m.icon-button;
 
-    font-size: t.$font-size-lg;
-
     @include m.focus-ring;
+  }
+
+  &__theme-icon {
+    display: block;
+    * {
+      fill: t.$color-surface-alt;
+    }
   }
 
   &__btn {

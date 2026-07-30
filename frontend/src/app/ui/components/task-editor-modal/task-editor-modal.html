@@ -70,7 +70,7 @@
       @if (isEditMode) {
       <app-animated-button label="Delete" variant="danger" title="Delete task" ariaLabel="Delete task" (pressed)="onDelete()" />
       }
-      <app-animated-button label="Cancel" variant="neutral" (pressed)="onClose()" />
+      <app-animated-button label="Cancel" variant="neutral" icon="close" (pressed)="onClose()" />
       <app-animated-button label="Save" variant="confirm" [disabled]="!canSave" (pressed)="onSave()" />
     </footer>
   </section>

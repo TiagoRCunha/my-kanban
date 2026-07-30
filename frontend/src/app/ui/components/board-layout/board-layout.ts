@@ -1,12 +1,12 @@
 import { Component, inject, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { BoardColumn } from '../board-column';
+import { BoardColumn, ColumnData } from '../board-column';
 import { TaskCardData } from '../task-card';
 import { ColumnController } from '../column-controller';
 import { CustomTag } from '../../../domain/board/entities/task.entity';
 import { TaskEditorFormValue, TaskEditorModal, TaskEditorState } from '../task-editor-modal';
 import { HttpColumnRepository, HttpTaskRepository } from '../../../infrastructure/board';
-import { HttpUserConfigRepository } from '../../../infrastructure/user-config/adapters/http-user-config.repository';
+import { HttpUserConfigAdapter } from '../../../infrastructure/user-config';
 import { AuthService } from '../../../infrastructure/auth/auth.service';
 
 type BoardColumnData = {
@@ -30,16 +30,32 @@ export class BoardLayout implements OnChanges {
 
   private readonly columnRepository = inject(HttpColumnRepository);
   private readonly taskRepository = inject(HttpTaskRepository);
-  private readonly userConfigRepository = inject(HttpUserConfigRepository);
+  private readonly userConfigAdapter = inject(HttpUserConfigAdapter);
   private readonly authService = inject(AuthService);
 
   taskEditor: TaskEditorState | null = null;
   availableTags: CustomTag[] = [];
 
   columns: BoardColumnData[] = [];
+  taskLimit = 10;
+  private loadMoreCounts: Record<number, number> = {};
   isLoading = true;
   hasDoneColumn = false;
   hasArchiveColumn = false;
+
+  getVisibleTasks(column: BoardColumnData): TaskCardData[] {
+    const multiplier = this.loadMoreCounts[column.id] ?? 1;
+    return column.tasks.slice(0, this.taskLimit * multiplier);
+  }
+
+  hasMoreTasks(column: BoardColumnData): boolean {
+    const multiplier = this.loadMoreCounts[column.id] ?? 1;
+    return column.tasks.length > this.taskLimit * multiplier;
+  }
+
+  onLoadMoreTasks(columnId: number): void {
+    this.loadMoreCounts[columnId] = (this.loadMoreCounts[columnId] ?? 1) + 1;
+  }
 
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
     if (changes['boardId'] && this.boardId) {
@@ -53,8 +69,12 @@ export class BoardLayout implements OnChanges {
     try {
       const userId = this.authService.user?.id;
       if (userId) {
-        this.availableTags = await this.userConfigRepository.getCustomTags(userId);
+        const config = await this.userConfigAdapter.getConfig(userId);
+        this.availableTags = config.customTags.map((ct) => ({ id: ct.id, name: ct.name, color: ct.color, position: ct.position }));
+        this.taskLimit = config.defaultTaskLimit;
       }
+
+      this.loadMoreCounts = {};
 
       const domainColumns = await this.columnRepository.findByBoardId(this.boardId);
 
@@ -227,6 +247,23 @@ export class BoardLayout implements OnChanges {
         title,
       };
     });
+  }
+
+  async onDeleteColumn(columnId: number): Promise<void> {
+    try {
+      const column = this.columns.find((c) => c.id === columnId);
+      if (!column) {
+        return;
+      }
+
+      await this.columnRepository.delete(columnId, this.boardId);
+
+      this.columns = this.columns.filter((c) => c.id !== columnId);
+      this.hasDoneColumn = this.columns.some((col) => col.isDone);
+      this.hasArchiveColumn = this.columns.some((col) => col.archived);
+    } catch (err) {
+      console.error('Failed to delete column', err);
+    }
   }
 
   onCreateTask(columnId: number): void {

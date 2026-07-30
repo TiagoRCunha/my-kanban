@@ -60,6 +60,35 @@
             <app-toggle-switch [checked]="isDarkMode" (toggled)="onToggleDarkMode()" />
           </div>
         </div>
+
+        <div class="settings__card">
+          <div class="settings__card-row">
+            <div class="settings__card-info">
+              <span class="settings__card-label">Default Task Limit</span>
+              <span class="settings__card-hint">Maximum number of tasks shown per column before requiring "Load more" (1–100)</span>
+            </div>
+            <div class="settings__task-limit-form">
+              <input
+                class="settings__number-input"
+                type="number"
+                min="1"
+                max="100"
+                [(ngModel)]="taskLimitDraft"
+                [disabled]="isSavingTaskLimit"
+              />
+              <app-animated-button
+                label="Save"
+                variant="confirm"
+                [compact]="true"
+                [disabled]="isSavingTaskLimit"
+                (pressed)="onSaveTaskLimit()"
+              />
+            </div>
+          </div>
+          @if (taskLimitSuccessMessage) {
+            <div class="settings__success settings__card-success">{{ taskLimitSuccessMessage }}</div>
+          }
+        </div>
       </section>
     }
 
@@ -84,6 +113,7 @@
                 [isFirst]="i === 0"
                 [isLast]="i === startupColumnsDraft.length - 1"
                 [disabled]="isSavingColumns"
+                [isNew]="col.id < 0"
                 (update)="onUpdateStartupColumn(i, $event)"
                 (moveUp)="moveStartupColumnUp(i)"
                 (moveDown)="moveStartupColumnDown(i)"
@@ -97,7 +127,7 @@
           </div>
 
           <div class="settings__card-actions">
-            <app-animated-button label="+ Add Column" variant="neutral" (pressed)="addStartupColumn()" />
+            <app-animated-button label="Add Column" variant="neutral" icon="plus" (pressed)="addStartupColumn()" />
           </div>
         </div>
       </section>
@@ -162,6 +192,7 @@
                 [color]="tag.color"
                 [position]="i"
                 [disabled]="isSavingTags"
+                [isNew]="tag.id < 0"
                 (save)="saveCustomTag(i, $event)"
                 (remove)="deleteCustomTag(i)"
               />
@@ -173,7 +204,7 @@
           </div>
 
           <div class="settings__card-actions">
-            <app-animated-button label="+ Add Tag" variant="neutral" (pressed)="addCustomTag()" />
+            <app-animated-button label="Add Tag" variant="neutral" icon="plus" (pressed)="addCustomTag()" />
           </div>
         </div>
       </section>

@@ -1,4 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../components/navbar';
 import { ToggleSwitch } from '../../components/toggle-switch';
 import { StartupColumnRow } from '../../components/startup-column-row';
@@ -19,7 +20,7 @@ type SettingsTab = 'appearance' | 'startup-columns' | 'custom-tags' | 'columns';
 
 @Component({
   selector: 'app-settings-page',
-  imports: [Navbar, ToggleSwitch, StartupColumnRow, CustomTagRow, AnimatedButton],
+  imports: [Navbar, ToggleSwitch, StartupColumnRow, CustomTagRow, AnimatedButton, FormsModule],
   templateUrl: './settings.html',
   styleUrl: './settings.scss',
 })
@@ -69,9 +70,30 @@ export class SettingsPage implements OnInit {
 
   // ─── Appearance ──────────────────────────────────────────────────────────
 
+  taskLimitDraft = 10;
+  isSavingTaskLimit = false;
+  taskLimitSuccessMessage = '';
+
   async onToggleDarkMode(): Promise<void> {
     await this.themeService.toggleDarkMode(this.userId);
     this.userConfig = this.userConfig?.withDarkMode(this.themeService.darkMode) ?? null;
+  }
+
+  async onSaveTaskLimit(): Promise<void> {
+    const limit = Math.max(1, Math.min(100, this.taskLimitDraft));
+    this.taskLimitDraft = limit;
+    this.isSavingTaskLimit = true;
+    this.taskLimitSuccessMessage = '';
+
+    try {
+      await this.configAdapter.updateConfig(this.userId, { defaultTaskLimit: limit });
+      this.userConfig = this.userConfig?.withDefaultTaskLimit(limit) ?? null;
+      this.taskLimitSuccessMessage = 'Task limit saved successfully.';
+    } catch {
+      this.errorMessage = 'Failed to save task limit. Please try again.';
+    } finally {
+      this.isSavingTaskLimit = false;
+    }
   }
 
   // ─── Startup Columns ─────────────────────────────────────────────────────
@@ -249,6 +271,7 @@ export class SettingsPage implements OnInit {
       this.userConfig = UserConfig.fromSnapshot(snapshot);
       this.startupColumnsDraft = [...this.userConfig.startupColumns];
       this.customTagsDraft = [...this.userConfig.customTags];
+      this.taskLimitDraft = this.userConfig.defaultTaskLimit;
 
       // Load boards and their columns for the Column Types tab
       const boards = await this.boardRepository.findAll();

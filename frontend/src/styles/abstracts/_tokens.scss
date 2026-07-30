@@ -4,11 +4,11 @@
 :root,
 [data-theme="light"] {
   --color-bg: #f4f5f7;
+  --color-primary: #4da6ff;
+  --color-primary-hover: #80c1ff;
   --color-surface: #ffffff;
   --color-surface-alt: #ebecf0;
   --color-border: #dfe1e6;
-  --color-primary: #0052cc;
-  --color-primary-hover: #0747a6;
   --color-danger: #de350b;
   --color-danger-hover: #bf2600;
   --color-success: #00a600;
@@ -26,11 +26,11 @@
 
 [data-theme="dark"] {
   --color-bg: #1a1a2e;
+  --color-border: #2a2a4a;
+  --color-primary: #0052cc;
+  --color-primary-hover: #0747a6;
   --color-surface: #16213e;
   --color-surface-alt: #0f3460;
-  --color-border: #2a2a4a;
-  --color-primary: #4da6ff;
-  --color-primary-hover: #80c1ff;
   --color-danger: #ff6b5a;
   --color-danger-hover: #ff8a7a;
   --color-success: #4caf50;

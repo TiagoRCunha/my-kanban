@@ -101,6 +101,10 @@
     border-radius: t.$radius-md;
     box-shadow: t.$shadow-card;
     padding: t.$spacing-4;
+
+    & + & {
+      margin-top: t.$spacing-4;
+    }
   }
 
   &__card-row {
@@ -143,6 +147,31 @@
     margin-top: t.$spacing-3;
     padding-top: t.$spacing-3;
     border-top: 1px solid t.$color-border;
+  }
+
+  &__card-success {
+    margin-top: t.$spacing-3;
+    margin-bottom: 0;
+  }
+
+  &__task-limit-form {
+    display: flex;
+    align-items: center;
+    gap: t.$spacing-2;
+  }
+
+  &__number-input {
+    width: 72px;
+    padding: t.$spacing-1 t.$spacing-2;
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-sm;
+    font: inherit;
+    font-size: t.$font-size-md;
+    text-align: center;
+    color: t.$color-text;
+    background: t.$color-surface;
+
+    @include m.focus-ring;
   }
 
   // ─── List ─────────────────────────────────────────────────────────────

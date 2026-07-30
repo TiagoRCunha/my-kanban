@@ -23,6 +23,7 @@ export class StartupColumnRow {
   @Input() disabled = false;
   @Input() showTypeSelector = false;
   @Input() readonlyTitle = false;
+  @Input() isNew = false;
 
   @Output() update = new EventEmitter<StartupColumnFormValue>();
   @Output() remove = new EventEmitter<void>();
@@ -46,9 +47,22 @@ export class StartupColumnRow {
     if (this.readonlyTitle) {
       return this.editedType !== this.type;
     }
+    if (this.isNew) {
+      return this.editedTitle.trim().length > 0;
+    }
     const titleChanged = this.editedTitle.trim().length > 0 && this.editedTitle.trim() !== this.title;
     const typeChanged = this.editedType !== this.type;
     return titleChanged || typeChanged;
+  }
+
+  get hasChanges(): boolean {
+    if (this.isNew) {
+      return this.editedTitle.trim().length > 0 || this.editedType !== this.type;
+    }
+    if (this.readonlyTitle) {
+      return this.editedType !== this.type;
+    }
+    return this.editedTitle.trim() !== this.title || this.editedType !== this.type;
   }
 
   onSave(): void {
@@ -63,6 +77,10 @@ export class StartupColumnRow {
   }
 
   onCancel(): void {
+    if (this.isNew) {
+      this.remove.emit();
+      return;
+    }
     this.editedTitle = this.title;
     this.editedType = this.type;
   }

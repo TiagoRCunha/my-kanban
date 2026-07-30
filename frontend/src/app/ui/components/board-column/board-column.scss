@@ -25,6 +25,9 @@
   }
 
   &__title-area {
+    display: flex;
+    align-items: center;
+    gap: t.$spacing-2;
     flex: 1;
     min-width: 0;
   }
@@ -98,13 +101,14 @@
   }
 
   &__pin-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: 1px solid t.$color-border;
     background: t.$color-surface;
     color: t.$color-text-muted;
     border-radius: t.$radius-sm;
-    padding: 2px t.$spacing-2;
-    font-size: t.$font-size-sm;
-    line-height: 1.3;
+    padding: 2px;
     transition: all 0.15s;
 
     @include m.focus-ring;
@@ -112,6 +116,126 @@
     &:hover {
       border-color: t.$color-primary;
       color: t.$color-primary;
+    }
+
+    &--active {
+      color: t.$color-primary;
+      border-color: t.$color-primary;
+      background: rgba(t.$color-primary, 0.08);
+    }
+  }
+
+  &__pin-icon {
+    display: block;
+  }
+
+  &__delete-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid t.$color-border;
+    background: t.$color-surface;
+    color: t.$color-text-muted;
+    border-radius: t.$radius-sm;
+    padding: 2px;
+    transition: all 0.15s;
+
+    @include m.focus-ring;
+
+    &:hover {
+      border-color: t.$color-danger;
+      color: t.$color-danger;
+    }
+  }
+
+  &__delete-icon {
+    display: block;
+  }
+
+  // ─── Confirm Deletion Modal ────────────────────────────────────────────────
+
+  &__confirm-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(9, 30, 66, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+  }
+
+  &__confirm-modal {
+    background: t.$color-surface;
+    border-radius: t.$radius-md;
+    padding: t.$spacing-5;
+    min-width: 320px;
+    max-width: 400px;
+    box-shadow: t.$shadow-card;
+  }
+
+  &__confirm-text {
+    margin: 0 0 t.$spacing-3;
+    font-size: t.$font-size-md;
+    color: t.$color-text;
+    line-height: 1.5;
+  }
+
+  &__confirm-input {
+    width: 100%;
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-sm;
+    padding: t.$spacing-2;
+    font: inherit;
+    font-size: t.$font-size-md;
+    color: t.$color-text;
+    background: t.$color-surface;
+    margin-bottom: t.$spacing-4;
+    box-sizing: border-box;
+
+    @include m.focus-ring;
+  }
+
+  &__confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: t.$spacing-2;
+  }
+
+  &__confirm-btn {
+    padding: t.$spacing-2 t.$spacing-4;
+    border-radius: t.$radius-sm;
+    font-size: t.$font-size-md;
+    font-weight: t.$font-weight-medium;
+    cursor: pointer;
+    transition: all 0.15s;
+
+    @include m.focus-ring;
+
+    &--cancel {
+      border: 1px solid t.$color-border;
+      background: t.$color-surface;
+      color: t.$color-text-muted;
+
+      &:hover {
+        border-color: t.$color-primary;
+        color: t.$color-primary;
+      }
+    }
+
+    &--confirm {
+      border: 1px solid t.$color-danger;
+      background: t.$color-danger;
+      color: #ffffff;
+
+      &:hover:not(:disabled) {
+        background: t.$color-danger-hover;
+        border-color: t.$color-danger-hover;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
     }
   }
 
@@ -136,8 +260,31 @@
     min-height: 10px;
   }
 
+  &__load-more-btn {
+    // default
+    //padding: t.$spacing-2;
+    // safe padding for the button text and to avoid text clipping
+    padding: 8px 7px 20px;
+    border: 1px solid t.$color-border;
+    background: t.$color-surface;
+    border-radius: t.$radius-md;
+    color: t.$color-text-muted;
+    font-size: t.$font-size-sm;
+    font-weight: t.$font-weight-medium;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+
+    @include m.focus-ring;
+
+    &:hover {
+      border-color: t.$color-primary;
+      color: t.$color-primary;
+    }
+  }
+
   &__add-btn {
-    padding: t.$spacing-2;
+    min-height: 50px;
     border: 2px dashed t.$color-border;
     background: transparent;
     border-radius: t.$radius-md;

@@ -34,11 +34,38 @@
     }
 
     .animated-button__icon {
-      display: none;
+      position: static;
+      width: 20px;
+      height: 20px;
+      border-left: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    &:hover:not(:disabled) .animated-button__text {
-      color: inherit;
+    .animated-button__icon svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    /* Keep text visible on hover instead of hiding it */
+    &:hover:not(:disabled) {
+      .animated-button__text {
+        color: inherit;
+      }
+
+      .animated-button__icon {
+        width: 20px;
+        border-left: none;
+      }
+
+      .animated-button__icon svg {
+        transform: none;
+      }
+    }
+
+    &:active:not(:disabled) .animated-button__icon svg {
+      transform: scale(0.8);
     }
   }
 
