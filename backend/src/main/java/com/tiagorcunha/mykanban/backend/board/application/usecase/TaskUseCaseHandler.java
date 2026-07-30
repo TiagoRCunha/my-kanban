@@ -159,6 +159,26 @@ public class TaskUseCaseHandler implements TaskUseCase {
 
   @Override
   @Transactional
+  public TaskResponse markAsDone(Long taskId) {
+    User currentUser = authenticatedUserProvider.getAuthenticatedUser();
+    Task task = taskRepository.findById(taskId)
+        .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+    boardAuthorizationService.assertCanManageTask(task, currentUser);
+
+    Board board = task.getBoardColumn().getBoard();
+    BoardColumn doneColumn = boardColumnRepository.findByBoardIdAndIsDoneTrue(board.getId())
+        .orElseThrow(() -> new ResourceNotFoundException("No done column found in this board"));
+
+    task.setDone(true);
+    task.setBoardColumn(doneColumn);
+    List<Task> doneTasks = taskRepository.findByColumnId(doneColumn.getId());
+    task.setPosition(doneTasks.size());
+    task.setUpdatedAt(LocalDateTime.now());
+    return TaskResponseMapper.toResponse(taskRepository.save(task));
+  }
+
+  @Override
+  @Transactional
   public void move(Long taskId, MoveTaskCommand command) {
     User currentUser = authenticatedUserProvider.getAuthenticatedUser();
     Task task = taskRepository.findById(taskId)
@@ -176,6 +196,12 @@ public class TaskUseCaseHandler implements TaskUseCase {
     }
 
     task.setBoardColumn(targetColumn);
+    // Auto mark done/undone based on target column type
+    if (targetColumn.getIsDone() != null && targetColumn.getIsDone()) {
+      task.setDone(true);
+    } else {
+      task.setDone(false);
+    }
     // Save at a temporary high position to avoid unique constraint violations
     // reorderColumnTasks will later assign the correct position
     task.setPosition(Integer.MAX_VALUE / 2);

@@ -98,12 +98,14 @@ public class UserUseCaseHandler
 
     // Seed default startup columns
     String[] defaultColumnTitles = { "Backlog", "In Progress", "Testing", "Done" };
+    String[] defaultColumnTypes = { "ARCHIVE", "NORMAL", "NORMAL", "DONE" };
     List<UserStartupColumn> startupColumns = new java.util.ArrayList<>();
     for (int i = 0; i < defaultColumnTitles.length; i++) {
       UserStartupColumn col = new UserStartupColumn();
       col.setUser(savedUser);
       col.setTitle(defaultColumnTitles[i]);
       col.setPosition(i);
+      col.setType(defaultColumnTypes[i]);
       col.setCreatedAt(now);
       startupColumns.add(col);
     }
