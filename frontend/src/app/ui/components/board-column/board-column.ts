@@ -9,6 +9,8 @@ export type ColumnData = {
   title: string;
   position: number;
   pinned: boolean;
+  archived: boolean;
+  isDone: boolean;
 };
 
 @Component({
@@ -23,10 +25,15 @@ export class BoardColumn {
   @Input() tasks: TaskCardData[] = [];
   @Input() dropListId = '';
   @Input() connectedDropListIds: string[] = [];
+  @Input() currentUserId: number | null = null;
+  @Input() hasDoneColumn = false;
+  @Input() hasArchiveColumn = false;
   @Output() taskDropped = new EventEmitter<CdkDragDrop<TaskCardData[]>>();
   @Output() createTask = new EventEmitter<number>();
   @Output() openTask = new EventEmitter<number>();
   @Output() deleteTask = new EventEmitter<number>();
+  @Output() doneTask = new EventEmitter<number>();
+  @Output() archiveTask = new EventEmitter<number>();
   @Output() togglePin = new EventEmitter<void>();
   @Output() renameColumn = new EventEmitter<string>();
   isRenaming = false;
@@ -46,6 +53,14 @@ export class BoardColumn {
 
   onOpenTask(taskId: number): void {
     this.openTask.emit(taskId);
+  }
+
+  onDoneTask(taskId: number): void {
+    this.doneTask.emit(taskId);
+  }
+
+  onArchiveTask(taskId: number): void {
+    this.archiveTask.emit(taskId);
   }
 
   onTogglePin(): void {

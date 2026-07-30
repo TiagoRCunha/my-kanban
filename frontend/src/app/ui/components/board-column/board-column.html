@@ -46,8 +46,14 @@
       <div cdkDrag [cdkDragData]="task" class="column__task-item">
         <app-task-card
           [task]="task"
+          [currentUserId]="currentUserId"
+          [hasDoneColumn]="hasDoneColumn"
+          [hasArchiveColumn]="hasArchiveColumn"
+          [isArchived]="column.archived"
           (openTask)="onOpenTask($event)"
           (deleteTask)="onDeleteTask($event)"
+          (doneTask)="onDoneTask($event)"
+          (archiveTask)="onArchiveTask($event)"
         />
       </div>
     } @empty {
@@ -55,7 +61,9 @@
     }
   </div>
 
-  <button class="column__add-btn" (click)="onAddTask()" type="button">
-    + Add task
-  </button>
+  @if (!column.archived) {
+    <button class="column__add-btn" (click)="onAddTask()" type="button">
+      + Add task
+    </button>
+  }
 </div>
