@@ -13,6 +13,7 @@ export class TaskMapper {
       dueDate: dto.dueDate,
       estimatedHours: dto.estimatedHours,
       position: dto.position,
+      done: dto.done,
       columnId: dto.columnId,
       reportedById: dto.reportedById,
       assigneeIds: dto.assigneeIds,

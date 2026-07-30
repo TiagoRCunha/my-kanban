@@ -9,6 +9,7 @@ export type StartupColumnResponseDto = {
   id: number;
   title: string;
   position: number;
+  type: string;
 };
 
 export type UserConfigResponseDto = {
@@ -24,6 +25,7 @@ export type UserConfigResponseDto = {
 export type SaveStartupColumnRequestDto = {
   title: string;
   position: number;
+  type: string;
 };
 
 export type SaveCustomTagRequestDto = {

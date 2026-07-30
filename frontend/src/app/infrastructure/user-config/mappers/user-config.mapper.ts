@@ -11,6 +11,7 @@ export class UserConfigMapper {
         id: sc.id,
         title: sc.title,
         position: sc.position,
+        type: sc.type ?? 'NORMAL',
       })),
       customTags: dto.customTags.map((ct) => ({
         id: ct.id,

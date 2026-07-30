@@ -32,9 +32,9 @@ export class HttpUserConfigAdapter implements UserConfigRepositoryPort {
   async saveStartupColumns(
     userId: number,
     columns: StartupColumnCommand[],
-  ): Promise<{ id: number; title: string; position: number }[]> {
+  ): Promise<{ id: number; title: string; position: number; type: string }[]> {
     return firstValueFrom(
-      this.httpClient.put<{ id: number; title: string; position: number }[]>(
+      this.httpClient.put<{ id: number; title: string; position: number; type: string }[]>(
         `${this.apiBaseUrl}/users/${userId}/config/startup-columns`,
         { columns },
       ),
