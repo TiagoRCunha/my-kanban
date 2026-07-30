@@ -23,6 +23,7 @@ public final class TaskResponseMapper {
         task.getDueDate(),
         task.getEstimatedHours(),
         task.getPosition(),
+        task.getDone(),
         task.getBoardColumn().getId(),
         task.getReportedBy().getId(),
         task.getAssignees().stream()

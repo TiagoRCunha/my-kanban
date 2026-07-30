@@ -12,6 +12,10 @@ public record BoardColumnResponse(
     String title,
     @Schema(example = "1")
     Integer position,
+    @Schema(description = "Whether this column is an archive", example = "false")
+    Boolean archived,
+    @Schema(description = "Whether this column is the done column", example = "false")
+    Boolean isDone,
     @Schema(example = "10")
     Long boardId,
     @Schema(example = "2026-07-05T10:25:00")

@@ -46,6 +46,9 @@ public class Task {
   private BigDecimal estimatedHours;
 
   @Column(nullable = false)
+  private Boolean done = false;
+
+  @Column(nullable = false)
   private Integer position;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -115,6 +118,14 @@ public class Task {
 
   public void setEstimatedHours(BigDecimal estimatedHours) {
     this.estimatedHours = estimatedHours;
+  }
+
+  public Boolean getDone() {
+    return done;
+  }
+
+  public void setDone(Boolean done) {
+    this.done = done;
   }
 
   public Integer getPosition() {

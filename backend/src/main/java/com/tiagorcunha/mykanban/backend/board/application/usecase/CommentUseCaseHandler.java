@@ -15,6 +15,7 @@ import com.tiagorcunha.mykanban.backend.board.application.response.CommentRespon
 import com.tiagorcunha.mykanban.backend.board.domain.model.Board;
 import com.tiagorcunha.mykanban.backend.board.domain.model.Comment;
 import com.tiagorcunha.mykanban.backend.board.domain.model.Task;
+import com.tiagorcunha.mykanban.backend.common.application.exception.ForbiddenException;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ResourceNotFoundException;
 import com.tiagorcunha.mykanban.backend.common.infrastructure.security.AuthenticatedUserProvider;
 import com.tiagorcunha.mykanban.backend.user.domain.model.User;
@@ -54,6 +55,9 @@ public class CommentUseCaseHandler implements CommentUseCase {
   public CommentResponse create(Long taskId, SaveCommentCommand command) {
     User currentUser = authenticatedUserProvider.getAuthenticatedUser();
     Task task = requireTask(taskId);
+    if (Boolean.TRUE.equals(task.getDone())) {
+      throw new ForbiddenException("Cannot comment on a done task");
+    }
     Board board = task.getBoardColumn().getBoard();
     boardAuthorizationService.assertCanCreateComment(board, currentUser);
 

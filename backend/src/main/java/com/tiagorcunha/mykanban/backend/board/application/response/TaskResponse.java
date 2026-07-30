@@ -28,6 +28,8 @@ public record TaskResponse(
     BigDecimal estimatedHours,
     @Schema(example = "0")
     Integer position,
+    @Schema(description = "Whether the task is done", example = "false")
+    Boolean done,
     @Schema(example = "21")
     Long columnId,
     @Schema(example = "1")

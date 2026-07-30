@@ -13,9 +13,17 @@ public record BoardColumnRequest(
   @Schema(description = "Column title", example = "In Progress")
     @NotBlank @Size(max = 50) String title,
   @Schema(description = "Zero-based column position", example = "1")
-    @NotNull @Min(0) Integer position) {
+    @NotNull @Min(0) Integer position,
+  @Schema(description = "Whether this column is an archive", example = "false")
+    Boolean archived,
+  @Schema(description = "Whether this column is the done column", example = "false")
+    Boolean isDone) {
 
   public SaveBoardColumnCommand toCommand() {
-    return new SaveBoardColumnCommand(title, position);
+    return new SaveBoardColumnCommand(
+        title,
+        position,
+        archived != null ? archived : false,
+        isDone != null ? isDone : false);
   }
 }

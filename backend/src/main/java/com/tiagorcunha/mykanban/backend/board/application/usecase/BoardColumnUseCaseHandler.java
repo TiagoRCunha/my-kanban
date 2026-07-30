@@ -62,6 +62,8 @@ public class BoardColumnUseCaseHandler implements BoardColumnUseCase {
     BoardColumn boardColumn = new BoardColumn();
     boardColumn.setTitle(command.title());
     boardColumn.setPosition(nextPosition);
+    boardColumn.setArchived(command.archived() != null ? command.archived() : false);
+    boardColumn.setIsDone(command.isDone() != null ? command.isDone() : false);
     boardColumn.setBoard(board);
     boardColumn.setCreatedAt(LocalDateTime.now());
     return BoardColumnResponseMapper.toResponse(boardColumnRepository.save(boardColumn));
@@ -79,6 +81,8 @@ public class BoardColumnUseCaseHandler implements BoardColumnUseCase {
 
     boardColumn.setTitle(command.title());
     boardColumn.setPosition(command.position());
+    boardColumn.setArchived(command.archived() != null ? command.archived() : false);
+    boardColumn.setIsDone(command.isDone() != null ? command.isDone() : false);
     return BoardColumnResponseMapper.toResponse(boardColumnRepository.save(boardColumn));
   }
 
