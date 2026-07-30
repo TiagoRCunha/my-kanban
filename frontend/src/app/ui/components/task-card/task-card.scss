@@ -17,6 +17,20 @@
     box-shadow: t.$shadow-card-hover;
   }
 
+  &--overdue {
+    background: t.$color-overdue-bg;
+    border-left-color: t.$color-overdue-border;
+  }
+
+  &--done {
+    opacity: 0.75;
+  }
+
+  &--archived {
+    opacity: 0.5;
+    filter: grayscale(1);
+  }
+
   &__content {
     display: flex;
     flex-direction: column;
@@ -64,6 +78,7 @@
     gap: t.$spacing-2;
     flex-wrap: wrap;
     font-size: t.$font-size-sm;
+    align-items: center;
   }
 
   &__tag {
@@ -78,5 +93,58 @@
     background: rgba(0, 0, 0, 0.05);
     border-radius: t.$radius-sm;
     color: t.$color-text-muted;
+  }
+
+  &__due-date {
+    padding: t.$spacing-1 t.$spacing-2;
+    border-radius: t.$radius-sm;
+    background: rgba(0, 0, 0, 0.05);
+    color: t.$color-text-muted;
+    font-size: t.$font-size-sm;
+
+    &--overdue {
+      background: t.$color-overdue-bg;
+      color: t.$color-overdue-text;
+      font-weight: t.$font-weight-bold;
+    }
+  }
+
+  &__done-badge {
+    padding: t.$spacing-1 t.$spacing-2;
+    border-radius: t.$radius-sm;
+    background: t.$color-done-bg;
+    color: t.$color-done-text;
+    font-size: t.$font-size-sm;
+    font-weight: t.$font-weight-medium;
+  }
+
+  &__done-btn,
+  &__archive-btn {
+    width: 100%;
+    padding: t.$spacing-1 t.$spacing-2;
+    border: 1px solid t.$color-done-border;
+    background: t.$color-done-bg;
+    color: t.$color-done-text;
+    border-radius: t.$radius-sm;
+    font-size: t.$font-size-sm;
+    font-weight: t.$font-weight-medium;
+    cursor: pointer;
+    transition: all 0.15s;
+
+    &:hover {
+      background: t.$color-done-bg-hover;
+    }
+
+    @include m.focus-ring;
+  }
+
+  &__archive-btn {
+    border-color: t.$color-primary;
+    background: rgba(0, 82, 204, 0.08);
+    color: t.$color-primary;
+
+    &:hover {
+      background: rgba(0, 82, 204, 0.16);
+    }
   }
 }

@@ -15,6 +15,13 @@
   --color-success-hover: #008f00;
   --color-text: #172b4d;
   --color-text-muted: #5e6c84;
+  --color-overdue-bg: #ffebee;
+  --color-overdue-text: #c62828;
+  --color-overdue-border: #ef5350;
+  --color-done-bg: #e8f5e9;
+  --color-done-text: #2e7d32;
+  --color-done-border: #66bb6a;
+  --color-done-bg-hover: #c8e6c9;
 }
 
 [data-theme="dark"] {
@@ -30,6 +37,13 @@
   --color-success-hover: #66bb6a;
   --color-text: #e0e0e0;
   --color-text-muted: #a0a0b0;
+  --color-overdue-bg: #3e1a1a;
+  --color-overdue-text: #ef9a9a;
+  --color-overdue-border: #c62828;
+  --color-done-bg: #1a3e1a;
+  --color-done-text: #a5d6a7;
+  --color-done-border: #388e3c;
+  --color-done-bg-hover: #2e5e2e;
 }
 
 // SCSS variables that reference CSS custom properties (for use in components)
@@ -45,6 +59,13 @@ $color-success: var(--color-success);
 $color-success-hover: var(--color-success-hover);
 $color-text: var(--color-text);
 $color-text-muted: var(--color-text-muted);
+$color-overdue-bg: var(--color-overdue-bg);
+$color-overdue-text: var(--color-overdue-text);
+$color-overdue-border: var(--color-overdue-border);
+$color-done-bg: var(--color-done-bg);
+$color-done-text: var(--color-done-text);
+$color-done-border: var(--color-done-border);
+$color-done-bg-hover: var(--color-done-bg-hover);
 
 // ─── Spacing (4px base) ───────────────────────────────────────────────────────
 

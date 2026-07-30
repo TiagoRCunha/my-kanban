@@ -127,6 +127,15 @@
     color: t.$color-text-muted;
   }
 
+  &__card-title {
+    font-size: t.$font-size-lg;
+    font-weight: t.$font-weight-bold;
+    color: t.$color-text;
+    margin-bottom: t.$spacing-3;
+    padding-bottom: t.$spacing-2;
+    border-bottom: 1px solid t.$color-border;
+  }
+
   &__card-actions {
     display: flex;
     justify-content: flex-end;

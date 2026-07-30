@@ -29,6 +29,14 @@
     >
       Custom Tags
     </button>
+    <button
+      class="settings__tab"
+      [class.settings__tab--active]="activeTab === 'columns'"
+      type="button"
+      (click)="setTab('columns')"
+    >
+      Column Types
+    </button>
   </nav>
 
   <!-- ─── Content ──────────────────────────────────────────────────────── -->
@@ -76,6 +84,7 @@
                 [isFirst]="i === 0"
                 [isLast]="i === startupColumnsDraft.length - 1"
                 [disabled]="isSavingColumns"
+                (update)="onUpdateStartupColumn(i, $event)"
                 (moveUp)="moveStartupColumnUp(i)"
                 (moveDown)="moveStartupColumnDown(i)"
                 (remove)="removeStartupColumn(i)"
@@ -89,14 +98,47 @@
 
           <div class="settings__card-actions">
             <app-animated-button label="+ Add Column" variant="neutral" (pressed)="addStartupColumn()" />
-            <app-animated-button
-              label="Save All"
-              variant="confirm"
-              [disabled]="isSavingColumns || startupColumnsDraft.length === 0"
-              (pressed)="saveStartupColumns()"
-            />
           </div>
         </div>
+      </section>
+    }
+
+    <!-- Column Types Tab -->
+    @if (activeTab === 'columns') {
+      <section class="settings__section">
+        <h2 class="settings__section-title">Column Types</h2>
+        <p class="settings__section-description">
+          Configure the type of each column per board. "Archive" columns grey out their tasks.
+          "Done" columns mark tasks as completed and prevent comments. The "Done" button
+          appears on tasks when a column is set as "Done".
+        </p>
+
+        @if (boardList.length === 0) {
+          <p class="settings__empty-text">No boards yet. Create a board to configure its column types.</p>
+        }
+
+        @for (entry of boardList; track entry.board.id) {
+          <div class="settings__card">
+            <h3 class="settings__card-title">{{ entry.board.title }}</h3>
+            <div class="settings__list">
+              @for (col of entry.columns; track col.id) {
+                <app-startup-column-row
+                  [title]="col.title"
+                  [position]="col.position"
+                  [type]="columnType(col)"
+                  [readonlyTitle]="true"
+                  [showTypeSelector]="true"
+                  [disabled]="isSavingBoardColumn"
+                  (update)="onUpdateBoardColumnType(entry.board.id, col.id, $event)"
+                />
+              } @empty {
+                <p class="settings__empty-text">
+                  No columns in this board.
+                </p>
+              }
+            </div>
+          </div>
+        }
       </section>
     }
 

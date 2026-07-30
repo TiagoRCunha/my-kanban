@@ -1,48 +1,68 @@
 <div class="col-row">
   <span class="col-row__position">{{ position + 1 }}.</span>
 
-  <input
-    class="col-row__input"
-    type="text"
-    [(ngModel)]="editedTitle"
-    placeholder="Column title"
-    maxlength="50"
-    [disabled]="disabled"
-  />
+  @if (readonlyTitle) {
+    <span class="col-row__label">{{ title }}</span>
+  } @else {
+    <input
+      class="col-row__input"
+      type="text"
+      [(ngModel)]="editedTitle"
+      placeholder="Column title"
+      maxlength="50"
+      [disabled]="disabled"
+    />
+  }
+
+  @if (showTypeSelector) {
+    <select
+      class="col-row__select"
+      [(ngModel)]="editedType"
+      [disabled]="disabled"
+    >
+      <option value="NORMAL">Normal</option>
+      <option value="ARCHIVE">Archive</option>
+      <option value="DONE">Done</option>
+    </select>
+  }
 
   <div class="col-row__actions">
-    <button
-      class="col-row__icon-btn"
-      type="button"
-      aria-label="Move up"
-      [disabled]="disabled || isFirst"
-      (click)="moveUp.emit()"
-    >
-      &#9650;
-    </button>
-    <button
-      class="col-row__icon-btn"
-      type="button"
-      aria-label="Move down"
-      [disabled]="disabled || isLast"
-      (click)="moveDown.emit()"
-    >
-      &#9660;
-    </button>
-
-    @if (canSave) {
-      <app-animated-button label="Save" variant="confirm" (pressed)="onSave()" />
-      <app-animated-button label="Cancel" variant="neutral" (pressed)="onCancel()" />
+    @if (!readonlyTitle) {
+      <button
+        class="col-row__icon-btn"
+        type="button"
+        aria-label="Move up"
+        [disabled]="disabled || isFirst"
+        (click)="moveUp.emit()"
+      >
+        &#9650;
+      </button>
+      <button
+        class="col-row__icon-btn"
+        type="button"
+        aria-label="Move down"
+        [disabled]="disabled || isLast"
+        (click)="moveDown.emit()"
+      >
+        &#9660;
+      </button>
     }
 
-    <button
-      class="col-row__icon-btn col-row__icon-btn--danger"
-      type="button"
-      aria-label="Remove column"
-      [disabled]="disabled"
-      (click)="remove.emit()"
-    >
-      &times;
-    </button>
+    @if (canSave) {
+      <app-animated-button label="Save" variant="confirm" [compact]="true" (pressed)="onSave()" />
+      <app-animated-button label="Cancel" variant="neutral" [compact]="true" (pressed)="onCancel()" />
+    }
+
+    @if (!readonlyTitle) {
+      <button
+        class="col-row__icon-btn col-row__icon-btn--danger"
+        type="button"
+        aria-label="Remove column"
+        [disabled]="disabled"
+        (click)="remove.emit()"
+      >
+        &times;
+      </button>
+    }
   </div>
 </div>

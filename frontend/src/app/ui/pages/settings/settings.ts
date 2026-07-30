@@ -7,11 +7,15 @@ import { AnimatedButton } from '../../components/animated-button';
 import { AuthService } from '../../../infrastructure/auth';
 import { ThemeService } from '../../../infrastructure/theme/theme.service';
 import { HttpUserConfigAdapter } from '../../../infrastructure/user-config';
+import { HttpBoardRepository } from '../../../infrastructure/board/adapters/http-board.repository';
+import { HttpColumnRepository } from '../../../infrastructure/board/adapters/http-column.repository';
 import { UserConfig } from '../../../domain/users/entities/user-config.entity';
 import { StartupColumn } from '../../../domain/users/entities/startup-column.entity';
 import { CustomTagSettings } from '../../../domain/users/entities/custom-tag-settings.entity';
+import { Board } from '../../../domain/board/entities/board.entity';
+import { Column } from '../../../domain/board/entities/column.entity';
 
-type SettingsTab = 'appearance' | 'startup-columns' | 'custom-tags';
+type SettingsTab = 'appearance' | 'startup-columns' | 'custom-tags' | 'columns';
 
 @Component({
   selector: 'app-settings-page',
@@ -23,6 +27,8 @@ export class SettingsPage implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly themeService = inject(ThemeService);
   private readonly configAdapter = inject(HttpUserConfigAdapter);
+  private readonly boardRepository = inject(HttpBoardRepository);
+  private readonly columnRepository = inject(HttpColumnRepository);
 
   userConfig: UserConfig | null = null;
   isLoading = true;
@@ -33,6 +39,10 @@ export class SettingsPage implements OnInit {
   startupColumnsDraft: StartupColumn[] = [];
   isSavingColumns = false;
   columnsSuccessMessage = '';
+
+  // Board columns per board (for Column Types tab)
+  boardList: { board: Board; columns: Column[] }[] = [];
+  isSavingBoardColumn = false;
 
   // Custom tags local draft
   customTagsDraft: CustomTagSettings[] = [];
@@ -71,7 +81,7 @@ export class SettingsPage implements OnInit {
     const tempId = -(Date.now());
     this.startupColumnsDraft = [
       ...this.startupColumnsDraft,
-      StartupColumn.fromCreateInput({ title: '', position: nextPosition }, tempId),
+      StartupColumn.fromCreateInput({ title: '', position: nextPosition, type: 'NORMAL' }, tempId),
     ];
   }
 
@@ -98,13 +108,32 @@ export class SettingsPage implements OnInit {
     this.startupColumnsDraft = this.reindexColumns(columns);
   }
 
-  async saveStartupColumns(): Promise<void> {
+  async onUpdateStartupColumn(index: number, value: { title: string; position: number; type: string }): Promise<void> {
+    const columns = [...this.startupColumnsDraft];
+    columns[index] = columns[index].withTitle(value.title).withType(value.type);
+    this.startupColumnsDraft = columns;
+
+    this.isSavingColumns = true;
+    try {
+      const commands = this.startupColumnsDraft.map((col, i) =>
+        StartupColumn.toCommand({ title: col.title, position: i, type: col.type }),
+      );
+      await this.configAdapter.saveStartupColumns(this.userId, commands);
+      this.columnsSuccessMessage = 'Startup columns saved successfully.';
+    } catch {
+      this.errorMessage = 'Failed to save startup columns. Please try again.';
+    } finally {
+      this.isSavingColumns = false;
+    }
+  }
+
+  private async saveStartupColumns(): Promise<void> {
     this.isSavingColumns = true;
     this.columnsSuccessMessage = '';
 
     try {
       const commands = this.startupColumnsDraft.map((col, i) =>
-        StartupColumn.toCommand({ title: col.title, position: i }),
+        StartupColumn.toCommand({ title: col.title, position: i, type: col.type }),
       );
       await this.configAdapter.saveStartupColumns(this.userId, commands);
       await this.loadConfig();
@@ -177,6 +206,38 @@ export class SettingsPage implements OnInit {
     }
   }
 
+  // ─── Board Columns (Column Types tab) ─────────────────────────────────
+
+  async onUpdateBoardColumnType(boardId: number, columnId: number, value: { title: string; position: number; type: string }): Promise<void> {
+    this.isSavingBoardColumn = true;
+    try {
+      const archived = value.type === 'ARCHIVE';
+      const isDone = value.type === 'DONE';
+      await this.columnRepository.update(columnId, {
+        title: value.title,
+        position: value.position,
+        archived,
+        isDone,
+        boardId,
+      });
+      // Refresh the columns for this board
+      const boardEntry = this.boardList.find((b) => b.board.id === boardId);
+      if (boardEntry) {
+        boardEntry.columns = await this.columnRepository.findByBoardId(boardId);
+      }
+    } catch {
+      this.errorMessage = 'Failed to update column type. Please try again.';
+    } finally {
+      this.isSavingBoardColumn = false;
+    }
+  }
+
+  columnType(column: Column): string {
+    if (column.isDone) { return 'DONE'; }
+    if (column.archived) { return 'ARCHIVE'; }
+    return 'NORMAL';
+  }
+
   // ─── Private Helpers ─────────────────────────────────────────────────────
 
   private async loadConfig(): Promise<void> {
@@ -188,6 +249,15 @@ export class SettingsPage implements OnInit {
       this.userConfig = UserConfig.fromSnapshot(snapshot);
       this.startupColumnsDraft = [...this.userConfig.startupColumns];
       this.customTagsDraft = [...this.userConfig.customTags];
+
+      // Load boards and their columns for the Column Types tab
+      const boards = await this.boardRepository.findAll();
+      const userBoards = boards.filter((b) => b.ownerId === this.userId);
+      this.boardList = [];
+      for (const board of userBoards) {
+        const columns = await this.columnRepository.findByBoardId(board.id);
+        this.boardList.push({ board, columns });
+      }
     } catch {
       this.errorMessage = 'Failed to load settings. Please try again.';
     } finally {
