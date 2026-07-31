@@ -44,7 +44,7 @@ export class HttpUserConfigRepository {
 
   async updateDarkMode(userId: number, darkMode: boolean): Promise<void> {
     await firstValueFrom(
-      this.httpClient.put(`${this.apiBaseUrl}/users/${userId}/config`, {
+      this.httpClient.patch(`${this.apiBaseUrl}/users/${userId}/config`, {
         darkMode,
       }),
     );

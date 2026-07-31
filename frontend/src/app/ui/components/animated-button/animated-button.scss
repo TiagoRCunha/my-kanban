@@ -138,16 +138,16 @@
     fill: t.$color-text-muted;
   }
 
-  &:hover:not(:disabled) &__text {
+  &:not(&--compact):hover:not(:disabled) &__text {
     color: transparent;
   }
 
-  &:hover:not(:disabled) &__icon {
+  &:not(&--compact):hover:not(:disabled) &__icon {
     width: 150px;
     border-left: none;
   }
 
-  &:active:not(:disabled) &__icon svg {
+  &:not(&--compact):active:not(:disabled) &__icon svg {
     transform: scale(0.8);
   }
 }

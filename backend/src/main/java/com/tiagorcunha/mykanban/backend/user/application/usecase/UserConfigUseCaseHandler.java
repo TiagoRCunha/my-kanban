@@ -91,7 +91,9 @@ public class UserConfigUseCaseHandler
     assertCanManageUser(currentUser, userId);
 
     UserConfig config = getOrCreateConfig(userId);
-    config.setDarkMode(command.darkMode());
+    if (command.darkMode() != null) {
+      config.setDarkMode(command.darkMode());
+    }
     if (command.defaultTaskLimit() != null) {
       config.setDefaultTaskLimit(command.defaultTaskLimit());
     }

@@ -25,13 +25,13 @@ export class HttpUserConfigAdapter implements UserConfigRepositoryPort {
 
   async updateDarkMode(userId: number, darkMode: boolean): Promise<void> {
     await firstValueFrom(
-      this.httpClient.put(`${this.apiBaseUrl}/users/${userId}/config`, { darkMode }),
+      this.httpClient.patch(`${this.apiBaseUrl}/users/${userId}/config`, { darkMode }),
     );
   }
 
   async updateConfig(userId: number, config: { darkMode?: boolean; defaultTaskLimit?: number }): Promise<void> {
     await firstValueFrom(
-      this.httpClient.put(`${this.apiBaseUrl}/users/${userId}/config`, config),
+      this.httpClient.patch(`${this.apiBaseUrl}/users/${userId}/config`, config),
     );
   }
 
