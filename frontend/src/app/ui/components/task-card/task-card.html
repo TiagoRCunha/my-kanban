@@ -27,9 +27,9 @@
       @if (task.assigneeIds.length > 0) {
         <span class="task-card__assignees">{{ task.assigneeIds.length }} assignee(s)</span>
       }
-      @if (task.dueDate) {
+      @if (task.dueDate && !task.done) {
         <span class="task-card__due-date" [class.task-card__due-date--overdue]="isOverdue">
-          {{ task.dueDate }}
+          {{ getDueDateLabel(task.dueDate) }}
         </span>
       }
       @if (task.done) {

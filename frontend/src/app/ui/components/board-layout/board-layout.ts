@@ -126,43 +126,67 @@ export class BoardLayout implements OnChanges {
   }
 
   onTaskDrop(event: CdkDragDrop<TaskCardData[]>): void {
+    const sourceColumn =
+      this.findColumnByContainerId(event.previousContainer?.id)
+      ?? this.findColumnByTasks(event.previousContainer.data);
+
     if (event.previousContainer === event.container) {
+      if (!sourceColumn) {
+        return;
+      }
+
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
 
-      const sourceColumn = this.columns.find((col) => col.tasks === event.container.data);
-      if (sourceColumn) {
-        const taskOrder = event.container.data.map((task, index) => ({ id: task.id, position: index }));
-        this.taskRepository.reorder(sourceColumn.id, taskOrder).catch(() => {});
-      }
+      // The drop list only exposes the visible slice, so write the new order back
+      // into the underlying full task array to keep pagination and the UI consistent.
+      const visibleCount = event.container.data.length;
+      sourceColumn.tasks = [...event.container.data, ...sourceColumn.tasks.slice(visibleCount)];
+
+      const taskOrder = sourceColumn.tasks.map((task, index) => ({ id: task.id, position: index }));
+      this.taskRepository.reorder(sourceColumn.id, taskOrder).catch(() => {});
       return;
     }
 
-    transferArrayItem(
-      event.previousContainer.data,
-      event.container.data,
-      event.previousIndex,
-      event.currentIndex,
-    );
+    const targetColumn =
+      (this.findColumnByContainerId(event.container?.id) ?? this.findColumnByTasks(event.container.data))
+      || undefined;
 
-    const sourceColumn = this.findColumnByTasks(event.previousContainer.data);
-    const targetColumn = this.findColumnByTasks(event.container.data);
-
-    if (sourceColumn && targetColumn) {
-      const reorderedSourceTasks = event.previousContainer.data.map((task, index) => ({ id: task.id, position: index }));
-      const reorderedTargetTasks = event.container.data.map((task, index) => ({ id: task.id, position: index }));
-
-      const movedTask = event.item.data as TaskCardData;
-      movedTask.done = targetColumn.isDone;
-
-      this.taskRepository.moveTask(
-        movedTask.id,
-        sourceColumn.id,
-        targetColumn.id,
-        event.currentIndex,
-        reorderedSourceTasks,
-        reorderedTargetTasks,
-      ).catch(() => {});
+    if (!sourceColumn || !targetColumn) {
+      return;
     }
+
+    // Snapshot the visible slices BEFORE mutating them. The drop lists expose a paged
+    // slice of the full task arrays, so the tasks that were not visible (paged out) must
+    // be re-appended afterwards. Recomputing the full arrays by index after the transfer
+    // would keep the moved task in the source column (and could drop a hidden target task).
+    const sourceVisibleIds = new Set(event.previousContainer.data.map((task) => task.id));
+    const targetVisibleIds = new Set(event.container.data.map((task) => task.id));
+
+    transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
+
+    sourceColumn.tasks = [
+      ...event.previousContainer.data,
+      ...sourceColumn.tasks.filter((task) => !sourceVisibleIds.has(task.id)),
+    ];
+    targetColumn.tasks = [
+      ...event.container.data,
+      ...targetColumn.tasks.filter((task) => !targetVisibleIds.has(task.id)),
+    ];
+
+    const reorderedSourceTasks = sourceColumn.tasks.map((task, index) => ({ id: task.id, position: index }));
+    const reorderedTargetTasks = targetColumn.tasks.map((task, index) => ({ id: task.id, position: index }));
+
+    const movedTask = event.item.data as TaskCardData;
+    movedTask.done = targetColumn.isDone;
+
+    this.taskRepository.moveTask(
+      movedTask.id,
+      sourceColumn.id,
+      targetColumn.id,
+      event.currentIndex,
+      reorderedSourceTasks,
+      reorderedTargetTasks,
+    ).catch(() => {});
   }
 
   onColumnDrop(event: CdkDragDrop<BoardColumnData[]>): void {
@@ -469,6 +493,16 @@ export class BoardLayout implements OnChanges {
 
   private findColumnByTasks(tasks: TaskCardData[]): BoardColumnData | undefined {
     return this.columns.find((col) => col.tasks === tasks);
+  }
+
+  private findColumnByContainerId(containerId: string | undefined): BoardColumnData | undefined {
+    const prefix = 'column-drop-list-';
+    if (!containerId || !containerId.startsWith(prefix)) {
+      return undefined;
+    }
+
+    const columnId = Number(containerId.slice(prefix.length));
+    return this.columns.find((col) => col.id === columnId);
   }
 
   async onAddColumn(title: string): Promise<void> {

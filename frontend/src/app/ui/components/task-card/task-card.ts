@@ -54,6 +54,26 @@ export class TaskCard {
     return !this.isArchived && !this.task.done && this.hasArchiveColumn && this.isOwner;
   }
 
+  getDueDateLabel(dueDate: string): string {
+    const due = new Date(dueDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    due.setHours(0, 0, 0, 0);
+
+    if(due < today) {
+      if (due.getTime() === today.getTime() - 24 * 60 * 60 * 1000) {
+        return 'Yesterday';
+      } else {
+        // "Overdue by ... days" label
+        const diffTime = Math.abs(today.getTime() - due.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return `Overdue by ${diffDays} day${diffDays > 1 ? 's' : ''}`;
+      }
+    } else {
+      return ""
+    }
+  }
+
   onOpenTask(): void {
     this.openTask.emit(this.task.id);
   }

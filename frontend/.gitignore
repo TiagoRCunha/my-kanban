@@ -44,3 +44,4 @@ Thumbs.db
 
 # Test output
 test-results/
+.playwright-mcp/**

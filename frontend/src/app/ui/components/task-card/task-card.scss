@@ -76,9 +76,12 @@
   &__meta {
     display: flex;
     gap: t.$spacing-2;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     font-size: t.$font-size-sm;
     align-items: center;
+    flex-direction: row;
+    align-content: center;
+    justify-content: space-between;
   }
 
   &__tag {
