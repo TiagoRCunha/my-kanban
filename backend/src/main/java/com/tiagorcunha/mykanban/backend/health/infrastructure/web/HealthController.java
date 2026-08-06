@@ -1,6 +1,5 @@
 package com.tiagorcunha.mykanban.backend.health.infrastructure.web;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,7 +14,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Health", description = "Service health and metadata")
 public class HealthController {
 
-  @Autowired
   private final BuildProperties buildProperties;
 
   public HealthController(BuildProperties buildProperties) {

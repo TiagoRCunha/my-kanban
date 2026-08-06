@@ -24,11 +24,7 @@ public class PasswordHashService {
       return false;
     }
 
-    if (isBcryptHash(storedHash)) {
-      return passwordEncoder.matches(rawPassword, storedHash);
-    }
-
-    return storedHash.equals(rawPassword);
+    return passwordEncoder.matches(rawPassword, storedHash);
   }
 
   private boolean isBcryptHash(String value) {

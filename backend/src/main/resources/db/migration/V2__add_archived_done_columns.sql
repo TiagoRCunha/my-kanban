@@ -1,8 +1,9 @@
--- ─── V2: Add archived/done columns and task done flag ───────────────────────
+-- --- V2: Add archived/done columns and task done flag ---------------------------
 
 -- Add archived and is_done flags to board_columns
 ALTER TABLE board_columns
-  ADD COLUMN archived BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN archived BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE board_columns
   ADD COLUMN is_done BOOLEAN NOT NULL DEFAULT FALSE;
 
 -- Add done flag to tasks
