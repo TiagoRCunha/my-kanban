@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.tiagorcunha.mykanban.backend.board.domain.model.TaskPriority;
+
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -26,6 +28,8 @@ public record TaskResponse(
     LocalDate dueDate,
     @Schema(example = "6.50")
     BigDecimal estimatedHours,
+    @Schema(description = "Task priority", example = "MEDIUM")
+    TaskPriority priority,
     @Schema(example = "0")
     Integer position,
     @Schema(description = "Whether the task is done", example = "false")

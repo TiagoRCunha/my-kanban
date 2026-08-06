@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.tiagorcunha.mykanban.backend.board.domain.model.TaskPriority;
+
 public record SaveTaskCommand(
     String title,
     String description,
@@ -11,6 +13,7 @@ public record SaveTaskCommand(
     LocalDate dueDate,
     BigDecimal estimatedHours,
     Integer position,
+    TaskPriority priority,
     Long reportedById,
     List<Long> assigneeIds) {
 }

@@ -19,6 +19,7 @@ import com.tiagorcunha.mykanban.backend.board.application.response.TaskResponse;
 import com.tiagorcunha.mykanban.backend.board.domain.model.Board;
 import com.tiagorcunha.mykanban.backend.board.domain.model.BoardColumn;
 import com.tiagorcunha.mykanban.backend.board.domain.model.Task;
+import com.tiagorcunha.mykanban.backend.board.domain.model.TaskPriority;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ConflictException;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ResourceNotFoundException;
 import com.tiagorcunha.mykanban.backend.common.infrastructure.security.AuthenticatedUserProvider;
@@ -81,6 +82,7 @@ public class TaskUseCaseHandler implements TaskUseCase {
     task.setTag(resolveTag(command.tagId()));
     task.setDueDate(command.dueDate());
     task.setEstimatedHours(command.estimatedHours());
+    task.setPriority(command.priority() != null ? command.priority() : TaskPriority.MEDIUM);
     task.setPosition(command.position());
     task.setBoardColumn(boardColumn);
     task.setReportedBy(currentUser);
@@ -105,8 +107,8 @@ public class TaskUseCaseHandler implements TaskUseCase {
     task.setTag(resolveTag(command.tagId()));
     task.setDueDate(command.dueDate());
     task.setEstimatedHours(command.estimatedHours());
+    task.setPriority(command.priority() != null ? command.priority() : task.getPriority());
     task.setPosition(command.position());
-    task.setReportedBy(task.getReportedBy());
     task.setAssignees(resolveAssignees(command.assigneeIds()));
     task.setUpdatedAt(LocalDateTime.now());
     return TaskResponseMapper.toResponse(taskRepository.save(task));

@@ -22,6 +22,7 @@ public final class TaskResponseMapper {
         tag != null ? tag.getColor() : null,
         task.getDueDate(),
         task.getEstimatedHours(),
+        task.getPriority(),
         task.getPosition(),
         task.getDone(),
         task.getBoardColumn().getId(),
