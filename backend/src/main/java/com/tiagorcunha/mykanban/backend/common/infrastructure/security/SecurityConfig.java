@@ -22,7 +22,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
-@EnableConfigurationProperties(JwtProperties.class)
+@EnableConfigurationProperties({ JwtProperties.class, TokenProperties.class })
 public class SecurityConfig {
 
   @Value("${app.frontend.url}")
@@ -47,6 +47,10 @@ public class SecurityConfig {
               .requestMatchers("/health").permitAll()
               .requestMatchers("/auth/login").permitAll()
               .requestMatchers("/auth/register").permitAll()
+              .requestMatchers("/auth/verify-email").permitAll()
+              .requestMatchers("/auth/resend-verification").permitAll()
+              .requestMatchers("/auth/forgot-password").permitAll()
+              .requestMatchers("/auth/reset-password").permitAll()
               .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
               .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("SUPER_ADMIN", "ADMIN")
               .requestMatchers(HttpMethod.POST, "/users").hasAnyRole("SUPER_ADMIN", "ADMIN")
