@@ -9,6 +9,13 @@
       </div>
     }
 
+    @if (needsVerification) {
+      <p class="auth-card__resend">
+        Didn't receive the email?
+        <a class="auth-card__link" [routerLink]="verifyEmailLink">Resend verification</a>
+      </p>
+    }
+
     <form class="auth-card__form" (ngSubmit)="onSubmit()">
       <div class="auth-card__field">
         <label class="auth-card__label" for="email">Email</label>
@@ -46,6 +53,10 @@
         {{ isLoading ? 'Signing in...' : 'Sign in' }}
       </button>
     </form>
+
+    <p class="auth-card__footer">
+      <a class="auth-card__link" routerLink="/forgot-password">Forgot your password?</a>
+    </p>
 
     <p class="auth-card__footer">
       Don't have an account?

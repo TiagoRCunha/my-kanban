@@ -17,16 +17,27 @@ export class LoginPage {
   password = '';
   errorMessage = '';
   isLoading = false;
+  needsVerification = false;
+
+  get verifyEmailLink(): string {
+    return `/verify-email?email=${encodeURIComponent(this.email)}`;
+  }
 
   async onSubmit(): Promise<void> {
     this.errorMessage = '';
+    this.needsVerification = false;
     this.isLoading = true;
 
     try {
       await this.authService.login(this.email, this.password);
       await this.router.navigate(['/boards']);
-    } catch (error) {
-      this.errorMessage = 'Invalid email or password. Please try again.';
+    } catch (error: any) {
+      if (error?.status === 403) {
+        this.needsVerification = true;
+        this.errorMessage = 'Please verify your email before signing in.';
+      } else {
+        this.errorMessage = 'Invalid email or password. Please try again.';
+      }
     } finally {
       this.isLoading = false;
     }
