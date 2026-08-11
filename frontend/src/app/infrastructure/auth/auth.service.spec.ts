@@ -182,4 +182,75 @@ describe('AuthService', () => {
       expect(service.isAuthenticated).toBeFalse();
     });
   });
+
+  describe('verifyEmail', () => {
+    it('should POST the verification token', async () => {
+      const verifyPromise = service.verifyEmail('some-token');
+
+      const req = httpMock.expectOne('http://localhost:8080/auth/verify-email');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ token: 'some-token' });
+
+      req.flush(null);
+      await verifyPromise;
+    });
+  });
+
+  describe('resendVerification', () => {
+    it('should POST the email to resend a verification link', async () => {
+      const resendPromise = service.resendVerification('test@example.com');
+
+      const req = httpMock.expectOne('http://localhost:8080/auth/resend-verification');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ email: 'test@example.com' });
+
+      req.flush(null);
+      await resendPromise;
+    });
+  });
+
+  describe('forgotPassword', () => {
+    it('should POST the email to request a reset link', async () => {
+      const forgotPromise = service.forgotPassword('test@example.com');
+
+      const req = httpMock.expectOne('http://localhost:8080/auth/forgot-password');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ email: 'test@example.com' });
+
+      req.flush(null);
+      await forgotPromise;
+    });
+  });
+
+  describe('resetPassword', () => {
+    it('should POST the token and new password', async () => {
+      const resetPromise = service.resetPassword('reset-token', 'brand-new-password');
+
+      const req = httpMock.expectOne('http://localhost:8080/auth/reset-password');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({
+        token: 'reset-token',
+        newPassword: 'brand-new-password',
+      });
+
+      req.flush(null);
+      await resetPromise;
+    });
+  });
+
+  describe('changePassword', () => {
+    it('should PUT the current and new password', async () => {
+      const changePromise = service.changePassword('current-password', 'brand-new-password');
+
+      const req = httpMock.expectOne('http://localhost:8080/auth/password');
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual({
+        currentPassword: 'current-password',
+        newPassword: 'brand-new-password',
+      });
+
+      req.flush(null);
+      await changePromise;
+    });
+  });
 });
