@@ -19,6 +19,7 @@ public record UserRequest(
     @Size(max = 255) String avatarUrl) {
 
   public SaveUserCommand toCommand() {
-    return new SaveUserCommand(fullName, email, passwordHash, avatarUrl);
+    // Admin-created users are trusted: null means "keep verified by default".
+    return new SaveUserCommand(fullName, email, passwordHash, avatarUrl, null);
   }
 }
