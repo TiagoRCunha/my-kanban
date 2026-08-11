@@ -1,4 +1,4 @@
-# my-kanban
+# My Kanban
 
 <span style="display: flex;
         align-items: center;
@@ -42,7 +42,7 @@ By combining a realistic business domain with a modern technology stack and a st
 - [x] Uses Postgres with migration/seeders pattern
 - [x] Uses token JWT for authentication and authorization
 - [x] Adds personalization to user such as settings and darkmode
-- [ ] Send email of create account
+- [x] Send email of create account
 - [ ] Manage more than one role type users
 - [ ] Have a full operation project
 - [ ] Uses CI/CD
