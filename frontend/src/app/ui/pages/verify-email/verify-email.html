@@ -1,0 +1,67 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h1 class="auth-card__title">MyKanban</h1>
+
+    @if (status === 'verifying') {
+      <p class="auth-card__subtitle">Verifying your email...</p>
+      <p class="auth-card__status">Please wait a moment while we activate your account.</p>
+    } @else if (status === 'verified') {
+      <p class="auth-card__subtitle">Email verified</p>
+      <div class="auth-card__success" role="status">
+        Your account is now active. You can sign in.
+      </div>
+      <p class="auth-card__footer">
+        <a class="auth-card__link" routerLink="/login">Sign in to your account</a>
+      </p>
+    } @else {
+      <p class="auth-card__subtitle">
+        {{ justRegistered ? 'Check your inbox' : 'Verify your email' }}
+      </p>
+
+      @if (justRegistered) {
+        <div class="auth-card__success" role="status">
+          Your account was created. We sent a verification link to your email.
+        </div>
+      }
+
+      @if (status === 'failed') {
+        <div class="auth-card__error" role="alert">
+          {{ errorMessage }}
+        </div>
+      }
+
+      <form class="auth-card__form" (ngSubmit)="resend()">
+        <div class="auth-card__field">
+          <label class="auth-card__label" for="email">Email</label>
+          <input
+            class="auth-card__input"
+            id="email"
+            type="email"
+            [(ngModel)]="email"
+            name="email"
+            placeholder="you@example.com"
+            required
+            autocomplete="email"
+          />
+        </div>
+
+        @if (resendMessage) {
+          <div class="auth-card__success" role="status">{{ resendMessage }}</div>
+        }
+
+        <button
+          class="auth-card__submit"
+          type="submit"
+          [disabled]="isResending || !email"
+        >
+          {{ isResending ? 'Sending...' : 'Resend verification email' }}
+        </button>
+      </form>
+
+      <p class="auth-card__footer">
+        Already verified?
+        <a class="auth-card__link" routerLink="/login">Sign in</a>
+      </p>
+    }
+  </div>
+</div>
