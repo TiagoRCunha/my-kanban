@@ -15,6 +15,14 @@
     </button>
     <button
       class="settings__tab"
+      [class.settings__tab--active]="activeTab === 'security'"
+      type="button"
+      (click)="setTab('security')"
+    >
+      Security
+    </button>
+    <button
+      class="settings__tab"
       [class.settings__tab--active]="activeTab === 'startup-columns'"
       type="button"
       (click)="setTab('startup-columns')"
@@ -88,6 +96,82 @@
           @if (taskLimitSuccessMessage) {
             <div class="settings__success settings__card-success">{{ taskLimitSuccessMessage }}</div>
           }
+        </div>
+      </section>
+    }
+
+    <!-- Security Tab -->
+    @if (activeTab === 'security') {
+      <section class="settings__section">
+        <h2 class="settings__section-title">Security</h2>
+        <p class="settings__section-description">
+          Keep your account secure by changing your password regularly.
+        </p>
+
+        <div class="settings__card">
+          <div class="settings__security-form">
+            <div class="settings__security-field">
+              <label class="settings__security-label" for="currentPassword">Current password</label>
+              <input
+                class="settings__security-input"
+                id="currentPassword"
+                type="password"
+                [(ngModel)]="currentPassword"
+                name="currentPassword"
+                autocomplete="current-password"
+                required
+              />
+            </div>
+
+            <div class="settings__security-field">
+              <label class="settings__security-label" for="newPassword">New password</label>
+              <input
+                class="settings__security-input"
+                id="newPassword"
+                type="password"
+                [(ngModel)]="newPassword"
+                name="newPassword"
+                placeholder="At least 6 characters"
+                minlength="6"
+                autocomplete="new-password"
+                required
+              />
+            </div>
+
+            <div class="settings__security-field">
+              <label class="settings__security-label" for="confirmPassword">Confirm new password</label>
+              <input
+                class="settings__security-input"
+                id="confirmPassword"
+                type="password"
+                [(ngModel)]="confirmPassword"
+                name="confirmPassword"
+                autocomplete="new-password"
+                required
+              />
+            </div>
+
+            @if (passwordErrorMessage) {
+              <div class="settings__error settings__security-error" role="alert">
+                {{ passwordErrorMessage }}
+              </div>
+            }
+
+            @if (passwordSuccessMessage) {
+              <div class="settings__success settings__security-success" role="status">
+                {{ passwordSuccessMessage }}
+              </div>
+            }
+          </div>
+
+          <div class="settings__card-actions">
+            <app-animated-button
+              label="Change password"
+              variant="confirm"
+              [disabled]="isSavingPassword || !currentPassword || !newPassword || !confirmPassword"
+              (pressed)="onChangePassword()"
+            />
+          </div>
         </div>
       </section>
     }

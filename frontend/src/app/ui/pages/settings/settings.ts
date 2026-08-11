@@ -16,7 +16,7 @@ import { CustomTagSettings } from '../../../domain/users/entities/custom-tag-set
 import { Board } from '../../../domain/board/entities/board.entity';
 import { Column } from '../../../domain/board/entities/column.entity';
 
-type SettingsTab = 'appearance' | 'startup-columns' | 'custom-tags' | 'columns';
+type SettingsTab = 'appearance' | 'security' | 'startup-columns' | 'custom-tags' | 'columns';
 
 @Component({
   selector: 'app-settings-page',
@@ -49,6 +49,14 @@ export class SettingsPage implements OnInit {
   customTagsDraft: CustomTagSettings[] = [];
   isSavingTags = false;
   tagsSuccessMessage = '';
+
+  // Change password form
+  currentPassword = '';
+  newPassword = '';
+  confirmPassword = '';
+  isSavingPassword = false;
+  passwordSuccessMessage = '';
+  passwordErrorMessage = '';
 
   get userId(): number {
     return this.authService.user?.id ?? 0;
@@ -93,6 +101,41 @@ export class SettingsPage implements OnInit {
       this.errorMessage = 'Failed to save task limit. Please try again.';
     } finally {
       this.isSavingTaskLimit = false;
+    }
+  }
+
+  // ─── Security ────────────────────────────────────────────────────────────
+
+  async onChangePassword(): Promise<void> {
+    this.passwordErrorMessage = '';
+    this.passwordSuccessMessage = '';
+
+    if (this.newPassword !== this.confirmPassword) {
+      this.passwordErrorMessage = 'New passwords do not match.';
+      return;
+    }
+
+    if (this.newPassword.length < 6) {
+      this.passwordErrorMessage = 'New password must be at least 6 characters.';
+      return;
+    }
+
+    this.isSavingPassword = true;
+
+    try {
+      await this.authService.changePassword(this.currentPassword, this.newPassword);
+      this.passwordSuccessMessage = 'Password changed successfully.';
+      this.currentPassword = '';
+      this.newPassword = '';
+      this.confirmPassword = '';
+    } catch (error: any) {
+      if (error?.status === 403) {
+        this.passwordErrorMessage = 'Current password is incorrect.';
+      } else {
+        this.passwordErrorMessage = 'Failed to change password. Please try again.';
+      }
+    } finally {
+      this.isSavingPassword = false;
     }
   }
 
@@ -170,7 +213,7 @@ export class SettingsPage implements OnInit {
   // ─── Custom Tags ─────────────────────────────────────────────────────────
 
   addCustomTag(): void {
-    const nextPosition = this.customTagsDraft.length;
+    const nextPosition = this.nextCustomTagPosition();
     const tempId = -(Date.now());
     this.customTagsDraft = [
       ...this.customTagsDraft,
@@ -196,7 +239,12 @@ export class SettingsPage implements OnInit {
       if (tag.id > 0) {
         await this.configAdapter.updateCustomTag(this.userId, tag.id, value);
       } else {
-        await this.configAdapter.createCustomTag(this.userId, value);
+        // Use the next free position instead of the row index: deleted tags can
+        // leave gaps (and the backend rejects duplicate positions with 409).
+        await this.configAdapter.createCustomTag(this.userId, {
+          ...value,
+          position: this.nextCustomTagPosition(),
+        });
       }
       await this.loadConfig();
       this.tagsSuccessMessage = 'Custom tag saved successfully.';
@@ -290,5 +338,15 @@ export class SettingsPage implements OnInit {
 
   private reindexColumns(columns: StartupColumn[]): StartupColumn[] {
     return columns.map((col, i) => col.withPosition(i));
+  }
+
+  private nextCustomTagPosition(): number {
+    // Only persisted tags (positive ids) occupy a real position in the backend.
+    // Unsaved new rows use a negative temporary id, so they must be excluded
+    // or the position would be incremented twice.
+    const maxPersistedPosition = this.customTagsDraft
+      .filter((tag) => tag.id > 0)
+      .reduce((max, tag) => Math.max(max, tag.position), -1);
+    return maxPersistedPosition + 1;
   }
 }
