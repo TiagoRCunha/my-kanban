@@ -17,5 +17,9 @@ public interface UserCustomTagRepositoryPort {
 
   UserCustomTag save(UserCustomTag tag);
 
+  List<UserCustomTag> saveAll(List<UserCustomTag> tags);
+
+  void flush();
+
   void delete(UserCustomTag tag);
 }

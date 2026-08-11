@@ -213,6 +213,7 @@ public class UserConfigUseCaseHandler
 
     UserCustomTag tag = getExistingCustomTag(userId, tagId);
     customTagRepository.delete(tag);
+    reindexCustomTags(userId);
   }
 
   // ─── Private Helpers ───────────────────────────────────────────────────────
@@ -248,5 +249,30 @@ public class UserConfigUseCaseHandler
   private UserCustomTag getExistingCustomTag(Long userId, Long tagId) {
     return customTagRepository.findByIdAndUserId(tagId, userId)
         .orElseThrow(() -> new ResourceNotFoundException("Custom tag not found"));
+  }
+
+  /**
+   * Keeps custom tag positions contiguous (0, 1, 2, ...) after a deletion. The
+   * frontend derives the position of a new tag from the list length, so leaving
+   * gaps would make the next create collide with the existing UNIQUE constraint.
+   * Positions are first shifted out of the way to avoid transient unique
+   * constraint violations, then re-assigned in order.
+   */
+  private void reindexCustomTags(Long userId) {
+    List<UserCustomTag> tags = customTagRepository.findByUserIdOrderByPositionAsc(userId);
+    if (tags.isEmpty()) {
+      return;
+    }
+
+    for (UserCustomTag tag : tags) {
+      tag.setPosition(tag.getPosition() + 10000);
+    }
+    customTagRepository.saveAll(tags);
+    customTagRepository.flush();
+
+    for (int i = 0; i < tags.size(); i++) {
+      tags.get(i).setPosition(i);
+    }
+    customTagRepository.saveAll(tags);
   }
 }
