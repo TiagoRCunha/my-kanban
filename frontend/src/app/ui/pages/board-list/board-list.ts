@@ -71,6 +71,20 @@ export class BoardListPage implements OnInit {
     this.router.navigate(['/boards', boardId]);
   }
 
+  isBoardOwner(board: Board): boolean {
+    const userId = this.authService.user?.id;
+    return userId != null && board.ownerId === userId;
+  }
+
+  async onLeaveBoard(boardId: number): Promise<void> {
+    try {
+      await this.boardRepository.leaveBoard(boardId);
+      await this.loadBoards();
+    } catch {
+      this.errorMessage = 'Failed to leave board. Please try again.';
+    }
+  }
+
   trackByBoardId(_index: number, board: Board): number {
     return board.id;
   }

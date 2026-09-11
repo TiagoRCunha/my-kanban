@@ -105,4 +105,30 @@
     color: t.$color-text-muted;
     margin-top: auto;
   }
+
+  &__card-wrapper {
+    position: relative;
+  }
+
+  &__leave-btn {
+    position: absolute;
+    top: t.$spacing-2;
+    right: t.$spacing-2;
+    padding: t.$spacing-1 t.$spacing-2;
+    background-color: transparent;
+    color: t.$color-danger;
+    border: 1px solid t.$color-danger;
+    border-radius: t.$radius-sm;
+    font-size: t.$font-size-sm;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+    z-index: 1;
+
+    &:hover {
+      background-color: t.$color-danger;
+      color: #ffffff;
+    }
+
+    @include m.focus-ring;
+  }
 }

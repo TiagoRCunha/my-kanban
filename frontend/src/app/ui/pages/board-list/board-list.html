@@ -24,17 +24,30 @@
   } @else {
     <div class="board-list-page__grid">
       @for (board of boards; track trackByBoardId($index, board)) {
-        <button
-          class="board-list-page__card"
-          type="button"
-          (click)="navigateToBoard(board.id)"
-        >
-          <h2 class="board-list-page__card-title">{{ board.title }}</h2>
-          @if (board.description) {
-            <p class="board-list-page__card-description">{{ board.description }}</p>
+        <div class="board-list-page__card-wrapper">
+          <button
+            class="board-list-page__card"
+            type="button"
+            (click)="navigateToBoard(board.id)"
+          >
+            <h2 class="board-list-page__card-title">{{ board.title }}</h2>
+            @if (board.description) {
+              <p class="board-list-page__card-description">{{ board.description }}</p>
+            }
+            <span class="board-list-page__card-id">Board #{{ board.id }}</span>
+          </button>
+          @if (!isBoardOwner(board)) {
+            <button
+              class="board-list-page__leave-btn"
+              type="button"
+              title="Leave board"
+              aria-label="Leave board"
+              (click)="onLeaveBoard(board.id); $event.stopPropagation()"
+            >
+              Leave
+            </button>
           }
-          <span class="board-list-page__card-id">Board #{{ board.id }}</span>
-        </button>
+        </div>
       }
     </div>
   }
