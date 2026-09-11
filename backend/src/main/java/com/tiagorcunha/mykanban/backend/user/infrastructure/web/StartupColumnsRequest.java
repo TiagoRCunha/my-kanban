@@ -15,7 +15,7 @@ public record StartupColumnsRequest(
 
   public List<SaveStartupColumnCommand> toCommands() {
     return columns.stream()
-        .map(col -> new SaveStartupColumnCommand(col.title(), col.position()))
+        .map(col -> new SaveStartupColumnCommand(col.title(), col.position(), col.type()))
         .toList();
   }
 
@@ -24,6 +24,8 @@ public record StartupColumnsRequest(
       @Schema(description = "Column title", example = "Backlog")
       String title,
       @Schema(description = "Column position (0-based)", example = "0")
-      Integer position) {
+      Integer position,
+      @Schema(description = "Column type: NORMAL, ARCHIVE, or DONE", example = "NORMAL")
+      String type) {
   }
 }

@@ -81,6 +81,8 @@ public class BoardUseCaseHandler implements BoardUseCase {
       BoardColumn column = new BoardColumn();
       column.setTitle(sc.getTitle());
       column.setPosition(sc.getPosition());
+      column.setArchived("ARCHIVE".equals(sc.getType()));
+      column.setIsDone("DONE".equals(sc.getType()));
       column.setBoard(savedBoard);
       column.setCreatedAt(now);
       boardColumnRepository.save(column);

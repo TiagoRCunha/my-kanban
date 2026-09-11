@@ -37,7 +37,10 @@ export class RegisterPage {
 
     try {
       await this.authService.register(this.fullName, this.email, this.password);
-      await this.router.navigate(['/login']);
+      await this.router.navigate([
+        '/verify-email',
+        { queryParams: { email: this.email, registered: 'true' } },
+      ]);
     } catch (error: any) {
       if (error?.status === 409) {
         this.errorMessage = 'An account with this email already exists.';

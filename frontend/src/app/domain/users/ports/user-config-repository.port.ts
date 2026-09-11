@@ -5,6 +5,7 @@ import { UserConfigSnapshot } from '../entities/user-config.entity';
 export interface UserConfigRepositoryPort {
   getConfig(userId: number): Promise<UserConfigSnapshot>;
   updateDarkMode(userId: number, darkMode: boolean): Promise<void>;
+  updateConfig(userId: number, config: { darkMode?: boolean; defaultTaskLimit?: number }): Promise<void>;
   saveStartupColumns(
     userId: number,
     columns: StartupColumnCommand[],

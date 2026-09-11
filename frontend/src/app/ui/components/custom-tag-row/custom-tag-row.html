@@ -20,18 +20,32 @@
 
   <div class="tag-row__actions">
     @if (hasChanges) {
-      <app-animated-button label="Save" variant="confirm" [disabled]="!canSave" (pressed)="onSave()" />
-      <app-animated-button label="Cancel" variant="neutral" (pressed)="onCancel()" />
+      <app-animated-button label="Save" variant="confirm" [compact]="true" [disabled]="!canSave" (pressed)="onSave()" />
+      <app-animated-button label="Cancel" variant="neutral" icon="close" [compact]="true" (pressed)="onCancel()" />
     }
 
-    <button
-      class="tag-row__icon-btn tag-row__icon-btn--danger"
-      type="button"
-      aria-label="Remove tag"
-      [disabled]="disabled"
-      (click)="remove.emit()"
-    >
-      &times;
-    </button>
+    @if (!isNew) {
+      <button
+        class="tag-row__icon-btn tag-row__icon-btn--danger"
+        type="button"
+        aria-label="Remove tag"
+        [disabled]="disabled"
+        (click)="remove.emit()"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path d="M3 6H5H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M19 6V20C19 21.1 18.1 22 17 22H7C5.9 22 5 21.1 5 20V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M8 6V4C8 2.9 8.9 2 10 2H14C15.1 2 16 2.9 16 4V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    }
   </div>
 </div>

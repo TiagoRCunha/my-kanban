@@ -8,6 +8,7 @@ export type TaskResponseDto = {
   dueDate: string | null;
   estimatedHours: number | null;
   position: number;
+  done: boolean;
   columnId: number;
   reportedById: number;
   assigneeIds: number[];

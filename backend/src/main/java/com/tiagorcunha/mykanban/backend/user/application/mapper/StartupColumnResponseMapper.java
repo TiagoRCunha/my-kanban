@@ -12,6 +12,7 @@ public final class StartupColumnResponseMapper {
     return new StartupColumnResponse(
         column.getId(),
         column.getTitle(),
-        column.getPosition());
+        column.getPosition(),
+        column.getType());
   }
 }

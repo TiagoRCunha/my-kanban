@@ -22,11 +22,14 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
-@EnableConfigurationProperties(JwtProperties.class)
+@EnableConfigurationProperties({ JwtProperties.class, TokenProperties.class })
 public class SecurityConfig {
 
   @Value("${app.frontend.url}")
   private String frontendUrl;
+
+  @Value("${app.security.h2-console-enabled:false}")
+  private boolean h2ConsoleEnabled;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter)
@@ -39,16 +42,24 @@ public class SecurityConfig {
         .exceptionHandling(exceptions -> exceptions
             .authenticationEntryPoint((request, response, authException) ->
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")))
-        .authorizeHttpRequests(authorize -> authorize
-            .requestMatchers("/health").permitAll()
-            .requestMatchers("/auth/login").permitAll()
-            .requestMatchers("/auth/register").permitAll()
-            .requestMatchers("/h2-console/**").permitAll()
-            .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("SUPER_ADMIN", "ADMIN")
-            .requestMatchers(HttpMethod.POST, "/users").hasAnyRole("SUPER_ADMIN", "ADMIN")
-            .requestMatchers("/admin/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
-            .anyRequest().authenticated())
+        .authorizeHttpRequests(authorize -> {
+          authorize
+              .requestMatchers("/health").permitAll()
+              .requestMatchers("/auth/login").permitAll()
+              .requestMatchers("/auth/register").permitAll()
+              .requestMatchers("/auth/verify-email").permitAll()
+              .requestMatchers("/auth/resend-verification").permitAll()
+              .requestMatchers("/auth/forgot-password").permitAll()
+              .requestMatchers("/auth/reset-password").permitAll()
+              .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+              .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("SUPER_ADMIN", "ADMIN")
+              .requestMatchers(HttpMethod.POST, "/users").hasAnyRole("SUPER_ADMIN", "ADMIN")
+              .requestMatchers("/admin/**").hasAnyRole("SUPER_ADMIN", "ADMIN");
+          if (h2ConsoleEnabled) {
+            authorize.requestMatchers("/h2-console/**").permitAll();
+          }
+          authorize.anyRequest().authenticated();
+        })
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();

@@ -9,6 +9,8 @@ public interface BoardColumnRepositoryPort {
 
   List<BoardColumn> findByBoardId(Long boardId);
 
+  Optional<BoardColumn> findByBoardIdAndIsDoneTrue(Long boardId);
+
   Optional<BoardColumn> findById(Long id);
 
   boolean existsByBoardIdAndPosition(Long boardId, Integer position);

@@ -5,3 +5,8 @@ export * from './dto/auth-login-request.dto';
 export * from './dto/auth-register-request.dto';
 export * from './dto/auth-token-response.dto';
 export * from './dto/auth-user-response.dto';
+export * from './dto/verify-email-request.dto';
+export * from './dto/resend-verification-request.dto';
+export * from './dto/forgot-password-request.dto';
+export * from './dto/reset-password-request.dto';
+export * from './dto/change-password-request.dto';

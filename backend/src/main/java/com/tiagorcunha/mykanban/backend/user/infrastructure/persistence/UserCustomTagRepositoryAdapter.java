@@ -43,6 +43,16 @@ public class UserCustomTagRepositoryAdapter implements UserCustomTagRepositoryPo
   }
 
   @Override
+  public List<UserCustomTag> saveAll(List<UserCustomTag> tags) {
+    return repository.saveAll(tags);
+  }
+
+  @Override
+  public void flush() {
+    repository.flush();
+  }
+
+  @Override
   public void delete(UserCustomTag tag) {
     repository.delete(tag);
   }

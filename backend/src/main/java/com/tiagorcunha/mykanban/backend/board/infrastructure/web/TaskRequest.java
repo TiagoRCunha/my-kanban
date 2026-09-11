@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.tiagorcunha.mykanban.backend.board.application.command.SaveTaskCommand;
+import com.tiagorcunha.mykanban.backend.board.domain.model.TaskPriority;
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,12 +29,14 @@ public record TaskRequest(
     @DecimalMin(value = "0.0", inclusive = true) @Digits(integer = 3, fraction = 2) BigDecimal estimatedHours,
   @Schema(description = "Zero-based position inside the column", example = "0")
     @jakarta.validation.constraints.NotNull @Min(0) Integer position,
+  @Schema(description = "Task priority", example = "MEDIUM", defaultValue = "MEDIUM")
+    TaskPriority priority,
   @Schema(description = "Deprecated: ignored, reporter is always the authenticated user", example = "1")
     Long reportedById,
   @ArraySchema(schema = @Schema(description = "Assignee user id", example = "2"))
     List<Long> assigneeIds) {
 
   public SaveTaskCommand toCommand() {
-    return new SaveTaskCommand(title, description, tagId, dueDate, estimatedHours, position, reportedById, assigneeIds);
+    return new SaveTaskCommand(title, description, tagId, dueDate, estimatedHours, position, priority, reportedById, assigneeIds);
   }
 }

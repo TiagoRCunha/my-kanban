@@ -11,6 +11,8 @@ import com.tiagorcunha.mykanban.backend.user.domain.model.UserCustomTag;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -42,8 +44,15 @@ public class Task {
   @Column(name = "due_date")
   private LocalDate dueDate;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 10)
+  private TaskPriority priority = TaskPriority.MEDIUM;
+
   @Column(name = "estimated_hours", precision = 5, scale = 2)
   private BigDecimal estimatedHours;
+
+  @Column(nullable = false)
+  private Boolean done = false;
 
   @Column(nullable = false)
   private Integer position;
@@ -109,12 +118,28 @@ public class Task {
     this.dueDate = dueDate;
   }
 
+  public TaskPriority getPriority() {
+    return priority;
+  }
+
+  public void setPriority(TaskPriority priority) {
+    this.priority = priority;
+  }
+
   public BigDecimal getEstimatedHours() {
     return estimatedHours;
   }
 
   public void setEstimatedHours(BigDecimal estimatedHours) {
     this.estimatedHours = estimatedHours;
+  }
+
+  public Boolean getDone() {
+    return done;
+  }
+
+  public void setDone(Boolean done) {
+    this.done = done;
   }
 
   public Integer getPosition() {

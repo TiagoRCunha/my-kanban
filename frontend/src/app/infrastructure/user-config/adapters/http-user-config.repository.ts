@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { API_BASE_URL } from '../../config/api.config';
 import { CustomTag } from '../../../domain/board/entities/task.entity';
+import { BoardColumnResponseDto } from '../../board/dto/column.dto';
 import {
   CustomTagResponseDto,
   SaveCustomTagRequestDto,
@@ -43,7 +44,7 @@ export class HttpUserConfigRepository {
 
   async updateDarkMode(userId: number, darkMode: boolean): Promise<void> {
     await firstValueFrom(
-      this.httpClient.put(`${this.apiBaseUrl}/users/${userId}/config`, {
+      this.httpClient.patch(`${this.apiBaseUrl}/users/${userId}/config`, {
         darkMode,
       }),
     );
@@ -59,6 +60,15 @@ export class HttpUserConfigRepository {
         { columns },
       ),
     );
+  }
+
+  async getDoneColumn(boardId: number): Promise<{ id: number } | null> {
+    const columns = await firstValueFrom(
+      this.httpClient.get<BoardColumnResponseDto[]>(
+        `${this.apiBaseUrl}/boards/${boardId}/columns`,
+      ),
+    );
+    return columns.find((col) => col.isDone) ?? null;
   }
 
   async createCustomTag(

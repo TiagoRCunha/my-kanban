@@ -70,7 +70,7 @@ public class UserConfigUseCaseHandler
   // ─── User Config ───────────────────────────────────────────────────────────
 
   @Override
-  @Transactional(readOnly = true)
+  @Transactional
   public UserConfigResponse findByUserId(Long userId) {
     User currentUser = authenticatedUserProvider.getAuthenticatedUser();
     assertCanManageUser(currentUser, userId);
@@ -91,7 +91,12 @@ public class UserConfigUseCaseHandler
     assertCanManageUser(currentUser, userId);
 
     UserConfig config = getOrCreateConfig(userId);
-    config.setDarkMode(command.darkMode());
+    if (command.darkMode() != null) {
+      config.setDarkMode(command.darkMode());
+    }
+    if (command.defaultTaskLimit() != null) {
+      config.setDefaultTaskLimit(command.defaultTaskLimit());
+    }
     config.setUpdatedAt(LocalDateTime.now());
     userConfigRepository.save(config);
 
@@ -124,6 +129,7 @@ public class UserConfigUseCaseHandler
 
     User user = getExistingUser(userId);
     startupColumnRepository.deleteAllByUserId(userId);
+    startupColumnRepository.flush();
 
     LocalDateTime now = LocalDateTime.now();
     List<UserStartupColumn> entities = columns.stream()
@@ -132,6 +138,7 @@ public class UserConfigUseCaseHandler
           entity.setUser(user);
           entity.setTitle(cmd.title());
           entity.setPosition(cmd.position());
+          entity.setType(cmd.type() != null ? cmd.type() : "NORMAL");
           entity.setCreatedAt(now);
           return entity;
         })
@@ -206,6 +213,7 @@ public class UserConfigUseCaseHandler
 
     UserCustomTag tag = getExistingCustomTag(userId, tagId);
     customTagRepository.delete(tag);
+    reindexCustomTags(userId);
   }
 
   // ─── Private Helpers ───────────────────────────────────────────────────────
@@ -226,6 +234,7 @@ public class UserConfigUseCaseHandler
       UserConfig config = new UserConfig();
       config.setUser(user);
       config.setDarkMode(false);
+      config.setDefaultTaskLimit(10);
       config.setCreatedAt(now);
       config.setUpdatedAt(now);
       return userConfigRepository.save(config);
@@ -240,5 +249,30 @@ public class UserConfigUseCaseHandler
   private UserCustomTag getExistingCustomTag(Long userId, Long tagId) {
     return customTagRepository.findByIdAndUserId(tagId, userId)
         .orElseThrow(() -> new ResourceNotFoundException("Custom tag not found"));
+  }
+
+  /**
+   * Keeps custom tag positions contiguous (0, 1, 2, ...) after a deletion. The
+   * frontend derives the position of a new tag from the list length, so leaving
+   * gaps would make the next create collide with the existing UNIQUE constraint.
+   * Positions are first shifted out of the way to avoid transient unique
+   * constraint violations, then re-assigned in order.
+   */
+  private void reindexCustomTags(Long userId) {
+    List<UserCustomTag> tags = customTagRepository.findByUserIdOrderByPositionAsc(userId);
+    if (tags.isEmpty()) {
+      return;
+    }
+
+    for (UserCustomTag tag : tags) {
+      tag.setPosition(tag.getPosition() + 10000);
+    }
+    customTagRepository.saveAll(tags);
+    customTagRepository.flush();
+
+    for (int i = 0; i < tags.size(); i++) {
+      tags.get(i).setPosition(i);
+    }
+    customTagRepository.saveAll(tags);
   }
 }

@@ -13,6 +13,8 @@ public final class BoardColumnResponseMapper {
         boardColumn.getId(),
         boardColumn.getTitle(),
         boardColumn.getPosition(),
+        boardColumn.getArchived(),
+        boardColumn.getIsDone(),
         boardColumn.getBoard().getId(),
         boardColumn.getCreatedAt());
   }

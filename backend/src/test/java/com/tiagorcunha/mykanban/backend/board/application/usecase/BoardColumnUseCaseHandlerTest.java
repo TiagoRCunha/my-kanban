@@ -108,7 +108,7 @@ class BoardColumnUseCaseHandlerTest {
     when(boardColumnRepository.findByBoardId(10L)).thenReturn(List.of(col1, col2));
     when(boardColumnRepository.save(any(BoardColumn.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-    SaveBoardColumnCommand command = new SaveBoardColumnCommand("New Column", 99);
+    SaveBoardColumnCommand command = new SaveBoardColumnCommand("New Column", 99, null, null);
     handler.create(10L, command);
 
     ArgumentCaptor<BoardColumn> captor = ArgumentCaptor.forClass(BoardColumn.class);
@@ -124,7 +124,7 @@ class BoardColumnUseCaseHandlerTest {
     when(boardColumnRepository.findByBoardId(10L)).thenReturn(List.of());
     when(boardColumnRepository.save(any(BoardColumn.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-    SaveBoardColumnCommand command = new SaveBoardColumnCommand("First Column", 5);
+    SaveBoardColumnCommand command = new SaveBoardColumnCommand("First Column", 5, null, null);
     handler.create(10L, command);
 
     ArgumentCaptor<BoardColumn> captor = ArgumentCaptor.forClass(BoardColumn.class);
@@ -146,7 +146,7 @@ class BoardColumnUseCaseHandlerTest {
     when(authenticatedUserProvider.getAuthenticatedUser()).thenReturn(currentUser);
     when(boardRepository.findById(10L)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> handler.create(10L, new SaveBoardColumnCommand("Col", 0)))
+    assertThatThrownBy(() -> handler.create(10L, new SaveBoardColumnCommand("Col", 0, null, null)))
         .isInstanceOf(ResourceNotFoundException.class);
   }
 

@@ -1,4 +1,11 @@
-<div class="task-card" [style.border-left-color]="task.tagColor || '#ccc'" (click)="onOpenTask()">
+<div
+  class="task-card"
+  [class.task-card--overdue]="isOverdue"
+  [class.task-card--done]="task.done"
+  [class.task-card--archived]="isArchived"
+  [style.border-left-color]="task.tagColor || '#ccc'"
+  (click)="onOpenTask()"
+>
   <div class="task-card__content">
     <div class="task-card__header">
       <h3 class="task-card__title">{{ task.title }}</h3>
@@ -20,6 +27,24 @@
       @if (task.assigneeIds.length > 0) {
         <span class="task-card__assignees">{{ task.assigneeIds.length }} assignee(s)</span>
       }
+      @if (task.dueDate && !task.done) {
+        <span class="task-card__due-date" [class.task-card__due-date--overdue]="isOverdue">
+          {{ getDueDateLabel(task.dueDate) }}
+        </span>
+      }
+      @if (task.done) {
+        <span class="task-card__done-badge">✓ Done</span>
+      }
     </div>
+    @if (showDoneButton) {
+      <button class="task-card__done-btn" type="button" (click)="onDoneTask($event)">
+        ✓ Mark as Done
+      </button>
+    }
+    @if (showArchiveButton) {
+      <button class="task-card__archive-btn" type="button" (click)="onArchiveTask($event)">
+        Archive
+      </button>
+    }
   </div>
 </div>

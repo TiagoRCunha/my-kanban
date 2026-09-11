@@ -21,6 +21,54 @@
     cursor: not-allowed;
   }
 
+  &--compact {
+    width: auto;
+    height: 28px;
+    padding: 0 t.$spacing-2;
+    box-shadow: none;
+    border: 1px solid transparent;
+
+    .animated-button__text {
+      transform: none;
+      font-size: t.$font-size-sm;
+    }
+
+    .animated-button__icon {
+      position: static;
+      width: 20px;
+      height: 20px;
+      border-left: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .animated-button__icon svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    /* Keep text visible on hover instead of hiding it */
+    &:hover:not(:disabled) {
+      .animated-button__text {
+        color: inherit;
+      }
+
+      .animated-button__icon {
+        width: 20px;
+        border-left: none;
+      }
+
+      .animated-button__icon svg {
+        transform: none;
+      }
+    }
+
+    &:active:not(:disabled) .animated-button__icon svg {
+      transform: scale(0.8);
+    }
+  }
+
   &--danger {
     background: t.$color-danger;
   }
@@ -90,16 +138,16 @@
     fill: t.$color-text-muted;
   }
 
-  &:hover:not(:disabled) &__text {
+  &:not(&--compact):hover:not(:disabled) &__text {
     color: transparent;
   }
 
-  &:hover:not(:disabled) &__icon {
+  &:not(&--compact):hover:not(:disabled) &__icon {
     width: 150px;
     border-left: none;
   }
 
-  &:active:not(:disabled) &__icon svg {
+  &:not(&--compact):active:not(:disabled) &__icon svg {
     transform: scale(0.8);
   }
 }

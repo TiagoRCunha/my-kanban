@@ -15,6 +15,7 @@
         <button class="column__title-button" type="button" (click)="onToggleRename()">
           <h2 class="column__title">{{ column.title }}</h2>
         </button>
+        <span class="column__count">{{ tasks.length }}</span>
       }
     </div>
     <div class="column__header-actions">
@@ -23,16 +24,90 @@
       </button> -->
       <button
         class="column__pin-btn"
+        [class.column__pin-btn--active]="isPinned"
         type="button"
         [attr.aria-label]="isPinned ? 'Unpin column' : 'Pin column'"
         [title]="isPinned ? 'Unpin column' : 'Pin column'"
         (click)="onTogglePin()"
       >
-        {{ isPinned ? '📌' : '📍' }}
+        <svg
+          class="column__pin-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <path
+            d="M5 10.7262L2 11.2308L11.2308 2L10.7262 5M12 16.8814L11.2308 18.9231L18.9231 11.2308L16.8814 12M15.0769 15.0769L21 21M3.53846 9.69231L9.69231 3.53846L9.92825 3.87927C12.0724 6.97631 14.5453 9.83225 17.3038 12.3972L17.5385 12.6154L12.6154 17.5385L12.3972 17.3038C9.83225 14.5453 6.97631 12.0724 3.87927 9.92825L3.53846 9.69231Z"
+            stroke="currentColor"
+            stroke-width="1"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            [attr.fill]="isPinned ? 'currentColor' : 'none'"
+          />
+        </svg>
       </button>
-      <span class="column__count">{{ tasks.length }}</span>
+      <button
+        class="column__delete-btn"
+        type="button"
+        title="Delete column"
+        aria-label="Delete column"
+        (click)="onDeleteColumn()"
+      >
+        <svg
+          class="column__delete-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <path d="M3 6H5H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M19 6V20C19 21.1 18.1 22 17 22H7C5.9 22 5 21.1 5 20V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M8 6V4C8 2.9 8.9 2 10 2H14C15.1 2 16 2.9 16 4V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </div>
   </div>
+
+  @if (showDeleteConfirm) {
+    <div class="column__confirm-backdrop" (click)="onCancelDelete()">
+      <div class="column__confirm-modal" (click)="$event.stopPropagation()">
+        <p class="column__confirm-text">
+          Type <strong>"delete"</strong> to confirm column deletion:
+        </p>
+        <input
+          class="column__confirm-input"
+          type="text"
+          [(ngModel)]="deleteConfirmText"
+          placeholder="delete"
+          autofocus
+          (keydown.enter)="deleteConfirmText === 'delete' && onConfirmDelete()"
+        />
+        <div class="column__confirm-actions">
+          <button
+            class="column__confirm-btn column__confirm-btn--cancel"
+            type="button"
+            (click)="onCancelDelete()"
+          >
+            Cancel
+          </button>
+          <button
+            class="column__confirm-btn column__confirm-btn--confirm"
+            type="button"
+            [disabled]="deleteConfirmText !== 'delete'"
+            (click)="onConfirmDelete()"
+          >
+            Delete column
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 
   <div
     class="column__tasks"
@@ -46,8 +121,14 @@
       <div cdkDrag [cdkDragData]="task" class="column__task-item">
         <app-task-card
           [task]="task"
+          [currentUserId]="currentUserId"
+          [hasDoneColumn]="hasDoneColumn"
+          [hasArchiveColumn]="hasArchiveColumn"
+          [isArchived]="column.archived"
           (openTask)="onOpenTask($event)"
           (deleteTask)="onDeleteTask($event)"
+          (doneTask)="onDoneTask($event)"
+          (archiveTask)="onArchiveTask($event)"
         />
       </div>
     } @empty {
@@ -55,7 +136,15 @@
     }
   </div>
 
-  <button class="column__add-btn" (click)="onAddTask()" type="button">
-    + Add task
-  </button>
+  @if (hasMoreTasks) {
+    <button class="column__load-more-btn" type="button" (click)="onLoadMore()">
+      Load more tasks
+    </button>
+  }
+
+  @if (!column.archived) {
+    <button class="column__add-btn" (click)="onAddTask()" type="button">
+      + Add task
+    </button>
+  }
 </div>

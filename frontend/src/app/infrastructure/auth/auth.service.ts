@@ -8,6 +8,11 @@ import { AuthLoginRequestDto } from './dto/auth-login-request.dto';
 import { AuthRegisterRequestDto } from './dto/auth-register-request.dto';
 import { AuthTokenResponseDto } from './dto/auth-token-response.dto';
 import { AuthUserResponseDto } from './dto/auth-user-response.dto';
+import { ChangePasswordRequestDto } from './dto/change-password-request.dto';
+import { ForgotPasswordRequestDto } from './dto/forgot-password-request.dto';
+import { ResendVerificationRequestDto } from './dto/resend-verification-request.dto';
+import { ResetPasswordRequestDto } from './dto/reset-password-request.dto';
+import { VerifyEmailRequestDto } from './dto/verify-email-request.dto';
 
 export type AuthUser = {
   id: number;
@@ -72,6 +77,41 @@ export class AuthService {
     };
 
     return user;
+  }
+
+  async verifyEmail(token: string): Promise<void> {
+    const body: VerifyEmailRequestDto = { token };
+    await firstValueFrom(
+      this.httpClient.post(`${this.apiBaseUrl}/auth/verify-email`, body),
+    );
+  }
+
+  async resendVerification(email: string): Promise<void> {
+    const body: ResendVerificationRequestDto = { email };
+    await firstValueFrom(
+      this.httpClient.post(`${this.apiBaseUrl}/auth/resend-verification`, body),
+    );
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    const body: ForgotPasswordRequestDto = { email };
+    await firstValueFrom(
+      this.httpClient.post(`${this.apiBaseUrl}/auth/forgot-password`, body),
+    );
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const body: ResetPasswordRequestDto = { token, newPassword };
+    await firstValueFrom(
+      this.httpClient.post(`${this.apiBaseUrl}/auth/reset-password`, body),
+    );
+  }
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    const body: ChangePasswordRequestDto = { currentPassword, newPassword };
+    await firstValueFrom(
+      this.httpClient.put(`${this.apiBaseUrl}/auth/password`, body),
+    );
   }
 
   logout(): void {

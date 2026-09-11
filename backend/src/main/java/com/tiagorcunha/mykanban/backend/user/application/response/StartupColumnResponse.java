@@ -9,5 +9,7 @@ public record StartupColumnResponse(
     @Schema(example = "Backlog")
     String title,
     @Schema(example = "0")
-    Integer position) {
+    Integer position,
+    @Schema(description = "Column type: NORMAL, ARCHIVE, or DONE", example = "NORMAL")
+    String type) {
 }

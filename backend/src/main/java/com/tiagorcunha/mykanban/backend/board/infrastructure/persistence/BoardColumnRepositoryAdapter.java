@@ -23,6 +23,11 @@ public class BoardColumnRepositoryAdapter implements BoardColumnRepositoryPort {
   }
 
   @Override
+  public Optional<BoardColumn> findByBoardIdAndIsDoneTrue(Long boardId) {
+    return repository.findByBoardIdAndIsDoneTrue(boardId);
+  }
+
+  @Override
   public Optional<BoardColumn> findById(Long id) {
     return repository.findById(id);
   }

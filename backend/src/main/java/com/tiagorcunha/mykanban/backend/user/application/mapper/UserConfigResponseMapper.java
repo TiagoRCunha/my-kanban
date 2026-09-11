@@ -21,6 +21,7 @@ public final class UserConfigResponseMapper {
         config.getId(),
         config.getUser().getId(),
         config.getDarkMode(),
+        config.getDefaultTaskLimit(),
         startupColumns != null
             ? startupColumns.stream().map(StartupColumnResponseMapper::toResponse).toList()
             : Collections.emptyList(),

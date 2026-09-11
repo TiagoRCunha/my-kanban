@@ -31,7 +31,7 @@ export class ThemeService {
     localStorage.setItem(DARK_MODE_KEY, JSON.stringify(this.isDarkMode));
 
     firstValueFrom(
-      this.httpClient.put(`${this.apiBaseUrl}/users/${userId}/config`, {
+      this.httpClient.patch(`${this.apiBaseUrl}/users/${userId}/config`, {
         darkMode: this.isDarkMode,
       }),
     ).catch(() => {});

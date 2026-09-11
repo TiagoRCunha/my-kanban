@@ -25,7 +25,12 @@ export class HttpColumnRepository {
   }
 
   public create(input: CreateColumnInput & { boardId: number }): Promise<Column> {
-    const command = Column.toCommand(input);
+    const command = Column.toCommand({
+      title: input.title,
+      position: input.position,
+      archived: input.archived,
+      isDone: input.isDone,
+    });
     const dto: BoardColumnRequestDto = ColumnMapper.toRequestDto(command);
 
     return firstValueFrom(
@@ -42,7 +47,12 @@ export class HttpColumnRepository {
     id: number,
     input: UpdateColumnInput & { boardId: number },
   ): Promise<Column> {
-    const command = Column.toCommand(input);
+    const command = Column.toCommand({
+      title: input.title,
+      position: input.position,
+      archived: input.archived,
+      isDone: input.isDone,
+    });
     const dto: BoardColumnRequestDto = ColumnMapper.toRequestDto(command);
 
     return firstValueFrom(

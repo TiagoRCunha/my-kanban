@@ -19,6 +19,7 @@ export class CustomTagRow {
   @Input() color = '#0052CC';
   @Input() position = 0;
   @Input() disabled = false;
+  @Input() isNew = false;
 
   @Output() save = new EventEmitter<CustomTagFormValue>();
   @Output() remove = new EventEmitter<void>();
@@ -37,6 +38,9 @@ export class CustomTagRow {
   }
 
   get hasChanges(): boolean {
+    if (this.isNew) {
+      return this.editedName.trim().length > 0 || this.editedColor !== this.color;
+    }
     return this.editedName.trim() !== this.name || this.editedColor !== this.color;
   }
 
@@ -60,6 +64,10 @@ export class CustomTagRow {
   }
 
   onCancel(): void {
+    if (this.isNew) {
+      this.remove.emit();
+      return;
+    }
     this.editedName = this.name;
     this.editedColor = this.color;
   }

@@ -19,6 +19,7 @@ import com.tiagorcunha.mykanban.backend.board.application.response.TaskResponse;
 import com.tiagorcunha.mykanban.backend.board.domain.model.Board;
 import com.tiagorcunha.mykanban.backend.board.domain.model.BoardColumn;
 import com.tiagorcunha.mykanban.backend.board.domain.model.Task;
+import com.tiagorcunha.mykanban.backend.board.domain.model.TaskPriority;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ConflictException;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ResourceNotFoundException;
 import com.tiagorcunha.mykanban.backend.common.infrastructure.security.AuthenticatedUserProvider;
@@ -81,6 +82,7 @@ public class TaskUseCaseHandler implements TaskUseCase {
     task.setTag(resolveTag(command.tagId()));
     task.setDueDate(command.dueDate());
     task.setEstimatedHours(command.estimatedHours());
+    task.setPriority(command.priority() != null ? command.priority() : TaskPriority.MEDIUM);
     task.setPosition(command.position());
     task.setBoardColumn(boardColumn);
     task.setReportedBy(currentUser);
@@ -105,8 +107,8 @@ public class TaskUseCaseHandler implements TaskUseCase {
     task.setTag(resolveTag(command.tagId()));
     task.setDueDate(command.dueDate());
     task.setEstimatedHours(command.estimatedHours());
+    task.setPriority(command.priority() != null ? command.priority() : task.getPriority());
     task.setPosition(command.position());
-    task.setReportedBy(task.getReportedBy());
     task.setAssignees(resolveAssignees(command.assigneeIds()));
     task.setUpdatedAt(LocalDateTime.now());
     return TaskResponseMapper.toResponse(taskRepository.save(task));
@@ -159,6 +161,26 @@ public class TaskUseCaseHandler implements TaskUseCase {
 
   @Override
   @Transactional
+  public TaskResponse markAsDone(Long taskId) {
+    User currentUser = authenticatedUserProvider.getAuthenticatedUser();
+    Task task = taskRepository.findById(taskId)
+        .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+    boardAuthorizationService.assertCanManageTask(task, currentUser);
+
+    Board board = task.getBoardColumn().getBoard();
+    BoardColumn doneColumn = boardColumnRepository.findByBoardIdAndIsDoneTrue(board.getId())
+        .orElseThrow(() -> new ResourceNotFoundException("No done column found in this board"));
+
+    task.setDone(true);
+    task.setBoardColumn(doneColumn);
+    List<Task> doneTasks = taskRepository.findByColumnId(doneColumn.getId());
+    task.setPosition(doneTasks.size());
+    task.setUpdatedAt(LocalDateTime.now());
+    return TaskResponseMapper.toResponse(taskRepository.save(task));
+  }
+
+  @Override
+  @Transactional
   public void move(Long taskId, MoveTaskCommand command) {
     User currentUser = authenticatedUserProvider.getAuthenticatedUser();
     Task task = taskRepository.findById(taskId)
@@ -176,6 +198,12 @@ public class TaskUseCaseHandler implements TaskUseCase {
     }
 
     task.setBoardColumn(targetColumn);
+    // Auto mark done/undone based on target column type
+    if (targetColumn.getIsDone() != null && targetColumn.getIsDone()) {
+      task.setDone(true);
+    } else {
+      task.setDone(false);
+    }
     // Save at a temporary high position to avoid unique constraint violations
     // reorderColumnTasks will later assign the correct position
     task.setPosition(Integer.MAX_VALUE / 2);

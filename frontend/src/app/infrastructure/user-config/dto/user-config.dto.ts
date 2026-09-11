@@ -9,12 +9,14 @@ export type StartupColumnResponseDto = {
   id: number;
   title: string;
   position: number;
+  type: string;
 };
 
 export type UserConfigResponseDto = {
   id: number;
   userId: number;
   darkMode: boolean;
+  defaultTaskLimit: number;
   startupColumns: StartupColumnResponseDto[];
   customTags: CustomTagResponseDto[];
   createdAt: string;
@@ -24,6 +26,7 @@ export type UserConfigResponseDto = {
 export type SaveStartupColumnRequestDto = {
   title: string;
   position: number;
+  type: string;
 };
 
 export type SaveCustomTagRequestDto = {

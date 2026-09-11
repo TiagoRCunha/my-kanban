@@ -1,4 +1,4 @@
-# my-kanban
+# My Kanban
 
 <span style="display: flex;
         align-items: center;
@@ -41,8 +41,8 @@ By combining a realistic business domain with a modern technology stack and a st
 - [x] Add test to the project and starts to use TDD
 - [x] Uses Postgres with migration/seeders pattern
 - [x] Uses token JWT for authentication and authorization
-- [ ] Adds personalization to user such as settings and darkmode
-- [ ] Send email of create account
+- [x] Adds personalization to user such as settings and darkmode
+- [x] Send email of create account
 - [ ] Manage more than one role type users
 - [ ] Have a full operation project
 - [ ] Uses CI/CD

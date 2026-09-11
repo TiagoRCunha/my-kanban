@@ -16,6 +16,7 @@ export type TaskSnapshot = {
   dueDate: string | null;
   estimatedHours: number | null;
   position: number;
+  done: boolean;
   reportedById: number;
   columnId: number;
   assigneeIds: number[];
@@ -68,7 +69,9 @@ export class Task {
     public readonly dueDate: string,
     public readonly estimatedHours: number,
     public readonly position: number,
+    public readonly done: boolean,
     public readonly reportedById: number,
+    public readonly columnId: number,
     public readonly assigneeIds: number[],
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
@@ -89,7 +92,9 @@ export class Task {
       snapshot.dueDate?.trim() ?? '',
       snapshot.estimatedHours ?? 0,
       position,
+      snapshot.done ?? false,
       snapshot.reportedById,
+      snapshot.columnId,
       snapshot.assigneeIds,
       Task.ensureDate(snapshot.createdAt, 'createdAt'),
       Task.ensureDate(snapshot.updatedAt, 'updatedAt'),

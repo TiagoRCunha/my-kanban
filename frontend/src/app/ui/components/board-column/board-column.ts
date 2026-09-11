@@ -9,6 +9,8 @@ export type ColumnData = {
   title: string;
   position: number;
   pinned: boolean;
+  archived: boolean;
+  isDone: boolean;
 };
 
 @Component({
@@ -23,14 +25,24 @@ export class BoardColumn {
   @Input() tasks: TaskCardData[] = [];
   @Input() dropListId = '';
   @Input() connectedDropListIds: string[] = [];
+  @Input() currentUserId: number | null = null;
+  @Input() hasDoneColumn = false;
+  @Input() hasArchiveColumn = false;
+  @Input() hasMoreTasks = false;
   @Output() taskDropped = new EventEmitter<CdkDragDrop<TaskCardData[]>>();
   @Output() createTask = new EventEmitter<number>();
   @Output() openTask = new EventEmitter<number>();
   @Output() deleteTask = new EventEmitter<number>();
+  @Output() doneTask = new EventEmitter<number>();
+  @Output() archiveTask = new EventEmitter<number>();
   @Output() togglePin = new EventEmitter<void>();
   @Output() renameColumn = new EventEmitter<string>();
+  @Output() loadMoreTasks = new EventEmitter<void>();
+  @Output() deleteColumn = new EventEmitter<void>();
   isRenaming = false;
   renameTitle = '';
+  showDeleteConfirm = false;
+  deleteConfirmText = '';
 
   onDrop(event: CdkDragDrop<TaskCardData[]>): void {
     this.taskDropped.emit(event);
@@ -46,6 +58,14 @@ export class BoardColumn {
 
   onOpenTask(taskId: number): void {
     this.openTask.emit(taskId);
+  }
+
+  onDoneTask(taskId: number): void {
+    this.doneTask.emit(taskId);
+  }
+
+  onArchiveTask(taskId: number): void {
+    this.archiveTask.emit(taskId);
   }
 
   onTogglePin(): void {
@@ -72,5 +92,29 @@ export class BoardColumn {
 
     this.renameColumn.emit(title);
     this.isRenaming = false;
+  }
+
+  onLoadMore(): void {
+    this.loadMoreTasks.emit();
+  }
+
+  onDeleteColumn(): void {
+    this.showDeleteConfirm = true;
+    this.deleteConfirmText = '';
+  }
+
+  onConfirmDelete(): void {
+    if (this.deleteConfirmText !== 'delete') {
+      return;
+    }
+
+    this.deleteColumn.emit();
+    this.showDeleteConfirm = false;
+    this.deleteConfirmText = '';
+  }
+
+  onCancelDelete(): void {
+    this.showDeleteConfirm = false;
+    this.deleteConfirmText = '';
   }
 }

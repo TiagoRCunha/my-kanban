@@ -23,16 +23,16 @@ public class AdminUserSeeder implements ApplicationRunner {
   private final UserRepositoryPort userRepository;
   private final PasswordEncoder passwordEncoder;
 
-  @Value("${app.seed.admin.enabled:true}")
+  @Value("${app.seed.admin.enabled:false}")
   private boolean enabled;
 
   @Value("${app.seed.admin.full-name:Tiago Admin}")
   private String fullName;
 
-  @Value("${app.seed.admin.email:tiago.r.c.sn@hotmail.com}")
+  @Value("${app.seed.admin.email:}")
   private String email;
 
-  @Value("${app.seed.admin.password:mypassword}")
+  @Value("${app.seed.admin.password:}")
   private String password;
 
   public AdminUserSeeder(UserRepositoryPort userRepository, PasswordEncoder passwordEncoder) {

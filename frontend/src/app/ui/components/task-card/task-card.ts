@@ -10,6 +10,7 @@ export type TaskCardData = {
   dueDate: string;
   estimatedHours: number;
   position: number;
+  done: boolean;
   reportedById: number;
   assigneeIds: number[];
 };
@@ -21,8 +22,57 @@ export type TaskCardData = {
 })
 export class TaskCard {
   @Input() task!: TaskCardData;
+  @Input() currentUserId: number | null = null;
+  @Input() hasDoneColumn = false;
+  @Input() hasArchiveColumn = false;
+  @Input() isArchived = false;
   @Output() openTask = new EventEmitter<number>();
   @Output() deleteTask = new EventEmitter<number>();
+  @Output() doneTask = new EventEmitter<number>();
+  @Output() archiveTask = new EventEmitter<number>();
+
+  get isOverdue(): boolean {
+    if (this.task.done || !this.task.dueDate) {
+      return false;
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(this.task.dueDate);
+    due.setHours(0, 0, 0, 0);
+    return due < today;
+  }
+
+  get isOwner(): boolean {
+    return this.currentUserId !== null && this.task.reportedById === this.currentUserId;
+  }
+
+  get showDoneButton(): boolean {
+    return !this.task.done && this.isOwner && this.hasDoneColumn && !this.isArchived;
+  }
+
+  get showArchiveButton(): boolean {
+    return !this.isArchived && !this.task.done && this.hasArchiveColumn && this.isOwner;
+  }
+
+  getDueDateLabel(dueDate: string): string {
+    const due = new Date(dueDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    due.setHours(0, 0, 0, 0);
+
+    if(due < today) {
+      if (due.getTime() === today.getTime() - 24 * 60 * 60 * 1000) {
+        return 'Yesterday';
+      } else {
+        // "Overdue by ... days" label
+        const diffTime = Math.abs(today.getTime() - due.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return `Overdue by ${diffDays} day${diffDays > 1 ? 's' : ''}`;
+      }
+    } else {
+      return ""
+    }
+  }
 
   onOpenTask(): void {
     this.openTask.emit(this.task.id);
@@ -31,5 +81,15 @@ export class TaskCard {
   onDeleteTask(event: MouseEvent): void {
     event.stopPropagation();
     this.deleteTask.emit(this.task.id);
+  }
+
+  onDoneTask(event: MouseEvent): void {
+    event.stopPropagation();
+    this.doneTask.emit(this.task.id);
+  }
+
+  onArchiveTask(event: MouseEvent): void {
+    event.stopPropagation();
+    this.archiveTask.emit(this.task.id);
   }
 }

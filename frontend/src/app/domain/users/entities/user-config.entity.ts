@@ -6,6 +6,7 @@ export type UserConfigSnapshot = {
   id: number;
   userId: number;
   darkMode: boolean;
+  defaultTaskLimit: number;
   startupColumns: StartupColumnSnapshot[];
   customTags: CustomTagSettingsSnapshot[];
   createdAt: string;
@@ -16,6 +17,7 @@ type StartupColumnSnapshot = {
   id: number;
   title: string;
   position: number;
+  type: string;
 };
 
 type CustomTagSettingsSnapshot = {
@@ -30,6 +32,7 @@ export class UserConfig {
     public readonly id: number,
     public readonly userId: number,
     public readonly darkMode: boolean,
+    public readonly defaultTaskLimit: number,
     public readonly startupColumns: StartupColumn[],
     public readonly customTags: CustomTagSettings[],
     public readonly createdAt: Date,
@@ -44,6 +47,7 @@ export class UserConfig {
       snapshot.id,
       snapshot.userId,
       snapshot.darkMode,
+      snapshot.defaultTaskLimit,
       snapshot.startupColumns.map((sc) => StartupColumn.fromSnapshot(sc)),
       snapshot.customTags.map((ct) => CustomTagSettings.fromSnapshot(ct)),
       DomainValidators.isoDate(snapshot.createdAt, 'createdAt'),
@@ -56,6 +60,20 @@ export class UserConfig {
       this.id,
       this.userId,
       darkMode,
+      this.defaultTaskLimit,
+      this.startupColumns,
+      this.customTags,
+      this.createdAt,
+      this.updatedAt,
+    );
+  }
+
+  public withDefaultTaskLimit(defaultTaskLimit: number): UserConfig {
+    return new UserConfig(
+      this.id,
+      this.userId,
+      this.darkMode,
+      defaultTaskLimit,
       this.startupColumns,
       this.customTags,
       this.createdAt,
@@ -68,6 +86,7 @@ export class UserConfig {
       this.id,
       this.userId,
       this.darkMode,
+      this.defaultTaskLimit,
       columns,
       this.customTags,
       this.createdAt,
@@ -80,6 +99,7 @@ export class UserConfig {
       this.id,
       this.userId,
       this.darkMode,
+      this.defaultTaskLimit,
       this.startupColumns,
       tags,
       this.createdAt,

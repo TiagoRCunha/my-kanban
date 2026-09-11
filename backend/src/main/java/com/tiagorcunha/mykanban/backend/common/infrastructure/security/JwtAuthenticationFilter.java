@@ -50,8 +50,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     try {
       String email = jwtTokenService.extractSubject(token);
       Long userId = jwtTokenService.extractUserId(token);
+      TokenPurpose purpose = jwtTokenService.extractPurpose(token);
 
-      if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+      if (email != null
+          && purpose == TokenPurpose.ACCESS
+          && SecurityContextHolder.getContext().getAuthentication() == null) {
         User user = userId == null ? null : userRepository.findById(userId).orElse(null);
         boolean tokenValid = user != null
             && jwtTokenService.isTokenValid(token, user.getEmail(), user.getId())

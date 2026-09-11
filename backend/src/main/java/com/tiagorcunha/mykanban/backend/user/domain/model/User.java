@@ -31,6 +31,9 @@ public class User {
   @Column(name = "avatar_url", length = 255)
   private String avatarUrl;
 
+  @Column(name = "email_verified", nullable = false)
+  private boolean emailVerified = true;
+
   @Enumerated(EnumType.STRING)
   @Column(name = "role", nullable = false, length = 20)
   private UserRole role = UserRole.USER;
@@ -79,6 +82,14 @@ public class User {
 
   public void setAvatarUrl(String avatarUrl) {
     this.avatarUrl = avatarUrl;
+  }
+
+  public boolean isEmailVerified() {
+    return emailVerified;
+  }
+
+  public void setEmailVerified(boolean emailVerified) {
+    this.emailVerified = emailVerified;
   }
 
   public UserRole getRole() {

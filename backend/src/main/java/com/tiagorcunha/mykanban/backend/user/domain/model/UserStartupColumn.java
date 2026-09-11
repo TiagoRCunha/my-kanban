@@ -33,6 +33,9 @@ public class UserStartupColumn {
   @Column(nullable = false)
   private Integer position;
 
+  @Column(nullable = false, length = 20)
+  private String type = "NORMAL";
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
 
@@ -66,6 +69,14 @@ public class UserStartupColumn {
 
   public void setPosition(Integer position) {
     this.position = position;
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
   }
 
   public LocalDateTime getCreatedAt() {

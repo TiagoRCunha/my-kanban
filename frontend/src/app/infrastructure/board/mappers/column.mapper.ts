@@ -7,15 +7,20 @@ export class ColumnMapper {
       id: dto.id,
       title: dto.title,
       position: dto.position,
+      archived: dto.archived,
+      isDone: dto.isDone,
       createdAt: dto.createdAt,
       updatedAt: dto.createdAt,
     });
   }
 
   public static toRequestDto(command: ColumnCommand): BoardColumnRequestDto {
-    return {
+    const dto: BoardColumnRequestDto = {
       title: command.title,
       position: command.position,
+      archived: command.archived ?? false,
+      isDone: command.isDone ?? false,
     };
+    return dto;
   }
 }

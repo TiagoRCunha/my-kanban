@@ -87,4 +87,15 @@ export class HttpTaskRepository {
       ),
     );
   }
+
+  public markAsDone(taskId: number, columnId: number): Promise<Task> {
+    return firstValueFrom(
+      this.httpClient
+        .patch<TaskResponseDto>(
+          `${this.apiBaseUrl}/columns/${columnId}/tasks/${taskId}/done`,
+          {},
+        )
+        .pipe(map((task) => TaskMapper.toDomain(task))),
+    );
+  }
 }

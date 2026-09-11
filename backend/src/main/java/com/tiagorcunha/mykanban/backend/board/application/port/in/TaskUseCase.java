@@ -20,4 +20,6 @@ public interface TaskUseCase {
   void reorder(Long columnId, List<ReorderItemCommand> items);
 
   void move(Long taskId, MoveTaskCommand command);
+
+  TaskResponse markAsDone(Long taskId);
 }

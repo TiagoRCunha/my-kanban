@@ -22,10 +22,6 @@ export class Navbar {
     return this.themeService.darkMode;
   }
 
-  get themeIcon(): string {
-    return this.themeService.darkMode ? '🌙' : '☀';
-  }
-
   async onToggleDarkMode(): Promise<void> {
     const userId = this.authService.user?.id;
     if (userId) {

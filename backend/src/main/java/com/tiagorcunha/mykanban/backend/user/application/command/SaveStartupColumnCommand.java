@@ -7,5 +7,7 @@ public record SaveStartupColumnCommand(
     @Schema(description = "Column title", example = "Backlog")
     String title,
     @Schema(description = "Column position (0-based)", example = "0")
-    Integer position) {
+    Integer position,
+    @Schema(description = "Column type: NORMAL, ARCHIVE, or DONE", example = "NORMAL")
+    String type) {
 }

@@ -165,4 +165,18 @@ public class TaskController {
             .toList());
     taskUseCase.move(taskId, command);
   }
+
+  @PatchMapping("/{taskId}/done")
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(summary = "Mark task as done and move to the done column")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Task marked as done"),
+      @ApiResponse(
+          responseCode = "404",
+          description = "Task or done column not found",
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+  })
+  public TaskResponse markAsDone(@PathVariable Long taskId) {
+    return taskUseCase.markAsDone(taskId);
+  }
 }

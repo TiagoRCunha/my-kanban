@@ -41,6 +41,13 @@
     font-size: t.$font-size-sm;
   }
 
+  &__resend {
+    margin: -#{t.$spacing-2} 0 t.$spacing-4;
+    font-size: t.$font-size-sm;
+    color: t.$color-text-muted;
+    text-align: center;
+  }
+
   &__form {
     display: flex;
     flex-direction: column;

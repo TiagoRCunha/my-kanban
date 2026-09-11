@@ -26,6 +26,12 @@ public class BoardColumn {
   @Column(nullable = false)
   private Integer position;
 
+  @Column(nullable = false)
+  private Boolean archived = false;
+
+  @Column(name = "is_done", nullable = false)
+  private Boolean isDone = false;
+
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "board_id", nullable = false)
   private Board board;
@@ -55,6 +61,22 @@ public class BoardColumn {
 
   public void setPosition(Integer position) {
     this.position = position;
+  }
+
+  public Boolean getArchived() {
+    return archived;
+  }
+
+  public void setArchived(Boolean archived) {
+    this.archived = archived;
+  }
+
+  public Boolean getIsDone() {
+    return isDone;
+  }
+
+  public void setIsDone(Boolean isDone) {
+    this.isDone = isDone;
   }
 
   public Board getBoard() {

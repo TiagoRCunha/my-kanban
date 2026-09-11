@@ -19,6 +19,8 @@ public record AuthRegisterRequest(
     @Size(max = 255) String avatarUrl) {
 
   public SaveUserCommand toCommand() {
-    return new SaveUserCommand(fullName, email, password, avatarUrl);
+    // Self-registered users start unverified: they must confirm their email
+    // via the link sent after registration before they can sign in.
+    return new SaveUserCommand(fullName, email, password, avatarUrl, false);
   }
 }

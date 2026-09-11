@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verify your email</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f5f7; font-family: Arial, Helvetica, sans-serif; color: #172b4d;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f4f5f7; padding: 32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 480px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(9, 30, 66, 0.08);">
+          <tr>
+            <td style="background-color: #0052cc; padding: 24px 32px;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: bold;">MyKanban</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 32px;">
+              <h2 style="margin: 0 0 12px; font-size: 18px;">Welcome, <span th:text="${fullName}">there</span>!</h2>
+              <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6;">
+                Thanks for creating an account. To activate it and start using your boards,
+                please verify your email address by clicking the button below.
+              </p>
+              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 24px 0;">
+                <tr>
+                  <td style="background-color: #0052cc; border-radius: 4px;">
+                    <a th:href="${link}" style="display: inline-block; padding: 12px 24px; color: #ffffff; font-size: 14px; font-weight: bold; text-decoration: none;">Verify my email</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6;">
+                If the button does not work, copy and paste this link into your browser:
+              </p>
+              <p style="margin: 0 0 16px; font-size: 12px; word-break: break-all; color: #42526e;">
+                <a th:href="${link}" th:text="${link}" style="color: #0052cc;"></a>
+              </p>
+              <p style="margin: 0; font-size: 12px; color: #7a869a;">
+                This link expires in 24 hours. If you did not create this account, you can safely ignore this email.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

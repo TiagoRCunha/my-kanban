@@ -18,6 +18,8 @@ describe('BoardColumn (unit)', () => {
       title: 'To Do',
       position: 0,
       pinned: false,
+      archived: false,
+      isDone: false,
     };
 
     component.tasks = [
@@ -31,6 +33,7 @@ describe('BoardColumn (unit)', () => {
         dueDate: '2026-07-28',
         estimatedHours: 3,
         position: 0,
+        done: false,
         reportedById: 1,
         assigneeIds: [1],
       },

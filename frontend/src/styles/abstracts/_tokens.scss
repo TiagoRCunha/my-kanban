@@ -4,32 +4,46 @@
 :root,
 [data-theme="light"] {
   --color-bg: #f4f5f7;
+  --color-primary: #4da6ff;
+  --color-primary-hover: #80c1ff;
   --color-surface: #ffffff;
   --color-surface-alt: #ebecf0;
   --color-border: #dfe1e6;
-  --color-primary: #0052cc;
-  --color-primary-hover: #0747a6;
   --color-danger: #de350b;
   --color-danger-hover: #bf2600;
   --color-success: #00a600;
   --color-success-hover: #008f00;
   --color-text: #172b4d;
   --color-text-muted: #5e6c84;
+  --color-overdue-bg: #ffebee;
+  --color-overdue-text: #c62828;
+  --color-overdue-border: #ef5350;
+  --color-done-bg: #e8f5e9;
+  --color-done-text: #2e7d32;
+  --color-done-border: #66bb6a;
+  --color-done-bg-hover: #c8e6c9;
 }
 
 [data-theme="dark"] {
   --color-bg: #1a1a2e;
+  --color-border: #2a2a4a;
+  --color-primary: #0052cc;
+  --color-primary-hover: #0747a6;
   --color-surface: #16213e;
   --color-surface-alt: #0f3460;
-  --color-border: #2a2a4a;
-  --color-primary: #4da6ff;
-  --color-primary-hover: #80c1ff;
   --color-danger: #ff6b5a;
   --color-danger-hover: #ff8a7a;
   --color-success: #4caf50;
   --color-success-hover: #66bb6a;
   --color-text: #e0e0e0;
   --color-text-muted: #a0a0b0;
+  --color-overdue-bg: #3e1a1a;
+  --color-overdue-text: #ef9a9a;
+  --color-overdue-border: #c62828;
+  --color-done-bg: #1a3e1a;
+  --color-done-text: #a5d6a7;
+  --color-done-border: #388e3c;
+  --color-done-bg-hover: #2e5e2e;
 }
 
 // SCSS variables that reference CSS custom properties (for use in components)
@@ -45,6 +59,13 @@ $color-success: var(--color-success);
 $color-success-hover: var(--color-success-hover);
 $color-text: var(--color-text);
 $color-text-muted: var(--color-text-muted);
+$color-overdue-bg: var(--color-overdue-bg);
+$color-overdue-text: var(--color-overdue-text);
+$color-overdue-border: var(--color-overdue-border);
+$color-done-bg: var(--color-done-bg);
+$color-done-text: var(--color-done-text);
+$color-done-border: var(--color-done-border);
+$color-done-bg-hover: var(--color-done-bg-hover);
 
 // ─── Spacing (4px base) ───────────────────────────────────────────────────────
 

@@ -6,7 +6,7 @@ import { BoardLayout } from './board-layout';
 import { ColumnController } from '../column-controller';
 import { HttpColumnRepository } from '../../../infrastructure/board/adapters/http-column.repository';
 import { HttpTaskRepository } from '../../../infrastructure/board/adapters/task-http.repository';
-import { HttpUserConfigRepository } from '../../../infrastructure/user-config/adapters/http-user-config.repository';
+import { HttpUserConfigAdapter } from '../../../infrastructure/user-config/adapters/http-user-config.adapter';
 import { AuthService } from '../../../infrastructure/auth/auth.service';
 import { Task } from '../../../domain/board/entities/task.entity';
 
@@ -39,6 +39,7 @@ describe('BoardLayout (integration)', () => {
           estimatedHours: input.estimatedHours,
           position: input.position,
           columnId: input.columnId,
+          done: false,
           reportedById: 1,
           assigneeIds: input.assigneeIds,
           createdAt: new Date().toISOString(),
@@ -59,6 +60,7 @@ describe('BoardLayout (integration)', () => {
           estimatedHours: input.estimatedHours,
           position: input.position,
           columnId: input.columnId,
+          done: false,
           reportedById: 1,
           assigneeIds: input.assigneeIds,
           createdAt: new Date().toISOString(),
@@ -69,12 +71,15 @@ describe('BoardLayout (integration)', () => {
     taskRepoSpy.delete.and.returnValue(Promise.resolve());
     taskRepoSpy.reorder.and.returnValue(Promise.resolve());
     taskRepoSpy.moveTask.and.returnValue(Promise.resolve());
-    const userConfigRepoSpy = jasmine.createSpyObj('HttpUserConfigRepository', ['getCustomTags']);
-    userConfigRepoSpy.getCustomTags.and.resolveTo([
-      { id: 1, name: 'Low', color: '#2e7d32' },
-      { id: 2, name: 'Medium', color: '#ed6c02' },
-      { id: 3, name: 'High', color: '#d32f2f' },
-    ]);
+    const userConfigAdapterSpy = jasmine.createSpyObj('HttpUserConfigAdapter', ['getConfig']);
+    userConfigAdapterSpy.getConfig.and.resolveTo({
+      customTags: [
+        { id: 1, name: 'Low', color: '#2e7d32', position: 1 },
+        { id: 2, name: 'Medium', color: '#ed6c02', position: 2 },
+        { id: 3, name: 'High', color: '#d32f2f', position: 3 },
+      ],
+      defaultTaskLimit: 10,
+    });
     const authServiceSpy = jasmine.createSpyObj('AuthService', [], { user: { id: 1 } });
 
     await TestBed.configureTestingModule({
@@ -82,7 +87,7 @@ describe('BoardLayout (integration)', () => {
       providers: [
         { provide: HttpColumnRepository, useValue: columnRepoSpy },
         { provide: HttpTaskRepository, useValue: taskRepoSpy },
-        { provide: HttpUserConfigRepository, useValue: userConfigRepoSpy },
+        { provide: HttpUserConfigAdapter, useValue: userConfigAdapterSpy },
         { provide: AuthService, useValue: authServiceSpy },
       ],
     }).compileComponents();
@@ -98,6 +103,8 @@ describe('BoardLayout (integration)', () => {
         title: 'To Do',
         position: 1,
         pinned: false,
+        archived: false,
+        isDone: false,
         tasks: [
           {
             id: 1,
@@ -109,6 +116,7 @@ describe('BoardLayout (integration)', () => {
             dueDate: '2026-07-20',
             estimatedHours: 4,
             position: 0,
+            done: false,
             reportedById: 1,
             assigneeIds: [1, 2],
           },
@@ -119,6 +127,8 @@ describe('BoardLayout (integration)', () => {
         title: 'In Progress',
         position: 2,
         pinned: false,
+        archived: false,
+        isDone: false,
         tasks: [
           {
             id: 2,
@@ -130,6 +140,7 @@ describe('BoardLayout (integration)', () => {
             dueDate: '2026-07-22',
             estimatedHours: 6,
             position: 0,
+            done: false,
             reportedById: 1,
             assigneeIds: [1],
           },
@@ -140,6 +151,8 @@ describe('BoardLayout (integration)', () => {
         title: 'Done',
         position: 3,
         pinned: false,
+        archived: false,
+        isDone: true,
         tasks: [
           {
             id: 3,
@@ -151,6 +164,7 @@ describe('BoardLayout (integration)', () => {
             dueDate: '2026-07-25',
             estimatedHours: 3,
             position: 0,
+            done: true,
             reportedById: 1,
             assigneeIds: [],
           },
@@ -159,7 +173,17 @@ describe('BoardLayout (integration)', () => {
     ];
     component.isLoading = false;
 
+    // The component reloads columns/tasks on first change detection (boardId is set),
+    // so make the repository mocks reproduce the seeded data to keep the tests intact.
+    columnRepoSpy.findByBoardId.and.callFake(() =>
+      Promise.resolve(component.columns.map(({ tasks, ...column }) => column)),
+    );
+    taskRepoSpy.findByColumnId.and.callFake((columnId: number) =>
+      Promise.resolve(component.columns.find((column) => column.id === columnId)?.tasks ?? []),
+    );
+
     fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('renders three initial columns', () => {
@@ -329,6 +353,7 @@ describe('BoardLayout (integration)', () => {
       dueDate: '',
       estimatedHours: 0,
       position: 1,
+      done: false,
       reportedById: 1,
       assigneeIds: [],
     });
@@ -374,5 +399,117 @@ describe('BoardLayout (integration)', () => {
       jasmine.any(Array),
       jasmine.any(Array),
     );
+  });
+
+  it('persists same-column task reorder when the drop list exposes a sliced task array', () => {
+    const taskRepoSpy = TestBed.inject(HttpTaskRepository) as jasmine.SpyObj<HttpTaskRepository>;
+    const sourceColumn = component.columns[0];
+
+    sourceColumn.tasks.push({
+      id: 10,
+      title: 'Second task',
+      description: '',
+      tagId: null,
+      tagName: '',
+      tagColor: '',
+      dueDate: '',
+      estimatedHours: 0,
+      position: 1,
+      done: false,
+      reportedById: 1,
+      assigneeIds: [],
+    });
+
+    // Mimic getVisibleTasks: the drop list data is a separate slice reference.
+    const visibleTasks = sourceColumn.tasks.slice(0, 2);
+    const container = { id: 'column-drop-list-1', data: visibleTasks };
+    const mockEvent = {
+      previousIndex: 0,
+      currentIndex: 1,
+      previousContainer: container,
+      container,
+      item: { data: sourceColumn.tasks[0] },
+    } as any;
+
+    component.onTaskDrop(mockEvent);
+
+    expect(taskRepoSpy.reorder).toHaveBeenCalledWith(sourceColumn.id, [
+      { id: 10, position: 0 },
+      { id: 1, position: 1 },
+    ]);
+  });
+
+  it('persists cross-column task move when columns expose sliced task arrays', () => {
+    const taskRepoSpy = TestBed.inject(HttpTaskRepository) as jasmine.SpyObj<HttpTaskRepository>;
+    const sourceColumn = component.columns[0];
+    const targetColumn = component.columns[1];
+    const movedTask = sourceColumn.tasks[0];
+
+    const mockEvent = {
+      previousIndex: 0,
+      currentIndex: 0,
+      previousContainer: { id: 'column-drop-list-1', data: sourceColumn.tasks.slice(0) },
+      container: { id: 'column-drop-list-2', data: targetColumn.tasks.slice(0) },
+      item: { data: movedTask },
+    } as any;
+
+    component.onTaskDrop(mockEvent);
+
+    expect(taskRepoSpy.moveTask).toHaveBeenCalledWith(
+      movedTask.id,
+      sourceColumn.id,
+      targetColumn.id,
+      0,
+      jasmine.any(Array),
+      jasmine.any(Array),
+    );
+  });
+
+  it('removes the moved task from the source column and keeps hidden tasks on a cross-column move', () => {
+    const taskRepoSpy = TestBed.inject(HttpTaskRepository) as jasmine.SpyObj<HttpTaskRepository>;
+    const sourceColumn = component.columns[0];
+    const targetColumn = component.columns[1];
+    const movedTask = sourceColumn.tasks[0];
+
+    // The target has a paged-out task that is not part of the drop list slice.
+    targetColumn.tasks = [
+      ...targetColumn.tasks,
+      {
+        id: 99,
+        title: 'Hidden target task',
+        description: '',
+        tagId: null,
+        tagName: '',
+        tagColor: '',
+        dueDate: '',
+        estimatedHours: 0,
+        position: 1,
+        done: false,
+        reportedById: 1,
+        assigneeIds: [],
+      },
+    ];
+    const targetVisibleSlice = targetColumn.tasks.slice(0, 1);
+
+    const mockEvent = {
+      previousIndex: 0,
+      currentIndex: 0,
+      previousContainer: { id: 'column-drop-list-1', data: sourceColumn.tasks.slice(0) },
+      container: { id: 'column-drop-list-2', data: targetVisibleSlice },
+      item: { data: movedTask },
+    } as any;
+
+    component.onTaskDrop(mockEvent);
+
+    // The moved task must leave the source column entirely.
+    expect(sourceColumn.tasks.map((task) => task.id)).not.toContain(movedTask.id);
+    // The target keeps its hidden task appended after the moved one.
+    expect(targetColumn.tasks.map((task) => task.id)).toEqual([movedTask.id, 2, 99]);
+
+    const movePayload = taskRepoSpy.moveTask.calls.mostRecent().args;
+    const reorderedSourceTasks = movePayload[4] as { id: number; position: number }[];
+    const reorderedTargetTasks = movePayload[5] as { id: number; position: number }[];
+    expect(reorderedSourceTasks.map((task) => task.id)).not.toContain(movedTask.id);
+    expect(reorderedTargetTasks.map((task) => task.id)).toEqual([movedTask.id, 2, 99]);
   });
 });

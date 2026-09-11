@@ -13,6 +13,8 @@ public record UserConfigResponse(
     Long userId,
     @Schema(example = "true")
     Boolean darkMode,
+    @Schema(description = "Default number of tasks shown per column", example = "10")
+    Integer defaultTaskLimit,
     @Schema(description = "Default columns for new boards")
     List<StartupColumnResponse> startupColumns,
     @Schema(description = "Custom priority tags")

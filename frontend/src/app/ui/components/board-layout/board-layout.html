@@ -20,15 +20,23 @@
           <app-board-column
             [column]="column"
             [isPinned]="column.pinned"
-            [tasks]="column.tasks"
+            [tasks]="getVisibleTasks(column)"
+            [hasMoreTasks]="hasMoreTasks(column)"
             [dropListId]="getDropListId(column.id)"
             [connectedDropListIds]="connectedDropListIds"
+            [currentUserId]="getCurrentUserId()"
+            [hasDoneColumn]="hasDoneColumn"
+            [hasArchiveColumn]="hasArchiveColumn"
             (taskDropped)="onTaskDrop($event)"
             (createTask)="onCreateTask(column.id)"
             (openTask)="onOpenTask(column.id, $event)"
             (deleteTask)="onDeleteTask(column.id, $event)"
+            (doneTask)="onDoneTask(column.id, $event)"
+            (archiveTask)="onArchiveTask(column.id, $event)"
             (togglePin)="onToggleColumnPin(column.id)"
             (renameColumn)="onRenameColumn(column.id, $event)"
+            (deleteColumn)="onDeleteColumn(column.id)"
+            (loadMoreTasks)="onLoadMoreTasks(column.id)"
           />
         </div>
       }

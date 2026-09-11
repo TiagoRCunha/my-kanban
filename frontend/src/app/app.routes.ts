@@ -18,6 +18,21 @@ export const routes: Routes = [
       import('./ui/pages/register/register').then((m) => m.RegisterPage),
   },
   {
+    path: 'forgot-password',
+    loadComponent: () =>
+      import('./ui/pages/forgot-password/forgot-password').then((m) => m.ForgotPasswordPage),
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./ui/pages/reset-password/reset-password').then((m) => m.ResetPasswordPage),
+  },
+  {
+    path: 'verify-email',
+    loadComponent: () =>
+      import('./ui/pages/verify-email/verify-email').then((m) => m.VerifyEmailPage),
+  },
+  {
     path: 'boards',
     canActivate: [authGuard],
     loadComponent: () =>

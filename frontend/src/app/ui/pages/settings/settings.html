@@ -15,6 +15,14 @@
     </button>
     <button
       class="settings__tab"
+      [class.settings__tab--active]="activeTab === 'security'"
+      type="button"
+      (click)="setTab('security')"
+    >
+      Security
+    </button>
+    <button
+      class="settings__tab"
       [class.settings__tab--active]="activeTab === 'startup-columns'"
       type="button"
       (click)="setTab('startup-columns')"
@@ -28,6 +36,14 @@
       (click)="setTab('custom-tags')"
     >
       Custom Tags
+    </button>
+    <button
+      class="settings__tab"
+      [class.settings__tab--active]="activeTab === 'columns'"
+      type="button"
+      (click)="setTab('columns')"
+    >
+      Column Types
     </button>
   </nav>
 
@@ -50,6 +66,111 @@
               <span class="settings__card-hint">Switch between light and dark themes</span>
             </div>
             <app-toggle-switch [checked]="isDarkMode" (toggled)="onToggleDarkMode()" />
+          </div>
+        </div>
+
+        <div class="settings__card">
+          <div class="settings__card-row">
+            <div class="settings__card-info">
+              <span class="settings__card-label">Default Task Limit</span>
+              <span class="settings__card-hint">Maximum number of tasks shown per column before requiring "Load more" (1–100)</span>
+            </div>
+            <div class="settings__task-limit-form">
+              <input
+                class="settings__number-input"
+                type="number"
+                min="1"
+                max="100"
+                [(ngModel)]="taskLimitDraft"
+                [disabled]="isSavingTaskLimit"
+              />
+              <app-animated-button
+                label="Save"
+                variant="confirm"
+                [compact]="true"
+                [disabled]="isSavingTaskLimit"
+                (pressed)="onSaveTaskLimit()"
+              />
+            </div>
+          </div>
+          @if (taskLimitSuccessMessage) {
+            <div class="settings__success settings__card-success">{{ taskLimitSuccessMessage }}</div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Security Tab -->
+    @if (activeTab === 'security') {
+      <section class="settings__section">
+        <h2 class="settings__section-title">Security</h2>
+        <p class="settings__section-description">
+          Keep your account secure by changing your password regularly.
+        </p>
+
+        <div class="settings__card">
+          <div class="settings__security-form">
+            <div class="settings__security-field">
+              <label class="settings__security-label" for="currentPassword">Current password</label>
+              <input
+                class="settings__security-input"
+                id="currentPassword"
+                type="password"
+                [(ngModel)]="currentPassword"
+                name="currentPassword"
+                autocomplete="current-password"
+                required
+              />
+            </div>
+
+            <div class="settings__security-field">
+              <label class="settings__security-label" for="newPassword">New password</label>
+              <input
+                class="settings__security-input"
+                id="newPassword"
+                type="password"
+                [(ngModel)]="newPassword"
+                name="newPassword"
+                placeholder="At least 6 characters"
+                minlength="6"
+                autocomplete="new-password"
+                required
+              />
+            </div>
+
+            <div class="settings__security-field">
+              <label class="settings__security-label" for="confirmPassword">Confirm new password</label>
+              <input
+                class="settings__security-input"
+                id="confirmPassword"
+                type="password"
+                [(ngModel)]="confirmPassword"
+                name="confirmPassword"
+                autocomplete="new-password"
+                required
+              />
+            </div>
+
+            @if (passwordErrorMessage) {
+              <div class="settings__error settings__security-error" role="alert">
+                {{ passwordErrorMessage }}
+              </div>
+            }
+
+            @if (passwordSuccessMessage) {
+              <div class="settings__success settings__security-success" role="status">
+                {{ passwordSuccessMessage }}
+              </div>
+            }
+          </div>
+
+          <div class="settings__card-actions">
+            <app-animated-button
+              label="Change password"
+              variant="confirm"
+              [disabled]="isSavingPassword || !currentPassword || !newPassword || !confirmPassword"
+              (pressed)="onChangePassword()"
+            />
           </div>
         </div>
       </section>
@@ -76,6 +197,8 @@
                 [isFirst]="i === 0"
                 [isLast]="i === startupColumnsDraft.length - 1"
                 [disabled]="isSavingColumns"
+                [isNew]="col.id < 0"
+                (update)="onUpdateStartupColumn(i, $event)"
                 (moveUp)="moveStartupColumnUp(i)"
                 (moveDown)="moveStartupColumnDown(i)"
                 (remove)="removeStartupColumn(i)"
@@ -88,15 +211,48 @@
           </div>
 
           <div class="settings__card-actions">
-            <app-animated-button label="+ Add Column" variant="neutral" (pressed)="addStartupColumn()" />
-            <app-animated-button
-              label="Save All"
-              variant="confirm"
-              [disabled]="isSavingColumns || startupColumnsDraft.length === 0"
-              (pressed)="saveStartupColumns()"
-            />
+            <app-animated-button label="Add Column" variant="neutral" icon="plus" (pressed)="addStartupColumn()" />
           </div>
         </div>
+      </section>
+    }
+
+    <!-- Column Types Tab -->
+    @if (activeTab === 'columns') {
+      <section class="settings__section">
+        <h2 class="settings__section-title">Column Types</h2>
+        <p class="settings__section-description">
+          Configure the type of each column per board. "Archive" columns grey out their tasks.
+          "Done" columns mark tasks as completed and prevent comments. The "Done" button
+          appears on tasks when a column is set as "Done".
+        </p>
+
+        @if (boardList.length === 0) {
+          <p class="settings__empty-text">No boards yet. Create a board to configure its column types.</p>
+        }
+
+        @for (entry of boardList; track entry.board.id) {
+          <div class="settings__card">
+            <h3 class="settings__card-title">{{ entry.board.title }}</h3>
+            <div class="settings__list">
+              @for (col of entry.columns; track col.id) {
+                <app-startup-column-row
+                  [title]="col.title"
+                  [position]="col.position"
+                  [type]="columnType(col)"
+                  [readonlyTitle]="true"
+                  [showTypeSelector]="true"
+                  [disabled]="isSavingBoardColumn"
+                  (update)="onUpdateBoardColumnType(entry.board.id, col.id, $event)"
+                />
+              } @empty {
+                <p class="settings__empty-text">
+                  No columns in this board.
+                </p>
+              }
+            </div>
+          </div>
+        }
       </section>
     }
 
@@ -120,6 +276,7 @@
                 [color]="tag.color"
                 [position]="i"
                 [disabled]="isSavingTags"
+                [isNew]="tag.id < 0"
                 (save)="saveCustomTag(i, $event)"
                 (remove)="deleteCustomTag(i)"
               />
@@ -131,7 +288,7 @@
           </div>
 
           <div class="settings__card-actions">
-            <app-animated-button label="+ Add Tag" variant="neutral" (pressed)="addCustomTag()" />
+            <app-animated-button label="Add Tag" variant="neutral" icon="plus" (pressed)="addCustomTag()" />
           </div>
         </div>
       </section>
