@@ -32,7 +32,7 @@ describe('LoginPage', () => {
   });
 
   it('should navigate to boards on successful login', async () => {
-    authSpy.login.and.resolveTo({ id: 1, fullName: 'X', email: 'x@example.com', avatarUrl: null });
+    authSpy.login.and.resolveTo({ id: 1, fullName: 'X', email: 'x@example.com', avatarUrl: null, role: 'USER' });
     component.email = 'x@example.com';
     component.password = 'secret';
 

@@ -6,6 +6,7 @@ export type UserSnapshot = {
   fullName: string;
   email: string;
   avatarUrl: string | null;
+  role: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -37,6 +38,7 @@ export class User {
     public readonly fullName: string,
     public readonly email: Email,
     public readonly avatarUrl: string | null,
+    public readonly role: string,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
   ) {}
@@ -51,6 +53,7 @@ export class User {
       fullName,
       Email.create(snapshot.email),
       avatarUrl,
+      snapshot.role,
       User.ensureDate(snapshot.createdAt, 'createdAt'),
       User.ensureDate(snapshot.updatedAt, 'updatedAt'),
     );

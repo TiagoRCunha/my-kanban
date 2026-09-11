@@ -49,7 +49,7 @@ describe('AuthService', () => {
     // Must set localStorage BEFORE injecting the service (new module)
     TestBed.resetTestingModule();
 
-    const user = { id: 1, fullName: 'Test', email: 'test@test.com', avatarUrl: null };
+    const user = { id: 1, fullName: 'Test', email: 'test@test.com', avatarUrl: null, role: 'USER' };
     localStorage.setItem('mykanban_access_token', 'some-token');
     localStorage.setItem('mykanban_user', JSON.stringify(user));
 
@@ -112,6 +112,7 @@ describe('AuthService', () => {
         fullName: 'Tiago Cunha',
         email: 'tiago@example.com',
         avatarUrl: null,
+        role: 'USER',
         createdAt: '2026-07-05T10:00:00',
         updatedAt: '2026-07-05T10:00:00',
       });
@@ -143,7 +144,7 @@ describe('AuthService', () => {
   describe('logout', () => {
     it('should clear stored token and user', () => {
       localStorage.setItem('mykanban_access_token', 'test-token');
-      localStorage.setItem('mykanban_user', JSON.stringify({ id: 1, email: 'test@test.com', fullName: 'Test' }));
+      localStorage.setItem('mykanban_user', JSON.stringify({ id: 1, email: 'test@test.com', fullName: 'Test', role: 'USER' }));
 
       service.logout();
 
@@ -171,6 +172,7 @@ describe('AuthService', () => {
         fullName: 'New User',
         email: 'new@example.com',
         avatarUrl: null,
+        role: 'USER',
         createdAt: '2026-07-05T10:00:00',
         updatedAt: '2026-07-05T10:00:00',
       });

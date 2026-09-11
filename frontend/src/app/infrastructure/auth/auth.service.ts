@@ -19,6 +19,7 @@ export type AuthUser = {
   fullName: string;
   email: string;
   avatarUrl: string | null;
+  role: string;
 };
 
 const TOKEN_KEY = 'mykanban_access_token';
@@ -74,6 +75,7 @@ export class AuthService {
       fullName: userDto.fullName,
       email: userDto.email,
       avatarUrl: userDto.avatarUrl,
+      role: userDto.role,
     };
 
     return user;
@@ -132,6 +134,7 @@ export class AuthService {
       fullName: userDto.fullName,
       email: userDto.email,
       avatarUrl: userDto.avatarUrl,
+      role: userDto.role,
     };
   }
 
