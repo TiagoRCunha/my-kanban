@@ -2,12 +2,13 @@ import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Navbar } from '../../components/navbar';
 import { BoardLayout } from '../../components/board-layout';
+import { ShareDialog } from '../../components/share-dialog';
 import { HttpBoardRepository } from '../../../infrastructure/board';
 import { Board } from '../../../domain/board/entities/board.entity';
 
 @Component({
   selector: 'app-board-page',
-  imports: [Navbar, BoardLayout],
+  imports: [Navbar, BoardLayout, ShareDialog],
   templateUrl: './board.html',
   styleUrl: './board.scss',
 })
@@ -20,6 +21,7 @@ export class BoardPage implements OnInit {
   boardId = 0;
   isLoading = true;
   errorMessage = '';
+  isShareDialogOpen = false;
 
   async ngOnInit(): Promise<void> {
     const paramBoardId = Number(this.route.snapshot.paramMap.get('boardId'));
@@ -44,5 +46,13 @@ export class BoardPage implements OnInit {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  onOpenShareDialog(): void {
+    this.isShareDialogOpen = true;
+  }
+
+  onCloseShareDialog(): void {
+    this.isShareDialogOpen = false;
   }
 }

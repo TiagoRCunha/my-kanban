@@ -84,5 +84,18 @@
         background: rgba(255, 255, 255, 0.25);
       }
     }
+
+    &--share {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      font-size: t.$font-size-md;
+      font-weight: t.$font-weight-medium;
+      padding: t.$spacing-1 t.$spacing-3;
+      border-radius: t.$radius-sm;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+    }
   }
 }

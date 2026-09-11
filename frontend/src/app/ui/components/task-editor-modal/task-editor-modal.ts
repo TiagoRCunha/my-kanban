@@ -17,6 +17,7 @@ export type TaskEditorState = {
   dueDate: string;
   estimatedHours: number | null;
   assigneeIdsText: string;
+  canDelete: boolean;
 };
 
 export type TaskEditorFormValue = {

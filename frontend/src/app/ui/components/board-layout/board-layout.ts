@@ -27,6 +27,7 @@ type BoardColumnData = {
 })
 export class BoardLayout implements OnChanges {
   @Input({ required: true }) boardId!: number;
+  @Input() boardOwnerId: number | null = null;
 
   private readonly columnRepository = inject(HttpColumnRepository);
   private readonly taskRepository = inject(HttpTaskRepository);
@@ -303,6 +304,7 @@ export class BoardLayout implements OnChanges {
       dueDate: '',
       estimatedHours: null,
       assigneeIdsText: '',
+      canDelete: false,
     };
   }
 
@@ -350,6 +352,7 @@ export class BoardLayout implements OnChanges {
       dueDate: task.dueDate,
       estimatedHours: task.estimatedHours,
       assigneeIdsText: task.assigneeIds.join(', '),
+      canDelete: this.canDeleteTask(task.reportedById),
     };
   }
 
@@ -626,5 +629,14 @@ export class BoardLayout implements OnChanges {
 
   getCurrentUserId(): number | null {
     return this.authService.user?.id ?? null;
+  }
+
+  isBoardOwner(): boolean {
+    const userId = this.authService.user?.id;
+    return userId != null && this.boardOwnerId === userId;
+  }
+
+  canDeleteTask(reportedById: number): boolean {
+    return this.isBoardOwner() || this.authService.user?.id === reportedById;
   }
 }

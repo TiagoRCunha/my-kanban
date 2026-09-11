@@ -67,7 +67,7 @@
     </div>
 
     <footer class="task-editor__actions">
-      @if (isEditMode) {
+      @if (isEditMode && state?.canDelete) {
       <app-animated-button label="Delete" variant="danger" title="Delete task" ariaLabel="Delete task" (pressed)="onDelete()" />
       }
       <app-animated-button label="Cancel" variant="neutral" icon="close" (pressed)="onClose()" />

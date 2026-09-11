@@ -25,6 +25,7 @@
             [dropListId]="getDropListId(column.id)"
             [connectedDropListIds]="connectedDropListIds"
             [currentUserId]="getCurrentUserId()"
+            [isBoardOwner]="isBoardOwner()"
             [hasDoneColumn]="hasDoneColumn"
             [hasArchiveColumn]="hasArchiveColumn"
             (taskDropped)="onTaskDrop($event)"

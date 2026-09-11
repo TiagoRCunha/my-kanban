@@ -26,6 +26,7 @@ export class BoardColumn {
   @Input() dropListId = '';
   @Input() connectedDropListIds: string[] = [];
   @Input() currentUserId: number | null = null;
+  @Input() isBoardOwner = false;
   @Input() hasDoneColumn = false;
   @Input() hasArchiveColumn = false;
   @Input() hasMoreTasks = false;
