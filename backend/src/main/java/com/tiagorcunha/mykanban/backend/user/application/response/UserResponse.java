@@ -14,6 +14,8 @@ public record UserResponse(
     String email,
     @Schema(example = "https://cdn.example.com/avatars/tiago.png")
     String avatarUrl,
+    @Schema(example = "USER", description = "System-wide role")
+    String role,
     @Schema(example = "2026-07-05T10:21:33")
     LocalDateTime createdAt,
     @Schema(example = "2026-07-05T11:02:10")

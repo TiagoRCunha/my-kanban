@@ -14,6 +14,7 @@ public final class UserResponseMapper {
         user.getFullName(),
         user.getEmail(),
         user.getAvatarUrl(),
+        user.getRole().name(),
         user.getCreatedAt(),
         user.getUpdatedAt());
   }
