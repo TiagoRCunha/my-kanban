@@ -1,0 +1,214 @@
+@use '../../../../styles/abstracts/tokens' as t;
+@use '../../../../styles/abstracts/mixins' as m;
+
+$overlay-bg: rgba(9, 30, 66, 0.45);
+
+.share-dialog {
+  position: fixed;
+  inset: 0;
+  background: $overlay-bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: t.$spacing-4;
+  z-index: 1200;
+
+  &__modal {
+    width: min(520px, 100%);
+    max-height: 80vh;
+    overflow: auto;
+    background: t.$color-surface;
+    border-radius: t.$radius-md;
+    box-shadow: t.$shadow-drag;
+    padding: t.$spacing-4;
+    display: flex;
+    flex-direction: column;
+    gap: t.$spacing-4;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__title {
+    margin: 0;
+    color: t.$color-text;
+    font-size: 20px;
+    font-weight: t.$font-weight-bold;
+  }
+
+  &__close {
+    border: 1px solid t.$color-border;
+    background: t.$color-surface;
+    color: t.$color-text-muted;
+    border-radius: t.$radius-sm;
+    width: 32px;
+    height: 32px;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover {
+      background: t.$color-surface-alt;
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: t.$spacing-3;
+  }
+
+  &__invite {
+    display: flex;
+    flex-direction: column;
+    gap: t.$spacing-2;
+  }
+
+  &__invite-row {
+    display: flex;
+    gap: t.$spacing-2;
+    align-items: center;
+  }
+
+  &__input {
+    flex: 1;
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-sm;
+    padding: t.$spacing-2;
+    font: inherit;
+    color: t.$color-text;
+    background: t.$color-surface;
+    min-width: 0;
+
+    &::placeholder {
+      color: t.$color-text-muted;
+    }
+  }
+
+  &__select {
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-sm;
+    padding: t.$spacing-2;
+    font: inherit;
+    color: t.$color-text;
+    background: t.$color-surface;
+    min-width: 120px;
+  }
+
+  &__error {
+    color: #de350b;
+    font-size: t.$font-size-sm;
+    padding: t.$spacing-2;
+    background: #ffebe6;
+    border-radius: t.$radius-sm;
+  }
+
+  &__success {
+    color: #006644;
+    font-size: t.$font-size-sm;
+    padding: t.$spacing-2;
+    background: #e3fcef;
+    border-radius: t.$radius-sm;
+  }
+
+  &__members {
+    display: flex;
+    flex-direction: column;
+    gap: t.$spacing-2;
+  }
+
+  &__members-title {
+    margin: 0;
+    font-size: t.$font-size-md;
+    font-weight: t.$font-weight-bold;
+    color: t.$color-text;
+  }
+
+  &__loading,
+  &__empty {
+    color: t.$color-text-muted;
+    font-size: t.$font-size-sm;
+    padding: t.$spacing-3 0;
+    margin: 0;
+    text-align: center;
+  }
+
+  &__member {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: t.$spacing-2;
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-sm;
+    gap: t.$spacing-2;
+  }
+
+  &__member-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__member-name {
+    font-size: t.$font-size-sm;
+    font-weight: t.$font-weight-medium;
+    color: t.$color-text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__member-email {
+    font-size: t.$font-size-sm;
+    color: t.$color-text-muted;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__member-actions {
+    display: flex;
+    align-items: center;
+    gap: t.$spacing-2;
+    flex-shrink: 0;
+  }
+
+  &__role-select {
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-sm;
+    padding: 4px t.$spacing-2;
+    font: inherit;
+    font-size: t.$font-size-sm;
+    color: t.$color-text;
+    background: t.$color-surface;
+  }
+
+  &__remove-btn {
+    border: 1px solid t.$color-border;
+    background: t.$color-surface;
+    color: t.$color-text-muted;
+    border-radius: t.$radius-sm;
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      color: #de350b;
+      border-color: #de350b;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+}

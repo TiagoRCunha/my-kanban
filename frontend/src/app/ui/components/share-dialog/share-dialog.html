@@ -1,0 +1,95 @@
+@if (isVisible) {
+<div class="share-dialog" (click)="onClose()">
+  <section class="share-dialog__modal" (click)="$event.stopPropagation()">
+    <header class="share-dialog__header">
+      <h3 class="share-dialog__title">Share Board</h3>
+      <button class="share-dialog__close" type="button" aria-label="Close share dialog" (click)="onClose()">
+        &times;
+      </button>
+    </header>
+
+    <div class="share-dialog__content">
+      <!-- Invite form -->
+      <div class="share-dialog__invite">
+        <div class="share-dialog__invite-row">
+          <input
+            class="share-dialog__input"
+            type="email"
+            placeholder="Enter email address"
+            [(ngModel)]="inviteEmail"
+            [disabled]="isInviting"
+            (keyup.enter)="onInvite()"
+          />
+          <select
+            class="share-dialog__select"
+            [(ngModel)]="inviteRole"
+            [disabled]="isInviting"
+          >
+            <option value="GUEST">Guest</option>
+            <option value="VIEW_ONLY">View Only</option>
+            <option value="INVITED">Pending Invite</option>
+          </select>
+          <app-animated-button
+            label="Invite"
+            variant="confirm"
+            [compact]="true"
+            [disabled]="!canInvite"
+            (pressed)="onInvite()"
+          />
+        </div>
+      </div>
+
+      @if (errorMessage) {
+        <div class="share-dialog__error" role="alert">{{ errorMessage }}</div>
+      }
+
+      @if (successMessage) {
+        <div class="share-dialog__success" role="status">{{ successMessage }}</div>
+      }
+
+      <!-- Members list -->
+      <div class="share-dialog__members">
+        <h4 class="share-dialog__members-title">Members</h4>
+
+        @if (isLoading) {
+          <div class="share-dialog__loading">Loading members...</div>
+        } @else if (members.length === 0) {
+          <p class="share-dialog__empty">No members yet. Invite someone to share this board.</p>
+        } @else {
+          @for (member of members; track member.id) {
+            <div class="share-dialog__member">
+              <div class="share-dialog__member-info">
+                <span class="share-dialog__member-name">{{ member.fullName }}</span>
+                <span class="share-dialog__member-email">{{ member.email }}</span>
+              </div>
+              <div class="share-dialog__member-actions">
+                <select
+                  class="share-dialog__role-select"
+                  [ngModel]="member.role"
+                  (ngModelChange)="onChangeRole(member, $event)"
+                >
+                  <option value="GUEST">Guest</option>
+                  <option value="VIEW_ONLY">View Only</option>
+                  <option value="INVITED">Pending Invite</option>
+                </select>
+                <button
+                  class="share-dialog__remove-btn"
+                  type="button"
+                  aria-label="Remove member"
+                  (click)="onRemoveMember(member)"
+                >
+                  &times;
+                </button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <footer class="share-dialog__actions">
+      <app-animated-button label="Done" variant="neutral" icon="check" (pressed)="onClose()" />
+    </footer>
+  </section>
+</div>
+}
