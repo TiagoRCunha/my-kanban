@@ -9,14 +9,16 @@ import { AuthService } from '../../../infrastructure/auth';
 import { ThemeService } from '../../../infrastructure/theme/theme.service';
 import { HttpUserConfigAdapter } from '../../../infrastructure/user-config';
 import { HttpBoardRepository } from '../../../infrastructure/board/adapters/http-board.repository';
+import { HttpBoardMemberRepository } from '../../../infrastructure/board/adapters/http-board-member.repository';
 import { HttpColumnRepository } from '../../../infrastructure/board/adapters/http-column.repository';
 import { UserConfig } from '../../../domain/users/entities/user-config.entity';
 import { StartupColumn } from '../../../domain/users/entities/startup-column.entity';
 import { CustomTagSettings } from '../../../domain/users/entities/custom-tag-settings.entity';
 import { Board } from '../../../domain/board/entities/board.entity';
 import { Column } from '../../../domain/board/entities/column.entity';
+import { BoardMember, BoardMemberRole } from '../../../domain/board/entities/board-member.entity';
 
-type SettingsTab = 'appearance' | 'security' | 'startup-columns' | 'custom-tags' | 'columns';
+type SettingsTab = 'appearance' | 'security' | 'startup-columns' | 'custom-tags' | 'columns' | 'sharing';
 
 @Component({
   selector: 'app-settings-page',
@@ -30,6 +32,7 @@ export class SettingsPage implements OnInit {
   private readonly configAdapter = inject(HttpUserConfigAdapter);
   private readonly boardRepository = inject(HttpBoardRepository);
   private readonly columnRepository = inject(HttpColumnRepository);
+  private readonly memberRepository = inject(HttpBoardMemberRepository);
 
   userConfig: UserConfig | null = null;
   isLoading = true;
@@ -58,6 +61,17 @@ export class SettingsPage implements OnInit {
   passwordSuccessMessage = '';
   passwordErrorMessage = '';
 
+  // Board sharing
+  ownerBoards: Board[] = [];
+  boardMembers: Map<number, BoardMember[]> = new Map();
+  isLoadingMembers = false;
+  inviteEmail = '';
+  inviteRole: BoardMemberRole = 'GUEST';
+  selectedBoardId: number | null = null;
+  isInviting = false;
+  inviteErrorMessage = '';
+  inviteSuccessMessage = '';
+
   get userId(): number {
     return this.authService.user?.id ?? 0;
   }
@@ -74,6 +88,9 @@ export class SettingsPage implements OnInit {
     this.activeTab = tab;
     this.columnsSuccessMessage = '';
     this.tagsSuccessMessage = '';
+    this.inviteErrorMessage = '';
+    this.inviteSuccessMessage = '';
+    this.selectedBoardId = null;
   }
 
   // ─── Appearance ──────────────────────────────────────────────────────────
@@ -308,6 +325,81 @@ export class SettingsPage implements OnInit {
     return 'NORMAL';
   }
 
+  // ─── Board Sharing ──────────────────────────────────────────────────────
+
+  async loadBoardMembers(): Promise<void> {
+    this.isLoadingMembers = true;
+    try {
+      this.boardMembers = new Map();
+      for (const board of this.ownerBoards) {
+        const members = await this.memberRepository.listMembers(board.id);
+        this.boardMembers.set(board.id, members);
+      }
+    } catch {
+      this.errorMessage = 'Failed to load board members.';
+    } finally {
+      this.isLoadingMembers = false;
+    }
+  }
+
+  async onInviteMember(boardId: number): Promise<void> {
+    if (!this.inviteEmail.trim()) return;
+
+    this.isInviting = true;
+    this.inviteErrorMessage = '';
+    this.inviteSuccessMessage = '';
+
+    try {
+      await this.memberRepository.inviteMember(boardId, {
+        email: this.inviteEmail.trim(),
+        role: this.inviteRole,
+      });
+      this.inviteSuccessMessage = `Invitation sent to ${this.inviteEmail.trim()}`;
+      this.inviteEmail = '';
+      this.inviteRole = 'GUEST';
+      await this.loadBoardMembers();
+    } catch (error: any) {
+      if (error?.status === 404) {
+        this.inviteErrorMessage = 'No user found with that email address.';
+      } else if (error?.status === 409) {
+        this.inviteErrorMessage = 'This user is already a member of this board.';
+      } else {
+        this.inviteErrorMessage = 'Failed to invite member. Please try again.';
+      }
+    } finally {
+      this.isInviting = false;
+    }
+  }
+
+  async onChangeMemberRole(boardId: number, member: BoardMember, newRole: BoardMemberRole): Promise<void> {
+    try {
+      await this.memberRepository.updateMemberRole(boardId, member.id, newRole);
+      await this.loadBoardMembers();
+    } catch {
+      this.errorMessage = 'Failed to update member role.';
+    }
+  }
+
+  async onRemoveMember(boardId: number, member: BoardMember): Promise<void> {
+    try {
+      await this.memberRepository.removeMember(boardId, member.id);
+      await this.loadBoardMembers();
+    } catch {
+      this.errorMessage = 'Failed to remove member.';
+    }
+  }
+
+  getMembersForBoard(boardId: number): BoardMember[] {
+    return this.boardMembers.get(boardId) ?? [];
+  }
+
+  selectBoard(boardId: number): void {
+    this.selectedBoardId = this.selectedBoardId === boardId ? null : boardId;
+    this.inviteErrorMessage = '';
+    this.inviteSuccessMessage = '';
+    this.inviteEmail = '';
+  }
+
   // ─── Private Helpers ─────────────────────────────────────────────────────
 
   private async loadConfig(): Promise<void> {
@@ -325,10 +417,14 @@ export class SettingsPage implements OnInit {
       const boards = await this.boardRepository.findAll();
       const userBoards = boards.filter((b) => b.ownerId === this.userId);
       this.boardList = [];
+      this.ownerBoards = userBoards;
       for (const board of userBoards) {
         const columns = await this.columnRepository.findByBoardId(board.id);
         this.boardList.push({ board, columns });
       }
+
+      // Load members for sharing tab
+      await this.loadBoardMembers();
     } catch {
       this.errorMessage = 'Failed to load settings. Please try again.';
     } finally {
