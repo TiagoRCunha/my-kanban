@@ -10,11 +10,14 @@ import com.tiagorcunha.mykanban.backend.board.application.command.SaveBoardComma
 import com.tiagorcunha.mykanban.backend.board.application.mapper.BoardResponseMapper;
 import com.tiagorcunha.mykanban.backend.board.application.port.in.BoardUseCase;
 import com.tiagorcunha.mykanban.backend.board.application.port.out.BoardColumnRepositoryPort;
+import com.tiagorcunha.mykanban.backend.board.application.port.out.BoardMemberRepositoryPort;
 import com.tiagorcunha.mykanban.backend.board.application.port.out.BoardRepositoryPort;
 import com.tiagorcunha.mykanban.backend.board.application.response.BoardResponse;
 import com.tiagorcunha.mykanban.backend.board.domain.model.Board;
 import com.tiagorcunha.mykanban.backend.board.domain.model.BoardColumn;
+import com.tiagorcunha.mykanban.backend.board.domain.model.BoardMember;
 import com.tiagorcunha.mykanban.backend.common.infrastructure.security.AuthenticatedUserProvider;
+import com.tiagorcunha.mykanban.backend.common.application.exception.ForbiddenException;
 import com.tiagorcunha.mykanban.backend.common.application.exception.ResourceNotFoundException;
 import com.tiagorcunha.mykanban.backend.user.application.port.out.UserStartupColumnRepositoryPort;
 import com.tiagorcunha.mykanban.backend.user.domain.model.User;
@@ -25,6 +28,7 @@ public class BoardUseCaseHandler implements BoardUseCase {
 
   private final BoardRepositoryPort boardRepository;
   private final BoardColumnRepositoryPort boardColumnRepository;
+  private final BoardMemberRepositoryPort boardMemberRepository;
   private final AuthenticatedUserProvider authenticatedUserProvider;
   private final BoardAuthorizationService boardAuthorizationService;
   private final UserStartupColumnRepositoryPort startupColumnRepository;
@@ -32,11 +36,13 @@ public class BoardUseCaseHandler implements BoardUseCase {
   public BoardUseCaseHandler(
       BoardRepositoryPort boardRepository,
       BoardColumnRepositoryPort boardColumnRepository,
+      BoardMemberRepositoryPort boardMemberRepository,
       AuthenticatedUserProvider authenticatedUserProvider,
       BoardAuthorizationService boardAuthorizationService,
       UserStartupColumnRepositoryPort startupColumnRepository) {
     this.boardRepository = boardRepository;
     this.boardColumnRepository = boardColumnRepository;
+    this.boardMemberRepository = boardMemberRepository;
     this.authenticatedUserProvider = authenticatedUserProvider;
     this.boardAuthorizationService = boardAuthorizationService;
     this.startupColumnRepository = startupColumnRepository;
@@ -110,6 +116,19 @@ public class BoardUseCaseHandler implements BoardUseCase {
     Board board = getExistingBoard(id);
     boardAuthorizationService.assertCanManageBoard(board, currentUser);
     boardRepository.deleteById(id);
+  }
+
+  @Override
+  @Transactional
+  public void leaveBoard(Long id) {
+    User currentUser = authenticatedUserProvider.getAuthenticatedUser();
+    Board board = getExistingBoard(id);
+    if (board.getOwner().getId().equals(currentUser.getId())) {
+      throw new ForbiddenException("Board owner cannot leave the board");
+    }
+    BoardMember member = boardMemberRepository.findByBoardIdAndUserId(id, currentUser.getId())
+        .orElseThrow(() -> new ForbiddenException("You are not a member of this board"));
+    boardMemberRepository.delete(member);
   }
 
   private Board getExistingBoard(Long id) {

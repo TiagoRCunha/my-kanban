@@ -16,4 +16,6 @@ public interface BoardUseCase {
   BoardResponse update(Long id, SaveBoardCommand command);
 
   void delete(Long id);
+
+  void leaveBoard(Long id);
 }
