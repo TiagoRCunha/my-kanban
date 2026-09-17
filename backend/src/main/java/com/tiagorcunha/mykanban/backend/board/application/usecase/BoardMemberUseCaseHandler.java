@@ -28,16 +28,19 @@ public class BoardMemberUseCaseHandler implements BoardMemberUseCase {
   private final BoardRepositoryPort boardRepository;
   private final UserRepositoryPort userRepository;
   private final AuthenticatedUserProvider authenticatedUserProvider;
+  private final BoardAuthorizationService boardAuthorizationService;
 
   public BoardMemberUseCaseHandler(
       BoardMemberRepositoryPort boardMemberRepository,
       BoardRepositoryPort boardRepository,
       UserRepositoryPort userRepository,
-      AuthenticatedUserProvider authenticatedUserProvider) {
+      AuthenticatedUserProvider authenticatedUserProvider,
+      BoardAuthorizationService boardAuthorizationService) {
     this.boardMemberRepository = boardMemberRepository;
     this.boardRepository = boardRepository;
     this.userRepository = userRepository;
     this.authenticatedUserProvider = authenticatedUserProvider;
+    this.boardAuthorizationService = boardAuthorizationService;
   }
 
   @Override
@@ -45,7 +48,7 @@ public class BoardMemberUseCaseHandler implements BoardMemberUseCase {
   public List<BoardMemberResponse> listMembers(Long boardId) {
     User currentUser = authenticatedUserProvider.getAuthenticatedUser();
     Board board = getExistingBoard(boardId);
-    assertIsBoardOwnerOrSuperAdmin(board, currentUser);
+    boardAuthorizationService.assertCanReadBoard(board, currentUser);
 
     return boardMemberRepository.findAllByBoardId(boardId).stream()
         .map(this::toResponse)
@@ -130,11 +133,19 @@ public class BoardMemberUseCaseHandler implements BoardMemberUseCase {
   }
 
   private BoardMemberRole parseRole(String role) {
+    final BoardMemberRole parsed;
     try {
-      return BoardMemberRole.valueOf(role.toUpperCase());
+      parsed = BoardMemberRole.valueOf(role.toUpperCase());
     } catch (IllegalArgumentException | NullPointerException e) {
       throw new ConflictException("Invalid role: '" + role + "'. Valid roles: INVITED, VIEW_ONLY, GUEST");
     }
+
+    if (!parsed.isAssignable()) {
+      throw new ConflictException(
+          "Role '" + role + "' cannot be assigned. Valid roles: INVITED, VIEW_ONLY, GUEST");
+    }
+
+    return parsed;
   }
 
   private BoardMemberResponse toResponse(BoardMember member) {

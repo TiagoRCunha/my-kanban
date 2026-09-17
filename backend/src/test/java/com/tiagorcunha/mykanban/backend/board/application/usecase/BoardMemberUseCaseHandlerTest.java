@@ -44,6 +44,7 @@ class BoardMemberUseCaseHandlerTest {
   @Mock
   private AuthenticatedUserProvider authenticatedUserProvider;
 
+  private BoardAuthorizationService authorizationService;
   private BoardMemberUseCaseHandler handler;
 
   private User ownerUser;
@@ -52,8 +53,9 @@ class BoardMemberUseCaseHandlerTest {
 
   @BeforeEach
   void setUp() {
+    authorizationService = new BoardAuthorizationService(boardMemberRepository);
     handler = new BoardMemberUseCaseHandler(
-        boardMemberRepository, boardRepository, userRepository, authenticatedUserProvider);
+        boardMemberRepository, boardRepository, userRepository, authenticatedUserProvider, authorizationService);
 
     ownerUser = new User();
     ownerUser.setId(1L);
@@ -270,6 +272,56 @@ class BoardMemberUseCaseHandlerTest {
     assertThatThrownBy(() -> handler.removeMember(10L, 200L))
         .isInstanceOf(ResourceNotFoundException.class);
     verify(boardMemberRepository, never()).delete(any());
+  }
+
+  @Test
+  void inviteMember_throwsWhenAssigningOwnerRole() {
+    when(authenticatedUserProvider.getAuthenticatedUser()).thenReturn(ownerUser);
+    when(boardRepository.findById(10L)).thenReturn(Optional.of(board));
+    when(userRepository.findByEmail("invited@example.com")).thenReturn(Optional.of(invitedUser));
+    when(boardMemberRepository.findByBoardIdAndUserId(10L, 2L)).thenReturn(Optional.empty());
+
+    InviteBoardMemberCommand command = new InviteBoardMemberCommand("invited@example.com", "OWNER");
+
+    assertThatThrownBy(() -> handler.inviteMember(10L, command))
+        .isInstanceOf(ConflictException.class)
+        .hasMessageContaining("cannot be assigned");
+    verify(boardMemberRepository, never()).save(any(BoardMember.class));
+  }
+
+  @Test
+  void updateMemberRole_throwsWhenAssigningOwnerRole() {
+    when(authenticatedUserProvider.getAuthenticatedUser()).thenReturn(ownerUser);
+    when(boardRepository.findById(10L)).thenReturn(Optional.of(board));
+
+    BoardMember member = createMember(200L, invitedUser, BoardMemberRole.GUEST);
+    when(boardMemberRepository.findById(200L)).thenReturn(Optional.of(member));
+
+    UpdateBoardMemberRoleCommand command = new UpdateBoardMemberRoleCommand("OWNER");
+
+    assertThatThrownBy(() -> handler.updateMemberRole(10L, 200L, command))
+        .isInstanceOf(ConflictException.class)
+        .hasMessageContaining("cannot be assigned");
+    verify(boardMemberRepository, never()).save(any(BoardMember.class));
+  }
+
+  @Test
+  void listMembers_memberCanViewMemberList() {
+    User memberUser = new User();
+    memberUser.setId(3L);
+    memberUser.setRole(UserRole.USER);
+
+    BoardMember memberRow = createMember(300L, memberUser, BoardMemberRole.VIEW_ONLY);
+    when(authenticatedUserProvider.getAuthenticatedUser()).thenReturn(memberUser);
+    when(boardRepository.findById(10L)).thenReturn(Optional.of(board));
+    when(boardMemberRepository.findByBoardIdAndUserId(10L, 3L)).thenReturn(Optional.of(memberRow));
+    when(boardMemberRepository.findAllByBoardId(10L))
+        .thenReturn(List.of(createMember(100L, invitedUser, BoardMemberRole.GUEST)));
+
+    List<BoardMemberResponse> result = handler.listMembers(10L);
+
+    assertThat(result).hasSize(1);
+    assertThat(result.get(0).role()).isEqualTo("GUEST");
   }
 
   @Test
