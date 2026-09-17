@@ -142,18 +142,6 @@ $overlay-bg: rgba(9, 30, 66, 0.45);
     }
   }
 
-  &__meta {
-    display: flex;
-    flex-direction: column;
-    gap: t.$spacing-2;
-
-    p {
-      margin: 0;
-      color: t.$color-text-muted;
-      font-size: t.$font-size-sm;
-    }
-  }
-
   &__actions {
     display: flex;
     justify-content: flex-end;
