@@ -9,7 +9,7 @@
   <div class="task-card__content">
     <div class="task-card__header">
       <h3 class="task-card__title">{{ task.title }}</h3>
-      @if (isOwner) {
+      @if (isOwner && canInteract) {
         <button
           class="task-card__delete-btn"
           type="button"

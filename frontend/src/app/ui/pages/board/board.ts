@@ -5,6 +5,11 @@ import { BoardLayout } from '../../components/board-layout';
 import { ShareDialog } from '../../components/share-dialog';
 import { HttpBoardRepository } from '../../../infrastructure/board';
 import { Board } from '../../../domain/board/entities/board.entity';
+import { BoardMemberRole } from '../../../domain/board/entities/board-member.entity';
+import { BoardPermissions, getBoardPermissions } from '../../../domain/board/entities/board-permissions';
+import { ListBoardMembersUseCase } from '../../../domain/board/use-cases/board-member/list-board-members.use-case';
+import { HttpBoardMemberRepository } from '../../../infrastructure/board/adapters/http-board-member.repository';
+import { AuthService } from '../../../infrastructure/auth';
 
 @Component({
   selector: 'app-board-page',
@@ -16,12 +21,16 @@ export class BoardPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly boardRepository = inject(HttpBoardRepository);
+  private readonly authService = inject(AuthService);
+  private readonly memberRepository = inject(HttpBoardMemberRepository);
+  private readonly listMembersUseCase = new ListBoardMembersUseCase(this.memberRepository);
 
   board: Board | null = null;
   boardId = 0;
   isLoading = true;
   errorMessage = '';
   isShareDialogOpen = false;
+  permissions: BoardPermissions = getBoardPermissions(null, false);
 
   async ngOnInit(): Promise<void> {
     const paramBoardId = Number(this.route.snapshot.paramMap.get('boardId'));
@@ -41,10 +50,35 @@ export class BoardPage implements OnInit {
 
     try {
       this.board = await this.boardRepository.findById(this.boardId);
+      await this.resolvePermissions();
     } catch {
       this.errorMessage = 'Failed to load board. It may not exist.';
     } finally {
       this.isLoading = false;
+    }
+  }
+
+  private async resolvePermissions(): Promise<void> {
+    if (!this.board) {
+      return;
+    }
+
+    const userId = this.authService.user?.id ?? null;
+    const isOwner = userId != null && this.board.ownerId === userId;
+
+    if (isOwner) {
+      this.permissions = getBoardPermissions(null, true);
+      return;
+    }
+
+    try {
+      const members = await this.listMembersUseCase.execute(this.board.id);
+      const myRole = members.find((member) => member.userId === userId)?.role as BoardMemberRole | null;
+      this.permissions = getBoardPermissions(myRole ?? null, false);
+    } catch {
+      // If the member list cannot be loaded, fall back to read-only access so
+      // the board remains viewable but not editable for unverified memberships.
+      this.permissions = getBoardPermissions(null, false);
     }
   }
 

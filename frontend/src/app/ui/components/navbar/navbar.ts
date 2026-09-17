@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../infrastructure/auth';
 import { ThemeService } from '../../../infrastructure/theme/theme.service';
+import { BoardPermissions } from '../../../domain/board/entities/board-permissions';
 
 @Component({
   selector: 'app-navbar',
@@ -16,6 +17,7 @@ export class Navbar {
 
   @Input() boardId: number | null = null;
   @Input() boardOwnerId: number | null = null;
+  @Input() permissions: BoardPermissions | null = null;
 
   @Output() shareBoard = new EventEmitter<void>();
 
@@ -33,7 +35,10 @@ export class Navbar {
   }
 
   get showShareButton(): boolean {
-    return this.boardId !== null && this.isBoardOwner;
+    if (this.boardId === null) {
+      return false;
+    }
+    return this.permissions?.canManageMembers ?? this.isBoardOwner;
   }
 
   async onToggleDarkMode(): Promise<void> {
