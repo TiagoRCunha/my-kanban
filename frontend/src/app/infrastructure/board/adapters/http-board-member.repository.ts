@@ -7,6 +7,7 @@ import {
   BoardMemberRole,
   InviteMemberInput,
 } from '../../../domain/board/entities/board-member.entity';
+import { BoardMemberRepository } from '../../../domain/board/ports/board-member-repository.port';
 import { API_BASE_URL } from '../../config/api.config';
 import {
   BoardMemberResponseDto,
@@ -16,7 +17,7 @@ import {
 import { BoardMemberMapper } from '../mappers/board-member.mapper';
 
 @Injectable({ providedIn: 'root' })
-export class HttpBoardMemberRepository {
+export class HttpBoardMemberRepository implements BoardMemberRepository {
   private readonly httpClient = inject(HttpClient);
   private readonly apiBaseUrl = inject(API_BASE_URL);
 

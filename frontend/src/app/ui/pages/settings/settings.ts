@@ -17,6 +17,10 @@ import { CustomTagSettings } from '../../../domain/users/entities/custom-tag-set
 import { Board } from '../../../domain/board/entities/board.entity';
 import { Column } from '../../../domain/board/entities/column.entity';
 import { BoardMember, BoardMemberRole } from '../../../domain/board/entities/board-member.entity';
+import { ListBoardMembersUseCase } from '../../../domain/board/use-cases/board-member/list-board-members.use-case';
+import { InviteBoardMemberUseCase } from '../../../domain/board/use-cases/board-member/invite-board-member.use-case';
+import { UpdateBoardMemberRoleUseCase } from '../../../domain/board/use-cases/board-member/update-board-member-role.use-case';
+import { RemoveBoardMemberUseCase } from '../../../domain/board/use-cases/board-member/remove-board-member.use-case';
 
 type SettingsTab = 'appearance' | 'security' | 'startup-columns' | 'custom-tags' | 'columns' | 'sharing';
 
@@ -33,6 +37,10 @@ export class SettingsPage implements OnInit {
   private readonly boardRepository = inject(HttpBoardRepository);
   private readonly columnRepository = inject(HttpColumnRepository);
   private readonly memberRepository = inject(HttpBoardMemberRepository);
+  private readonly listBoardMembersUseCase = new ListBoardMembersUseCase(this.memberRepository);
+  private readonly inviteBoardMemberUseCase = new InviteBoardMemberUseCase(this.memberRepository);
+  private readonly updateMemberRoleUseCase = new UpdateBoardMemberRoleUseCase(this.memberRepository);
+  private readonly removeBoardMemberUseCase = new RemoveBoardMemberUseCase(this.memberRepository);
 
   userConfig: UserConfig | null = null;
   isLoading = true;
@@ -332,7 +340,7 @@ export class SettingsPage implements OnInit {
     try {
       this.boardMembers = new Map();
       for (const board of this.ownerBoards) {
-        const members = await this.memberRepository.listMembers(board.id);
+        const members = await this.listBoardMembersUseCase.execute(board.id);
         this.boardMembers.set(board.id, members);
       }
     } catch {
@@ -350,7 +358,7 @@ export class SettingsPage implements OnInit {
     this.inviteSuccessMessage = '';
 
     try {
-      await this.memberRepository.inviteMember(boardId, {
+      await this.inviteBoardMemberUseCase.execute(boardId, {
         email: this.inviteEmail.trim(),
         role: this.inviteRole,
       });
@@ -373,7 +381,7 @@ export class SettingsPage implements OnInit {
 
   async onChangeMemberRole(boardId: number, member: BoardMember, newRole: BoardMemberRole): Promise<void> {
     try {
-      await this.memberRepository.updateMemberRole(boardId, member.id, newRole);
+      await this.updateMemberRoleUseCase.execute(boardId, member.id, newRole);
       await this.loadBoardMembers();
     } catch {
       this.errorMessage = 'Failed to update member role.';
@@ -382,7 +390,7 @@ export class SettingsPage implements OnInit {
 
   async onRemoveMember(boardId: number, member: BoardMember): Promise<void> {
     try {
-      await this.memberRepository.removeMember(boardId, member.id);
+      await this.removeBoardMemberUseCase.execute(boardId, member.id);
       await this.loadBoardMembers();
     } catch {
       this.errorMessage = 'Failed to remove member.';

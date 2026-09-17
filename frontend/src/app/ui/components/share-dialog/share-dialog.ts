@@ -2,6 +2,10 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, injec
 import { FormsModule } from '@angular/forms';
 import { AnimatedButton } from '../animated-button';
 import { BoardMember, BoardMemberRole } from '../../../domain/board/entities/board-member.entity';
+import { ListBoardMembersUseCase } from '../../../domain/board/use-cases/board-member/list-board-members.use-case';
+import { InviteBoardMemberUseCase } from '../../../domain/board/use-cases/board-member/invite-board-member.use-case';
+import { UpdateBoardMemberRoleUseCase } from '../../../domain/board/use-cases/board-member/update-board-member-role.use-case';
+import { RemoveBoardMemberUseCase } from '../../../domain/board/use-cases/board-member/remove-board-member.use-case';
 import { HttpBoardMemberRepository } from '../../../infrastructure/board/adapters/http-board-member.repository';
 
 @Component({
@@ -16,6 +20,10 @@ export class ShareDialog implements OnChanges {
   @Output() closed = new EventEmitter<void>();
 
   private readonly memberRepository = inject(HttpBoardMemberRepository);
+  private readonly listMembersUseCase = new ListBoardMembersUseCase(this.memberRepository);
+  private readonly inviteMemberUseCase = new InviteBoardMemberUseCase(this.memberRepository);
+  private readonly updateRoleUseCase = new UpdateBoardMemberRoleUseCase(this.memberRepository);
+  private readonly removeMemberUseCase = new RemoveBoardMemberUseCase(this.memberRepository);
 
   members: BoardMember[] = [];
   inviteEmail = '';
@@ -44,7 +52,7 @@ export class ShareDialog implements OnChanges {
     this.errorMessage = '';
 
     try {
-      this.members = await this.memberRepository.listMembers(this.boardId);
+      this.members = await this.listMembersUseCase.execute(this.boardId);
     } catch {
       this.errorMessage = 'Failed to load board members.';
     } finally {
@@ -62,7 +70,7 @@ export class ShareDialog implements OnChanges {
     this.successMessage = '';
 
     try {
-      await this.memberRepository.inviteMember(this.boardId, {
+      await this.inviteMemberUseCase.execute(this.boardId, {
         email: this.inviteEmail.trim(),
         role: this.inviteRole,
       });
@@ -86,7 +94,7 @@ export class ShareDialog implements OnChanges {
 
   async onChangeRole(member: BoardMember, newRole: BoardMemberRole): Promise<void> {
     try {
-      await this.memberRepository.updateMemberRole(this.boardId, member.id, newRole);
+      await this.updateRoleUseCase.execute(this.boardId, member.id, newRole);
       await this.loadMembers();
     } catch {
       this.errorMessage = 'Failed to update member role.';
@@ -95,7 +103,7 @@ export class ShareDialog implements OnChanges {
 
   async onRemoveMember(member: BoardMember): Promise<void> {
     try {
-      await this.memberRepository.removeMember(this.boardId, member.id);
+      await this.removeMemberUseCase.execute(this.boardId, member.id);
       await this.loadMembers();
     } catch {
       this.errorMessage = 'Failed to remove member.';
