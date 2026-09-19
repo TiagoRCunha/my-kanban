@@ -7,7 +7,7 @@
       class="board-list-page__create-btn"
       type="button"
       (click)="openCreatorDialog()"
-      [disabled]="isCreating"
+      [disabled]="isSaving"
     >
       + Create Board
     </button>
@@ -24,9 +24,9 @@
   } @else {
     <div class="board-list-page__grid">
       @for (board of boards; track trackByBoardId($index, board)) {
-        <div class="board-list-page__card-wrapper">
+        <div class="board-list-page__card">
           <button
-            class="board-list-page__card"
+            class="board-list-page__card-nav"
             type="button"
             (click)="navigateToBoard(board.id)"
           >
@@ -36,21 +36,34 @@
             }
             <span class="board-list-page__card-id">Board #{{ board.id }}</span>
           </button>
-          @if (!isBoardOwner(board)) {
-            <button
-              class="board-list-page__leave-btn"
-              type="button"
-              title="Leave board"
-              aria-label="Leave board"
-              (click)="onLeaveBoard(board.id); $event.stopPropagation()"
-            >
-              Leave
-            </button>
-          }
+
+          <div class="board-list-page__card-actions">
+            @if (canEditBoard(board)) {
+              <button
+                class="board-list-page__action-btn board-list-page__action-btn--edit"
+                type="button"
+                title="Edit board"
+                [attr.aria-label]="'Edit board ' + board.title"
+                (click)="onEditBoard(board)"
+              >
+                Edit
+              </button>
+            } @else if (canLeaveBoard(board)) {
+              <button
+                class="board-list-page__action-btn board-list-page__action-btn--leave"
+                type="button"
+                title="Leave board"
+                [attr.aria-label]="'Leave board ' + board.title"
+                (click)="onLeaveBoard(board.id)"
+              >
+                Leave
+              </button>
+            }
+          </div>
         </div>
       }
     </div>
   }
 </main>
 
-<app-board-creator-dialog (save)="onCreateBoard($event)" />
+<app-board-creator-dialog (save)="onSaveBoard($event)" (close)="onDialogClose()" />

@@ -10,6 +10,7 @@ describe('BoardListPage', () => {
   let fixture: ComponentFixture<BoardListPage>;
   let component: BoardListPage;
   let boardRepositorySpy: jasmine.SpyObj<HttpBoardRepository>;
+  let authServiceSpy: jasmine.SpyObj<AuthService>;
 
   const boardSnapshot = (
     id: number,
@@ -29,6 +30,7 @@ describe('BoardListPage', () => {
     boardRepositorySpy = jasmine.createSpyObj('HttpBoardRepository', [
       'findAll',
       'create',
+      'update',
       'leaveBoard',
     ]);
     boardRepositorySpy.findAll.and.resolveTo([
@@ -37,7 +39,15 @@ describe('BoardListPage', () => {
     ]);
     boardRepositorySpy.leaveBoard.and.resolveTo();
 
-    const authServiceSpy = jasmine.createSpyObj('AuthService', [], { user: { id: 1 } });
+    authServiceSpy = jasmine.createSpyObj('AuthService', [], {
+      user: {
+        id: 1,
+        fullName: 'Test',
+        email: 'test@test.com',
+        avatarUrl: null,
+        role: 'USER',
+      },
+    });
     const themeServiceSpy = jasmine.createSpyObj('ThemeService', [], { darkMode: false });
 
     await TestBed.configureTestingModule({
@@ -67,17 +77,77 @@ describe('BoardListPage', () => {
     expect(component.isBoardOwner(component.boards[1])).toBeFalse();
   });
 
-  it('renders a Leave button only for non-owned boards', () => {
-    const leaveButtons = fixture.nativeElement.querySelectorAll('.board-list-page__leave-btn');
+  it('renders an Edit button only for owned boards', () => {
+    const editButtons = fixture.nativeElement.querySelectorAll(
+      '.board-list-page__action-btn--edit',
+    );
+    const leaveButtons = fixture.nativeElement.querySelectorAll(
+      '.board-list-page__action-btn--leave',
+    );
+
+    expect(editButtons.length).toBe(1);
     expect(leaveButtons.length).toBe(1);
   });
 
+  it('exposes edit for owners and leave for guests', () => {
+    expect(component.canEditBoard(component.boards[0])).toBeTrue();
+    expect(component.canLeaveBoard(component.boards[0])).toBeFalse();
+    expect(component.canEditBoard(component.boards[1])).toBeFalse();
+    expect(component.canLeaveBoard(component.boards[1])).toBeTrue();
+  });
+
+  it('grants edit only to the owner, even for admin users', () => {
+    authServiceSpy.user!.role = 'ADMIN';
+
+    expect(component.canEditBoard(component.boards[0])).toBeTrue();
+    expect(component.canEditBoard(component.boards[1])).toBeFalse();
+    expect(component.canLeaveBoard(component.boards[1])).toBeTrue();
+  });
+
+  it('opens the creator dialog in edit mode for an owned board', () => {
+    component.onEditBoard(component.boards[0]);
+
+    expect(component['editingBoard']).toEqual({
+      id: 1,
+      title: 'My Board',
+      description: '',
+    });
+    expect(component.boardCreatorDialog.isEditMode).toBeTrue();
+  });
+
+  it('updates a board and reloads the list', async () => {
+    boardRepositorySpy.update.and.resolveTo(boardSnapshot(1, 'Renamed Board', 1));
+
+    component.onEditBoard(component.boards[0]);
+    await component.onSaveBoard({ title: 'Renamed Board', description: 'New description' });
+
+    expect(boardRepositorySpy.update).toHaveBeenCalledWith(
+      1,
+      jasmine.objectContaining({ title: 'Renamed Board' }),
+    );
+    expect(boardRepositorySpy.findAll).toHaveBeenCalledTimes(2);
+  });
+
+  it('surfaces an error when editing a board fails', async () => {
+    boardRepositorySpy.update.and.rejectWith({ status: 500 });
+
+    component.onEditBoard(component.boards[0]);
+    await component.onSaveBoard({ title: 'Renamed Board', description: '' });
+
+    expect(component.errorMessage).toBe('Failed to update board. Please try again.');
+  });
+
   it('leaves a shared board and reloads the list', async () => {
-    component.onLeaveBoard(2);
-    await fixture.whenStable();
+    await component.onLeaveBoard(2);
 
     expect(boardRepositorySpy.leaveBoard).toHaveBeenCalledWith(2);
     expect(boardRepositorySpy.findAll).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not allow the owner to leave an owned board', async () => {
+    await component.onLeaveBoard(1);
+
+    expect(boardRepositorySpy.leaveBoard).not.toHaveBeenCalled();
   });
 
   it('surfaces an error when leaving a board fails', async () => {

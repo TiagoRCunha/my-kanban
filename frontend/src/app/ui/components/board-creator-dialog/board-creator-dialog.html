@@ -2,7 +2,7 @@
 <div class="board-creator" (click)="onClose()">
   <section class="board-creator__modal" (click)="$event.stopPropagation()">
     <header class="board-creator__header">
-      <h3 class="board-creator__title">Create Board</h3>
+      <h3 class="board-creator__title">{{ isEditMode ? 'Edit Board' : 'Create Board' }}</h3>
       <button class="board-creator__close" type="button" aria-label="Close board creator" (click)="onClose()">
         &times;
       </button>
@@ -32,7 +32,12 @@
 
     <footer class="board-creator__actions">
       <app-animated-button label="Cancel" variant="neutral" (pressed)="onClose()" />
-      <app-animated-button label="Create" variant="confirm" [disabled]="!canSave" (pressed)="onSave()" />
+      <app-animated-button
+        [label]="isEditMode ? 'Save' : 'Create'"
+        variant="confirm"
+        [disabled]="!canSave"
+        (pressed)="onSave()"
+      />
     </footer>
   </section>
 </div>
