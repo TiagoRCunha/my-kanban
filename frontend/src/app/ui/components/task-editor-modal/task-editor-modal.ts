@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AnimatedButton } from '../animated-button';
+import { UserPicker } from '../user-picker';
 import { CustomTag } from '../../../domain/board/entities/task.entity';
 
 export type TaskEditorMode = 'create' | 'edit';
@@ -16,7 +17,8 @@ export type TaskEditorState = {
   tagColor: string;
   dueDate: string;
   estimatedHours: number | null;
-  assigneeIdsText: string;
+  assigneeIds: number[];
+  canDelete: boolean;
 };
 
 export type TaskEditorFormValue = {
@@ -27,12 +29,12 @@ export type TaskEditorFormValue = {
   tagColor: string;
   dueDate: string;
   estimatedHours: number;
-  assigneeIdsText: string;
+  assigneeIds: number[];
 };
 
 @Component({
   selector: 'app-task-editor-modal',
-  imports: [FormsModule, AnimatedButton],
+  imports: [FormsModule, AnimatedButton, UserPicker],
   templateUrl: './task-editor-modal.html',
   styleUrl: './task-editor-modal.scss',
 })
@@ -51,7 +53,7 @@ export class TaskEditorModal implements OnChanges {
     tagColor: '',
     dueDate: '',
     estimatedHours: null as unknown as number,
-    assigneeIdsText: '',
+    assigneeIds: [],
   };
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -71,7 +73,7 @@ export class TaskEditorModal implements OnChanges {
       tagColor: this.state.tagColor,
       dueDate: this.state.dueDate,
       estimatedHours: this.state.estimatedHours ?? (null as unknown as number),
-      assigneeIdsText: this.state.assigneeIdsText,
+      assigneeIds: [...this.state.assigneeIds],
     };
   }
 
@@ -126,7 +128,7 @@ export class TaskEditorModal implements OnChanges {
       tagColor: this.draft.tagColor,
       dueDate: this.draft.dueDate,
       estimatedHours: this.draft.estimatedHours,
-      assigneeIdsText: this.draft.assigneeIdsText,
+      assigneeIds: [...this.draft.assigneeIds],
     });
   }
 

@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BoardColumn } from './board-column';
+import { OWNER_PERMISSIONS } from '../../../domain/board/entities/board-permissions';
 
 describe('BoardColumn (unit)', () => {
   let fixture: ComponentFixture<BoardColumn>;
@@ -41,6 +42,7 @@ describe('BoardColumn (unit)', () => {
 
     component.dropListId = 'column-drop-list-1';
     component.connectedDropListIds = ['column-drop-list-1'];
+    component.permissions = OWNER_PERMISSIONS;
 
     fixture.detectChanges();
   });

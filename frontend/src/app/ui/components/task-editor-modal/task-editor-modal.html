@@ -58,16 +58,17 @@
           <input type="number" min="0.5" step="0.5" [(ngModel)]="draft.estimatedHours" />
         </label>
 
-        <div class="task-editor__meta">
-          <p>Assignees selection will be available in a future step.</p>
-        </div>
+        <label class="task-editor__field">
+          <h6>Assignees</h6>
+          <app-user-picker [(selectedIds)]="draft.assigneeIds" />
+        </label>
 
 
       </aside>
     </div>
 
     <footer class="task-editor__actions">
-      @if (isEditMode) {
+      @if (isEditMode && state?.canDelete) {
       <app-animated-button label="Delete" variant="danger" title="Delete task" ariaLabel="Delete task" (pressed)="onDelete()" />
       }
       <app-animated-button label="Cancel" variant="neutral" icon="close" (pressed)="onClose()" />

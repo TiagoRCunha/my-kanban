@@ -3,6 +3,7 @@ export type AuthUserResponseDto = {
   fullName: string;
   email: string;
   avatarUrl: string | null;
+  role: string;
   createdAt: string;
   updatedAt: string;
 };

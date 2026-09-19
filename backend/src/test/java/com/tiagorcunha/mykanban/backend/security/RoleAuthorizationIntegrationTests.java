@@ -79,7 +79,6 @@ class RoleAuthorizationIntegrationTests {
     User viewer = createUser("viewer@example.com", "viewer-pass", UserRole.USER);
     Board board = createBoard(owner);
     BoardColumn column = createColumn(board, "To Do", 0);
-    createMembership(board, viewer, BoardMemberRole.VIEW_ONLY);
 
     HttpHeaders viewerHeaders = bearerHeaders(loginAndGetToken("viewer@example.com", "viewer-pass"));
 

@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { BoardPermissions, getBoardPermissions } from '../../../domain/board/entities/board-permissions';
 
 export type TaskCardData = {
   id: number;
@@ -26,10 +27,15 @@ export class TaskCard {
   @Input() hasDoneColumn = false;
   @Input() hasArchiveColumn = false;
   @Input() isArchived = false;
+  @Input() permissions: BoardPermissions | null = null;
   @Output() openTask = new EventEmitter<number>();
   @Output() deleteTask = new EventEmitter<number>();
   @Output() doneTask = new EventEmitter<number>();
   @Output() archiveTask = new EventEmitter<number>();
+
+  get effectivePermissions(): BoardPermissions {
+    return this.permissions ?? getBoardPermissions(null, false);
+  }
 
   get isOverdue(): boolean {
     if (this.task.done || !this.task.dueDate) {
@@ -46,12 +52,24 @@ export class TaskCard {
     return this.currentUserId !== null && this.task.reportedById === this.currentUserId;
   }
 
+  get canInteract(): boolean {
+    return this.effectivePermissions.canEditTask;
+  }
+
   get showDoneButton(): boolean {
-    return !this.task.done && this.isOwner && this.hasDoneColumn && !this.isArchived;
+    return !this.task.done
+      && this.canInteract
+      && this.isOwner
+      && this.hasDoneColumn
+      && !this.isArchived;
   }
 
   get showArchiveButton(): boolean {
-    return !this.isArchived && !this.task.done && this.hasArchiveColumn && this.isOwner;
+    return !this.isArchived
+      && !this.task.done
+      && this.hasArchiveColumn
+      && this.isOwner
+      && this.canInteract;
   }
 
   getDueDateLabel(dueDate: string): string {
@@ -75,21 +93,33 @@ export class TaskCard {
   }
 
   onOpenTask(): void {
+    if (!this.canInteract) {
+      return;
+    }
     this.openTask.emit(this.task.id);
   }
 
   onDeleteTask(event: MouseEvent): void {
     event.stopPropagation();
+    if (!this.canInteract) {
+      return;
+    }
     this.deleteTask.emit(this.task.id);
   }
 
   onDoneTask(event: MouseEvent): void {
     event.stopPropagation();
+    if (!this.canInteract) {
+      return;
+    }
     this.doneTask.emit(this.task.id);
   }
 
   onArchiveTask(event: MouseEvent): void {
     event.stopPropagation();
+    if (!this.canInteract) {
+      return;
+    }
     this.archiveTask.emit(this.task.id);
   }
 }

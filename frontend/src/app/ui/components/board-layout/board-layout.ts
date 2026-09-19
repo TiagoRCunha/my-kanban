@@ -5,6 +5,7 @@ import { TaskCardData } from '../task-card';
 import { ColumnController } from '../column-controller';
 import { CustomTag } from '../../../domain/board/entities/task.entity';
 import { TaskEditorFormValue, TaskEditorModal, TaskEditorState } from '../task-editor-modal';
+import { BoardPermissions, getBoardPermissions } from '../../../domain/board/entities/board-permissions';
 import { HttpColumnRepository, HttpTaskRepository } from '../../../infrastructure/board';
 import { HttpUserConfigAdapter } from '../../../infrastructure/user-config';
 import { AuthService } from '../../../infrastructure/auth/auth.service';
@@ -27,6 +28,8 @@ type BoardColumnData = {
 })
 export class BoardLayout implements OnChanges {
   @Input({ required: true }) boardId!: number;
+  @Input() boardOwnerId: number | null = null;
+  @Input() permissions: BoardPermissions | null = null;
 
   private readonly columnRepository = inject(HttpColumnRepository);
   private readonly taskRepository = inject(HttpTaskRepository);
@@ -42,6 +45,10 @@ export class BoardLayout implements OnChanges {
   isLoading = true;
   hasDoneColumn = false;
   hasArchiveColumn = false;
+
+  get effectivePermissions(): BoardPermissions {
+    return this.permissions ?? getBoardPermissions(null, false);
+  }
 
   getVisibleTasks(column: BoardColumnData): TaskCardData[] {
     const multiplier = this.loadMoreCounts[column.id] ?? 1;
@@ -126,12 +133,20 @@ export class BoardLayout implements OnChanges {
   }
 
   onTaskDrop(event: CdkDragDrop<TaskCardData[]>): void {
+    if (!this.effectivePermissions.canMoveTask) {
+      return;
+    }
+
     const sourceColumn =
       this.findColumnByContainerId(event.previousContainer?.id)
       ?? this.findColumnByTasks(event.previousContainer.data);
 
     if (event.previousContainer === event.container) {
       if (!sourceColumn) {
+        return;
+      }
+
+      if (!this.effectivePermissions.canReorderTasks) {
         return;
       }
 
@@ -190,6 +205,10 @@ export class BoardLayout implements OnChanges {
   }
 
   onColumnDrop(event: CdkDragDrop<BoardColumnData[]>): void {
+    if (!this.effectivePermissions.canManageColumns) {
+      return;
+    }
+
     if (event.previousIndex === event.currentIndex) {
       return;
     }
@@ -239,6 +258,10 @@ export class BoardLayout implements OnChanges {
   }
 
   async onRenameColumn(columnId: number, newTitle: string): Promise<void> {
+    if (!this.effectivePermissions.canManageColumns) {
+      return;
+    }
+
     const title = newTitle.trim();
 
     if (!title) {
@@ -274,6 +297,10 @@ export class BoardLayout implements OnChanges {
   }
 
   async onDeleteColumn(columnId: number): Promise<void> {
+    if (!this.effectivePermissions.canManageColumns) {
+      return;
+    }
+
     try {
       const column = this.columns.find((c) => c.id === columnId);
       if (!column) {
@@ -291,6 +318,10 @@ export class BoardLayout implements OnChanges {
   }
 
   onCreateTask(columnId: number): void {
+    if (!this.effectivePermissions.canCreateTask) {
+      return;
+    }
+
     this.taskEditor = {
       mode: 'create',
       columnId,
@@ -302,11 +333,16 @@ export class BoardLayout implements OnChanges {
       tagColor: '',
       dueDate: '',
       estimatedHours: null,
-      assigneeIdsText: '',
+      assigneeIds: [],
+      canDelete: false,
     };
   }
 
   async onDeleteTask(columnId: number, taskId: number): Promise<void> {
+    if (!this.effectivePermissions.canEditTask) {
+      return;
+    }
+
     try {
       await this.taskRepository.delete(taskId, columnId);
     } catch (err) {
@@ -331,6 +367,10 @@ export class BoardLayout implements OnChanges {
   }
 
   onOpenTask(columnId: number, taskId: number): void {
+    if (!this.effectivePermissions.canEditTask) {
+      return;
+    }
+
     const column = this.columns.find((value) => value.id === columnId);
     const task = column?.tasks.find((value) => value.id === taskId);
 
@@ -349,7 +389,8 @@ export class BoardLayout implements OnChanges {
       tagColor: task.tagColor,
       dueDate: task.dueDate,
       estimatedHours: task.estimatedHours,
-      assigneeIdsText: task.assigneeIds.join(', '),
+      assigneeIds: [...task.assigneeIds],
+      canDelete: this.canDeleteTask(task.reportedById),
     };
   }
 
@@ -362,17 +403,16 @@ export class BoardLayout implements OnChanges {
       return;
     }
 
+    if (!this.effectivePermissions.canEditTask) {
+      return;
+    }
+
     const title = form.title.trim();
     if (!title) {
       return;
     }
 
-    const assigneeIds = form.assigneeIdsText
-      .split(',')
-      .map((value) => value.trim())
-      .filter((value) => value !== '')
-      .map((value) => Number(value))
-      .filter((value) => Number.isInteger(value) && value > 0);
+    const assigneeIds = form.assigneeIds;
 
     if (this.taskEditor.mode === 'create') {
       try {
@@ -506,6 +546,10 @@ export class BoardLayout implements OnChanges {
   }
 
   async onAddColumn(title: string): Promise<void> {
+    if (!this.effectivePermissions.canManageColumns) {
+      return;
+    }
+
     try {
       const newColumn = await this.columnRepository.create({
         title,
@@ -533,6 +577,10 @@ export class BoardLayout implements OnChanges {
   }
 
   async onDoneTask(columnId: number, taskId: number): Promise<void> {
+    if (!this.effectivePermissions.canEditTask) {
+      return;
+    }
+
     try {
       const updatedTask = await this.taskRepository.markAsDone(taskId, columnId);
 
@@ -583,6 +631,10 @@ export class BoardLayout implements OnChanges {
   }
 
   async onArchiveTask(columnId: number, taskId: number): Promise<void> {
+    if (!this.effectivePermissions.canEditTask) {
+      return;
+    }
+
     try {
       const archiveColumn = this.columns.find((col) => col.archived && !col.isDone);
       if (!archiveColumn) {
@@ -626,5 +678,15 @@ export class BoardLayout implements OnChanges {
 
   getCurrentUserId(): number | null {
     return this.authService.user?.id ?? null;
+  }
+
+  isBoardOwner(): boolean {
+    const userId = this.authService.user?.id;
+    return userId != null && this.boardOwnerId === userId;
+  }
+
+  canDeleteTask(reportedById: number): boolean {
+    return this.effectivePermissions.canEditTask
+      && (this.isBoardOwner() || this.authService.user?.id === reportedById);
   }
 }

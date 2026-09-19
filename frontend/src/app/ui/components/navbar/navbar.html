@@ -9,6 +9,16 @@
     <a class="navbar__link" routerLink="/boards">Boards</a>
     <a class="navbar__link" routerLink="/settings">Settings</a>
 
+    @if (showShareButton) {
+      <button
+        class="navbar__btn navbar__btn--share"
+        type="button"
+        (click)="onShare()"
+      >
+        Share
+      </button>
+    }
+
     <span class="navbar__user">{{ userName }}</span>
 
     <button

@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TaskCard } from '../task-card';
 import { TaskCardData } from '../task-card';
+import { BoardPermissions, getBoardPermissions } from '../../../domain/board/entities/board-permissions';
 
 export type ColumnData = {
   id: number;
@@ -26,6 +27,8 @@ export class BoardColumn {
   @Input() dropListId = '';
   @Input() connectedDropListIds: string[] = [];
   @Input() currentUserId: number | null = null;
+  @Input() isBoardOwner = false;
+  @Input() permissions: BoardPermissions | null = null;
   @Input() hasDoneColumn = false;
   @Input() hasArchiveColumn = false;
   @Input() hasMoreTasks = false;
@@ -43,6 +46,10 @@ export class BoardColumn {
   renameTitle = '';
   showDeleteConfirm = false;
   deleteConfirmText = '';
+
+  get effectivePermissions(): BoardPermissions {
+    return this.permissions ?? getBoardPermissions(null, false);
+  }
 
   onDrop(event: CdkDragDrop<TaskCardData[]>): void {
     this.taskDropped.emit(event);
@@ -69,10 +76,16 @@ export class BoardColumn {
   }
 
   onTogglePin(): void {
+    if (!this.effectivePermissions.canManageColumns) {
+      return;
+    }
     this.togglePin.emit();
   }
 
   onToggleRename(): void {
+    if (!this.effectivePermissions.canManageColumns) {
+      return;
+    }
     this.renameTitle = this.column.title;
     this.isRenaming = !this.isRenaming;
   }
@@ -99,6 +112,9 @@ export class BoardColumn {
   }
 
   onDeleteColumn(): void {
+    if (!this.effectivePermissions.canManageColumns) {
+      return;
+    }
     this.showDeleteConfirm = true;
     this.deleteConfirmText = '';
   }

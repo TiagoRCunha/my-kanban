@@ -7,6 +7,7 @@
       cdkDropList
       cdkDropListOrientation="horizontal"
       [cdkDropListData]="columns"
+      [cdkDropListDisabled]="!effectivePermissions.canManageColumns"
       (cdkDropListDropped)="onColumnDrop($event)"
     >
       @for (column of columns; track column.id) {
@@ -15,7 +16,7 @@
           cdkDrag
           cdkDragLockAxis="x"
           [cdkDragData]="column"
-          [cdkDragDisabled]="column.pinned"
+          [cdkDragDisabled]="column.pinned || !effectivePermissions.canManageColumns"
         >
           <app-board-column
             [column]="column"
@@ -25,6 +26,8 @@
             [dropListId]="getDropListId(column.id)"
             [connectedDropListIds]="connectedDropListIds"
             [currentUserId]="getCurrentUserId()"
+            [isBoardOwner]="isBoardOwner()"
+            [permissions]="effectivePermissions"
             [hasDoneColumn]="hasDoneColumn"
             [hasArchiveColumn]="hasArchiveColumn"
             (taskDropped)="onTaskDrop($event)"
@@ -42,7 +45,9 @@
       }
     </div>
 
-    <app-column-controller (onAdd)="onAddColumn($event)" />
+    @if (effectivePermissions.canManageColumns) {
+      <app-column-controller (onAdd)="onAddColumn($event)" />
+    }
 
     <app-task-editor-modal
       [state]="taskEditor"

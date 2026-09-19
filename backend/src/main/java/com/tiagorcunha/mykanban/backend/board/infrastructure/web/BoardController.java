@@ -106,4 +106,22 @@ public class BoardController {
   public void delete(@PathVariable Long id) {
     boardUseCase.delete(id);
   }
+
+  @PostMapping("/{id}/leave")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @Operation(summary = "Leave a board (remove yourself from board members)")
+  @ApiResponses({
+      @ApiResponse(responseCode = "204", description = "Left board"),
+      @ApiResponse(
+          responseCode = "403",
+          description = "Board owner cannot leave or not a member",
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
+      @ApiResponse(
+          responseCode = "404",
+          description = "Board not found",
+          content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+  })
+  public void leaveBoard(@PathVariable Long id) {
+    boardUseCase.leaveBoard(id);
+  }
 }

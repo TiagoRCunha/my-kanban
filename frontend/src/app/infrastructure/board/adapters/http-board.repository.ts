@@ -58,4 +58,10 @@ export class HttpBoardRepository implements BoardRepository {
   public delete(id: number): Promise<void> {
     return firstValueFrom(this.httpClient.delete<void>(`${this.apiBaseUrl}/boards/${id}`));
   }
+
+  public leaveBoard(id: number): Promise<void> {
+    return firstValueFrom(
+      this.httpClient.post<void>(`${this.apiBaseUrl}/boards/${id}/leave`, {}),
+    );
+  }
 }

@@ -45,6 +45,14 @@
     >
       Column Types
     </button>
+    <button
+      class="settings__tab"
+      [class.settings__tab--active]="activeTab === 'sharing'"
+      type="button"
+      (click)="setTab('sharing')"
+    >
+      Board Sharing
+    </button>
   </nav>
 
   <!-- ─── Content ──────────────────────────────────────────────────────── -->
@@ -291,6 +299,112 @@
             <app-animated-button label="Add Tag" variant="neutral" icon="plus" (pressed)="addCustomTag()" />
           </div>
         </div>
+      </section>
+    }
+
+    <!-- Board Sharing Tab -->
+    @if (activeTab === 'sharing') {
+      <section class="settings__section">
+        <h2 class="settings__section-title">Board Sharing</h2>
+        <p class="settings__section-description">
+          Manage who has access to your boards. Invite users by email and control their permissions.
+        </p>
+
+        @if (ownerBoards.length === 0) {
+          <p class="settings__empty-text">You don't own any boards yet. Create a board to start sharing.</p>
+        }
+
+        @for (board of ownerBoards; track board.id) {
+          <div class="settings__card">
+            <h3
+              class="settings__card-title settings__card-title--clickable"
+              (click)="selectBoard(board.id)"
+            >
+              {{ board.title }}
+              <span class="settings__member-count">
+                {{ getMembersForBoard(board.id).length }} member(s)
+              </span>
+            </h3>
+
+            @if (selectedBoardId === board.id) {
+              <div class="settings__sharing-panel">
+                <!-- Invite form -->
+                <div class="settings__invite-row">
+                  <input
+                    class="settings__invite-input"
+                    type="email"
+                    placeholder="Enter email address"
+                    [(ngModel)]="inviteEmail"
+                    [disabled]="isInviting"
+                    (keyup.enter)="onInviteMember(board.id)"
+                  />
+                  <select
+                    class="settings__invite-select"
+                    [(ngModel)]="inviteRole"
+                    [disabled]="isInviting"
+                  >
+                    <option value="GUEST">Guest</option>
+                    <option value="VIEW_ONLY">View Only</option>
+                  </select>
+                  <app-animated-button
+                    label="Invite"
+                    variant="confirm"
+                    [compact]="true"
+                    [disabled]="isInviting || !inviteEmail.trim()"
+                    (pressed)="onInviteMember(board.id)"
+                  />
+                </div>
+
+                @if (inviteErrorMessage) {
+                  <div class="settings__error settings__card-error">{{ inviteErrorMessage }}</div>
+                }
+
+                @if (inviteSuccessMessage) {
+                  <div class="settings__success settings__card-success">{{ inviteSuccessMessage }}</div>
+                }
+
+                <!-- Members list -->
+                @if (isLoadingMembers) {
+                  <p class="settings__empty-text">Loading members...</p>
+                } @else {
+                  <div class="settings__list">
+                    @for (member of getMembersForBoard(board.id); track member.id) {
+                      <div class="settings__member-row">
+                        <div class="settings__member-info">
+                          <span class="settings__member-name">{{ member.fullName }}</span>
+                          <span class="settings__member-email">{{ member.email }}</span>
+                        </div>
+                        <div class="settings__member-actions">
+                          <select
+                            class="settings__role-select"
+                            [ngModel]="member.role"
+                            (ngModelChange)="onChangeMemberRole(board.id, member, $event)"
+                          >
+                            <option value="GUEST">Guest</option>
+                            <option value="VIEW_ONLY">View Only</option>
+                            <option value="INVITED">Pending Invite</option>
+                          </select>
+                          <button
+                            class="settings__remove-member-btn"
+                            type="button"
+                            aria-label="Remove member"
+                            (click)="onRemoveMember(board.id, member)"
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      </div>
+                    } @empty {
+                      <p class="settings__empty-text">
+                        No members yet. Invite someone to share this board.
+                      </p>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
       </section>
     }
   }

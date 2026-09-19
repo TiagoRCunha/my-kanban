@@ -9,6 +9,8 @@ import { HttpTaskRepository } from '../../../infrastructure/board/adapters/task-
 import { HttpUserConfigAdapter } from '../../../infrastructure/user-config/adapters/http-user-config.adapter';
 import { AuthService } from '../../../infrastructure/auth/auth.service';
 import { Task } from '../../../domain/board/entities/task.entity';
+import { OWNER_PERMISSIONS } from '../../../domain/board/entities/board-permissions';
+import { HttpUserRepository } from '../../../infrastructure/users';
 
 describe('BoardLayout (integration)', () => {
   let fixture: ComponentFixture<BoardLayout>;
@@ -81,6 +83,8 @@ describe('BoardLayout (integration)', () => {
       defaultTaskLimit: 10,
     });
     const authServiceSpy = jasmine.createSpyObj('AuthService', [], { user: { id: 1 } });
+    const userRepositorySpy = jasmine.createSpyObj('HttpUserRepository', ['findAll']);
+    userRepositorySpy.findAll.and.resolveTo([]);
 
     await TestBed.configureTestingModule({
       imports: [FormsModule, BoardLayout],
@@ -89,12 +93,14 @@ describe('BoardLayout (integration)', () => {
         { provide: HttpTaskRepository, useValue: taskRepoSpy },
         { provide: HttpUserConfigAdapter, useValue: userConfigAdapterSpy },
         { provide: AuthService, useValue: authServiceSpy },
+        { provide: HttpUserRepository, useValue: userRepositorySpy },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(BoardLayout);
     component = fixture.componentInstance;
     component.boardId = 1;
+    component.permissions = OWNER_PERMISSIONS;
 
     // Bypass async loading by setting data directly (matches the original test pattern)
     component.columns = [
@@ -241,7 +247,7 @@ describe('BoardLayout (integration)', () => {
       tagColor: component.columns[0].tasks[0].tagColor,
       dueDate: '2026-08-01',
       estimatedHours: 3,
-      assigneeIdsText: '10,11',
+      assigneeIds: [10, 11],
     });
     await fixture.whenStable();
     fixture.detectChanges();
@@ -293,7 +299,7 @@ describe('BoardLayout (integration)', () => {
       tagColor: component.taskEditor.tagColor,
       dueDate: '2026-07-30',
       estimatedHours: 5,
-      assigneeIdsText: '5, 7',
+      assigneeIds: [5, 7],
     });
     await fixture.whenStable();
     fixture.detectChanges();

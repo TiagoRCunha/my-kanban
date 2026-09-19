@@ -1,4 +1,9 @@
-<app-navbar />
+<app-navbar
+  [boardId]="boardId"
+  [boardOwnerId]="board?.ownerId ?? null"
+  [permissions]="permissions"
+  (shareBoard)="onOpenShareDialog()"
+/>
 
 <main class="board-page">
   @if (isLoading) {
@@ -12,7 +17,17 @@
       <h1 class="board-page__title">{{ board.title }}</h1>
     </div>
     <div class="board-page__content">
-      <app-board-layout [boardId]="boardId" />
+      <app-board-layout
+        [boardId]="boardId"
+        [boardOwnerId]="board.ownerId"
+        [permissions]="permissions"
+      />
     </div>
   }
 </main>
+
+<app-share-dialog
+  [boardId]="boardId"
+  [open]="isShareDialogOpen"
+  (closed)="onCloseShareDialog()"
+/>

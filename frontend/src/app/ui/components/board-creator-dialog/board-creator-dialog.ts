@@ -7,6 +7,8 @@ export type BoardCreatorFormValue = {
   description: string;
 };
 
+export type BoardCreatorMode = 'create' | 'edit';
+
 @Component({
   selector: 'app-board-creator-dialog',
   imports: [FormsModule, AnimatedButton],
@@ -24,12 +26,25 @@ export class BoardCreatorDialog {
     description: '',
   };
 
+  private mode: BoardCreatorMode = 'create';
+
+  get isEditMode(): boolean {
+    return this.mode === 'edit';
+  }
+
   get canSave(): boolean {
     return this.draft.title.trim().length > 0;
   }
 
   open(): void {
+    this.mode = 'create';
     this.draft = { title: '', description: '' };
+    this.isVisible = true;
+  }
+
+  openForEdit(title: string, description: string): void {
+    this.mode = 'edit';
+    this.draft = { title, description };
     this.isVisible = true;
   }
 

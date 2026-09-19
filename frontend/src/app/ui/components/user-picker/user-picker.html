@@ -1,0 +1,77 @@
+<div class="user-picker">
+  <div class="user-picker__chips">
+    @for (user of selectedUsers; track user.id) {
+      <span class="user-picker__chip">
+        <span class="user-picker__avatar user-picker__avatar--chip">
+          @if (user.avatarUrl) {
+            <img [src]="user.avatarUrl" alt="" />
+          } @else {
+            {{ getInitials(user.fullName) }}
+          }
+        </span>
+        <span class="user-picker__chip-name">{{ user.fullName }}</span>
+        <button
+          type="button"
+          class="user-picker__chip-remove"
+          [attr.aria-label]="'Remove ' + user.fullName"
+          (click)="removeUser(user.id)"
+        >
+          ×
+        </button>
+      </span>
+    } @empty {
+      <span class="user-picker__placeholder">No assignees selected</span>
+    }
+  </div>
+
+  @if (errorMessage) {
+    <p class="user-picker__error">{{ errorMessage }}</p>
+  }
+
+  <div class="user-picker__field" [class.user-picker__field--open]="isOpen">
+    <input
+      class="user-picker__search"
+      type="text"
+      placeholder="Search users..."
+      aria-label="Search users"
+      [(ngModel)]="searchText"
+      (focus)="isOpen = true"
+      (blur)="isOpen = false"
+    />
+
+    @if (isOpen) {
+      <ul class="user-picker__list">
+        @if (isLoading) {
+          <li class="user-picker__list-note">Loading users...</li>
+        } @else if (filteredUsers.length === 0) {
+          <li class="user-picker__list-note">No users found.</li>
+        } @else {
+          @for (user of filteredUsers; track user.id) {
+            <li
+              class="user-picker__option"
+              [class.user-picker__option--selected]="isSelected(user.id)"
+              (mousedown)="toggleUser(user)"
+            >
+              <span class="user-picker__avatar">
+                @if (user.avatarUrl) {
+                  <img [src]="user.avatarUrl" alt="" />
+                } @else {
+                  {{ getInitials(user.fullName) }}
+                }
+              </span>
+              <span class="user-picker__option-info">
+                <span class="user-picker__option-name">{{ user.fullName }}</span>
+                <span class="user-picker__option-email">{{ user.email.value }}</span>
+              </span>
+              <span class="user-picker__check">
+                @if (isSelected(user.id)) {
+                  ✓
+                }
+              </span>
+            </li>
+          }
+        }
+      </ul>
+    }
+  </div>
+</div>

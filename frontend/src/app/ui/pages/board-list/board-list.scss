@@ -10,6 +10,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: t.$spacing-3;
     margin-bottom: t.$spacing-5;
   }
 
@@ -67,21 +69,34 @@
   &__card {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: t.$spacing-2;
-    padding: t.$spacing-4;
+    min-width: 0;
+    width: 100%;
     background-color: t.$color-surface;
     border: 1px solid t.$color-border;
     border-radius: t.$radius-md;
     box-shadow: t.$shadow-card;
-    cursor: pointer;
-    text-align: left;
+    overflow: hidden;
     transition: box-shadow 0.15s, border-color 0.15s;
 
     &:hover {
       box-shadow: t.$shadow-card-hover;
       border-color: t.$color-primary;
     }
+  }
+
+  &__card-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: t.$spacing-2;
+    flex: 1;
+    width: 100%;
+    padding: t.$spacing-4;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
 
     @include m.focus-ring;
   }
@@ -104,5 +119,58 @@
     font-size: t.$font-size-sm;
     color: t.$color-text-muted;
     margin-top: auto;
+  }
+
+  &__card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: t.$spacing-2;
+    padding: t.$spacing-3 t.$spacing-4 t.$spacing-4;
+    border-top: 1px solid t.$color-border;
+  }
+
+  &__action-btn {
+    padding: t.$spacing-1 t.$spacing-3;
+    background-color: transparent;
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-sm;
+    font-size: t.$font-size-sm;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+
+    @include m.focus-ring;
+
+    &--edit {
+      color: t.$color-primary;
+      border-color: t.$color-primary;
+
+      &:hover {
+        background-color: t.$color-primary;
+        color: #ffffff;
+      }
+    }
+
+    &--leave {
+      color: t.$color-danger;
+      border-color: t.$color-danger;
+
+      &:hover {
+        background-color: t.$color-danger;
+        color: #ffffff;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: t.$spacing-3;
+
+    &__card-actions {
+      align-items: stretch;
+    }
+
+    &__action-btn {
+      flex: 1;
+      text-align: center;
+    }
   }
 }
