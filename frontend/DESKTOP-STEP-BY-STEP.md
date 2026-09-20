@@ -47,3 +47,5 @@ persistence for the built binary.
 - Only reliable channel: small single-file node writes + clean node reads.
 - Run tests via: node node_modules/@angular/cli/bin/ng.js test --watch=false
   --browsers=ChromeHeadless (single command line, no && chains).
+
+## DECISION (user-confirmed today): desktop = Electron/Tauri DESKTOP BINARY. Target wiring: IpcStorageDriver + DesktopStorageBridge in main process; desktop SPA = built Angular bundle + main-process IPC persistence.
