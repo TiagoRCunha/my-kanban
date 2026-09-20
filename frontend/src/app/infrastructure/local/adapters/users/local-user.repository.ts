@@ -1,7 +1,7 @@
-import type { LocalActorPort } from '../../../../../domain/shared/ports/local-actor.port';
-import type { LocalBackend } from '../../../../local/local-backend';
-import { User, type CreateUserInput, type UpdateUserInput } from '../../../../../domain/users/entities/user.entity';
-import { UserRepository } from '../../../../../domain/users/ports/user-repository.port';
+import type { LocalActorPort } from '../../../../domain/shared/ports/local-actor.port';
+import type { LocalBackend } from '../../local-backend';
+import { User, type CreateUserInput, type UpdateUserInput } from '../../../../domain/users/entities/user.entity';
+import { UserRepository } from '../../../../domain/users/ports/user-repository.port';
 import { LocalSessionDrivenUserMapper } from './local-user.mapper';
 
 /**
@@ -27,12 +27,26 @@ export class LocalUserRepository implements UserRepository {
 
   public async create(input: CreateUserInput): Promise<User> {
     const actorId = await this.actor.resolveActorId();
-    return LocalSessionDrivenUserMapper.toDomain(await this.backend.createUser(actorId, input));
+    return LocalSessionDrivenUserMapper.toDomain(
+      await this.backend.createUser(actorId, {
+        fullName: input.fullName,
+        email: input.email,
+        password: input.passwordHash,
+        avatarUrl: input.avatarUrl ?? null,
+      }),
+    );
   }
 
   public async update(id: number, input: UpdateUserInput): Promise<User> {
     const actorId = await this.actor.resolveActorId();
-    return LocalSessionDrivenUserMapper.toDomain(await this.backend.updateUser(actorId, id, input));
+    return LocalSessionDrivenUserMapper.toDomain(
+      await this.backend.updateUser(actorId, id, {
+        fullName: input.fullName,
+        email: input.email,
+        password: input.passwordHash,
+        avatarUrl: input.avatarUrl ?? null,
+      }),
+    );
   }
 
   public async delete(id: number): Promise<void> {

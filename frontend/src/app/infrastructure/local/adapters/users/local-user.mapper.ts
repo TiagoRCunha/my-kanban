@@ -1,5 +1,5 @@
-import { User } from '../../../../../domain/users/entities/user.entity'
-import type { UserResponseDto } from '../../../../local/local-backend';
+import { User } from '../../../../domain/users/entities/user.entity'
+import type { UserResponseDto } from '../../../users/dto/user-response.dto';
 
 /**
  * Maps the local (desktop) user DTO returned by `LocalBackend` into the
