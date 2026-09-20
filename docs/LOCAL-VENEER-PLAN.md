@@ -30,9 +30,10 @@ Phase 1 (DONE): `LocalDatabase` (snapshot-based local store) + `LocalBackend`
 (session-aware API, 49 public methods) — committed, green.
 Phase 2 (DONE): pluggable storage drivers (in-memory, IndexedDB, IPC) + factory
 — committed, green.
-Phase 3 (IN PROGRESS): **DI veneer** — thin repository adapters that sit on top
-of `LocalBackend` behind a DI token, selected per storage mode. This is a large
-vertical (users, board, column, task, comment, member, user-config ~7 slices).
+Phase 3 (DONE): **DI veneer** — thin repository adapters that sit on top
+of `LocalBackend` behind DI tokens, selected per storage mode. Every aggregate
+(users, boards, columns, tasks, comments, board-members, user-config) has a
+spec-first `Local<Slice>Repository` and the DI wiring is in place.
 
 ## Phase 3 — the two adapter veneers already written (clean on disk)
 
@@ -96,17 +97,18 @@ DO NOT rehydrate the giant spec file by guessing; it landed corrupt both tries.
 
 ## Suggested next session steps
 
-1. Run the users veneer slice to confirm the current RED:
-   `ng test --watch=false --browsers=ChromeHeadless`
-   (target: `local-user.repository.spec.ts`)
-2. Rewrite `adapters/users/local-user.repository.spec.ts` with the correct
-   relative imports above + a spec mirroring HTTP `UserRepository` behavior
-   (findAll, findById, create, update, delete round trip).
-3. Green it, then repeat the same veneer pattern for the other `User*`
-   repositories, the board/column/task/comment/member slices, and user-config.
-4. Wire the DI token + factory: `createStorageDriver(detectStorageMode())`
-   selects the adapter set.
-5. Commit.
+1. Phase 3 is complete. Continue with Phase 4:
+   - **Feature flag**: page/route guards and UI injection pick the local
+     adapters by storage mode. The UI still injects the `Http*` concrete
+     classes directly, so introduce/consume the domain ports (or the `LOCAL_*`
+     tokens from `infrastructure/local/di/local-veneer.providers.ts`) and add
+     `provideLocalVeneer()` to the app/bootstrap config for local mode.
+   - **Desktop shell**: Electron/Tauri draft that boots
+     `provideLocalVeneer('desktop')` over the IPC storage bridge and shows the
+     board offline, surviving restart.
+2. Run the full suite (`ng test --watch=false --browsers=ChromeHeadless`):
+   currently **215 specs green**.
+3. Commit each phase separately, same style (`feat(local-veneer): ...`).
 
 ## Environment notes
 - Windows PowerShell; node works from `E:\documentos\programming\my-kanban\frontend`.

@@ -5,40 +5,50 @@ Add a local (desktop/offline) veneer to my-kanban so the same Angular
 front-end can run as a desktop binary (Electron/Tauri) without the Spring
 backend: same domain, same feature flags, no HTTP.
 
-## Proven foundation (committed, green, byte-verified)
+## Proven foundation (committed, green)
 - Phase 1+2: `LocalDatabase` + `LocalBackend` (49 session-aware methods,
   actor-first), pluggable storage drivers (InMemory, IndexedDb, Ipc + bridge)
   behind `createStorageDriver(detectStorageMode())`. 59 specs green.
-- Commit: 4cce9f3 (persistence), branch desktop-version, git root = frontend.
+- Commit: 4cce9f3 (persistence), branch desktop-version.
 
-## The veneer pattern (one per domain aggregate)
+## Progress — Phase 3 (DI veneer) COMPLETE
+All slices are spec-first (red then green) and committed individually:
+
+| Slice | Specs | Commit |
+| --- | --- | --- |
+| users | 9 | 42902e8 |
+| boards (+ leaveBoard) | 10 | 02265ed |
+| columns | 7 | f5e2ff3 |
+| tasks | 8 | 5c45e97 |
+| comments | 5 | 3487e20 |
+| board-members | 5 | 29458ac |
+| user-config | 8 | 25606f9 |
+| DI wiring + session | 15 | 970cb92 |
+
+Full suite after wiring: **215 specs green**.
+
+### The veneer pattern (one per domain aggregate)
 Each local adapter mirrors the HTTP adapter's veneer contract but swaps the
 HTTP client + JWT for `LocalBackend` + `LocalActorPort` (acting user id):
 
-1. Port: `LocalActorPort { resolveActorId(): Promise<number> }` — done (shared/ports).
-2. Static actor: `StaticLocalActor(id)` — done (adapters/users/static-local-actor).
-3. Mapper: local DTO -> domain User — done (adapters/users/local-user.mapper).
-4. Repository: `LocalUserRepository(backend, actor)` delegating to backend
-   with `const actorId = await this.actor.resolveActorId()` — done
-   (adapters/users/local-user.repository).
-5. DI: `LocalActorPort` token + `StaticLocalActor` factory wired in the DI
-   module, selected by `detectStorageMode()`; owner user from LocalDatabase.
+1. Port: `LocalActorPort { resolveActorId(): Promise<number> }` (shared/ports).
+2. Actors: `StaticLocalActor(id)` (tests) and `SessionLocalActor`
+   (desktop session, reads `LocalSessionStore`).
+3. Mapper: local DTO -> domain aggregate (`local-<slice>.mapper.ts`).
+4. Repository: `Local<Slice>Repository(backend, actor)` delegating to the
+   backend with `const actorId = await this.actor.resolveActorId()`.
+5. DI: `provideLocalVeneer(mode)` in `infrastructure/local/di/` exposes
+   `LOCAL_*` tokens + factories (backend, driver, session store, actor and all
+   seven repositories) sharing one `LocalBackend`; `createLocalVeneer` /
+   `hydrateLocalVeneer` are the composable boot core. `LocalDatabase.hydrate`
+   restores a persisted snapshot in place on boot.
 
-## Step-by-step (next session, DO IN ORDER)
-1. Rewrite ONLY `local-user.repository.spec.ts` (the one corrupted file) —
-   mirror the HTTP users veneer spec's construction bytes:
-   `StaticLocalActor(1)` + `new LocalBackend(database, { storage: new InMemoryStorageDriver() })`.
-2. Run users slice only: `ng test --watch=false --browsers=ChromeHeadless
-   --include="src/app/infrastructure/local/adapters/users/**"` — expect green.
-3. Commit users veneer slice (feat(local-veneer): users repository).
-4. Repeat the exact same veneer for: boards, columns, tasks, comments,
-   board-members, board-membership, user-config (7 repositories), each with
-   its spec-first red then green, one commit per slice.
-5. DI wiring: register all local repositories behind `LocalActorPort` + DI
-   tokens as provider factories selected by `detectStorageMode()`;
-   add a session store resolving the owner id (desktop session).
-6. Feature flag: Angular page/route guards pick the local adapter by mode;
-   desktop build uses desktop storage driver (IPC bridge → main process →
-   IndexedDB) so data survives restart.
-7. Acceptance: run the 59 base specs + all new veneer specs green; build a
-   desktop shell that boots the DI factories and shows the board offline.
+## Remaining (Phase 4 — feature flag + shell)
+1. **Feature flag**: route/page guards and UI injection must pick the local
+   adapters by storage mode. Today every page injects the `Http*` concrete
+   classes directly, so this is the switch-over step.
+2. **Desktop shell**: Electron/Tauri draft that calls
+   `provideLocalVeneer('desktop')` (IPC storage bridge → main process →
+   SQLite/IndexedDB) and shows the board offline, surviving restart.
+3. **Acceptance**: full suite green (done) plus a manual offline smoke test of
+   the shell.
