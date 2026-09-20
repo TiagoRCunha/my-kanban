@@ -43,6 +43,10 @@ By combining a realistic business domain with a modern technology stack and a st
 - [x] Uses token JWT for authentication and authorization
 - [x] Adds personalization to user such as settings and darkmode
 - [x] Send email of create account
-- [ ] Manage more than one role type users
-- [ ] Have a full operation project
-- [ ] Uses CI/CD
+- [x] Manage more than one role type users
+- [x] Have a full operation project
+- [x] Uses CI/CD
+
+## Extra milestone
+
+- [ ] build a version for local storage and a desktop app for local use.
