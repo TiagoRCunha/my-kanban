@@ -239,6 +239,33 @@ export class LocalDatabase {
   }
 
   /**
+   * Restores the state of an existing instance from a snapshot, replacing the
+   * current records and identity sequences in place. Used by the desktop DI
+   * bootstrapping to reuse the same `LocalDatabase` instance while hydrating
+   * it from a persisted storage driver.
+   */
+  public hydrate(snapshot: LocalDatabaseSnapshot): void {
+    if (!snapshot?.meta || snapshot.meta.schemaVersion !== LOCAL_DATABASE_SCHEMA_VERSION) {
+      const version = snapshot?.meta?.schemaVersion ?? 'missing';
+      throw new Error(
+        `Unsupported local database schema version (expected ${LOCAL_DATABASE_SCHEMA_VERSION}, got ${version})`,
+      );
+    }
+
+    this.users = snapshot.users ?? [];
+    this.userConfigs = snapshot.userConfigs ?? [];
+    this.userStartupColumns = snapshot.userStartupColumns ?? [];
+    this.userCustomTags = snapshot.userCustomTags ?? [];
+    this.boards = snapshot.boards ?? [];
+    this.boardColumns = snapshot.boardColumns ?? [];
+    this.boardMembers = snapshot.boardMembers ?? [];
+    this.tasks = snapshot.tasks ?? [];
+    this.taskAssignees = snapshot.taskAssignees ?? [];
+    this.comments = snapshot.comments ?? [];
+    this.nextIds = { ...DEFAULT_NEXT_IDS, ...(snapshot.nextIds ?? {}) };
+  }
+
+  /**
    * Returns an independent snapshot of the current state. The returned value
    * is safe to stringify or mutate without affecting the live database.
    */

@@ -60,6 +60,40 @@ describe('LocalDatabase', () => {
     expect(restored.nextId('boards')).toBe(2);
   });
 
+  it('hydrates an existing instance in place from a snapshot', () => {
+    const database = LocalDatabase.createEmpty();
+    const now = '2026-09-19T10:00:00.000Z';
+    database.users.push({
+      id: database.nextId('users'),
+      fullName: 'Tiago',
+      email: 'tiago@example.com',
+      passwordHash: 'hash',
+      avatarUrl: null,
+      role: 'USER',
+      emailVerified: true,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    const persisted = database.serialize();
+    const hydrated = LocalDatabase.createEmpty();
+    hydrated.hydrate(persisted);
+
+    expect(hydrated.users).toEqual(database.users);
+    expect(hydrated.serialize()).toEqual(persisted);
+    expect(hydrated.nextId('users')).toBe(2);
+  });
+
+  it('rejects unsupported schema versions on hydrate', () => {
+    const snapshot = LocalDatabase.createEmpty().serialize();
+    const unsupported = {
+      ...snapshot,
+      meta: { schemaVersion: LOCAL_DATABASE_SCHEMA_VERSION + 1 },
+    };
+
+    expect(() => LocalDatabase.createEmpty().hydrate(unsupported)).toThrowError(/schema version/);
+  });
+
   it('rejects unsupported schema versions', () => {
     const snapshot = LocalDatabase.createEmpty().serialize();
     const unsupported = {
