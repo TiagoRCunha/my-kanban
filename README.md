@@ -14,6 +14,10 @@
     <img width="50" src="https://raw.githubusercontent.com/marwin1991/profile-technology-icons/refs/heads/main/icons/docker.png"/>
 </span>
 
+## What is this project
+
+> Extra: This last branch modify the database to local, you can change to this branch, build and install the program.
+
 This portfolio project was designed to replicate the structure and standards of a real-world enterprise application, built from the ground up to practice and demonstrate the most respected software design patterns. It uses a task management system inspired by the Kanban methodology as its core domain, providing a practical and familiar business scenario that is complex enough to showcase advanced architectural decisions without becoming overly simplistic. The system supports multiple user roles with distinct permissions—regular users can create and manage their own boards, columns, and tasks, while administrators have access to broader management functions—ensuring that authentication and authorization are treated as first-class concerns throughout the entire stack.
 
 On the backend, the application is developed with Spring Boot and persists data in PostgreSQL. The server code rigorously follows Hexagonal Architecture (Ports and Adapters), keeping the domain model completely isolated from infrastructure details such as the database, REST controllers, and JWT token handling. Domain-Driven Design was applied during the modeling phase to identify Bounded Contexts, Aggregates, Value Objects, and Domain Events, resulting in a rich and expressive business layer that faithfully captures the rules of a collaborative Kanban board. Every feature was written using Test-Driven Development, with a comprehensive test suite that validates domain logic, application services, and adapters independently, allowing for rapid and safe refactoring. The API exposes full OpenAPI documentation generated automatically from code, enabling interactive exploration and testing of endpoints. Security is implemented using JWT-based authentication, with tokens carrying non-sequential identifiers and being validated on every request to protect resources according to the user’s role.
@@ -49,4 +53,4 @@ By combining a realistic business domain with a modern technology stack and a st
 
 ## Extra milestone
 
-- [ ] build a version for local storage and a desktop app for local use.
+- [x] build a version for local storage and a desktop app for local use.
