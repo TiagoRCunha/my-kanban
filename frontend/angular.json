@@ -52,6 +52,23 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "desktop": {
+              "baseHref": "./",
+              "optimization": true,
+              "outputHashing": "all",
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"

@@ -1,12 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { UserPicker } from './user-picker';
-import { HttpUserRepository } from '../../../infrastructure/users';
+import { USER_REPOSITORY } from '../../../infrastructure/di/repository-tokens';
+import type { UserRepository } from '../../../domain/users/ports/user-repository.port';
 import { User } from '../../../domain/users';
 
 describe('UserPicker', () => {
   let fixture: ComponentFixture<UserPicker>;
   let component: UserPicker;
-  let userRepositorySpy: jasmine.SpyObj<HttpUserRepository>;
+  let userRepositorySpy: jasmine.SpyObj<UserRepository>;
 
   const buildUser = (id: number, fullName: string, email: string): User =>
     User.fromSnapshot({
@@ -20,7 +21,7 @@ describe('UserPicker', () => {
     });
 
   beforeEach(async () => {
-    userRepositorySpy = jasmine.createSpyObj('HttpUserRepository', ['findAll']);
+    userRepositorySpy = jasmine.createSpyObj('UserRepository', ['findAll']);
     userRepositorySpy.findAll.and.resolveTo([
       buildUser(1, 'Ana Souza', 'ana@example.com'),
       buildUser(2, 'Bruno Lima', 'bruno@example.com'),
@@ -28,7 +29,7 @@ describe('UserPicker', () => {
 
     await TestBed.configureTestingModule({
       imports: [UserPicker],
-      providers: [{ provide: HttpUserRepository, useValue: userRepositorySpy }],
+      providers: [{ provide: USER_REPOSITORY, useValue: userRepositorySpy }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(UserPicker);

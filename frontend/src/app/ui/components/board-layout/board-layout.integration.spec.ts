@@ -4,20 +4,24 @@ import { FormsModule } from '@angular/forms';
 import { BoardColumn } from '../board-column';
 import { BoardLayout } from './board-layout';
 import { ColumnController } from '../column-controller';
-import { HttpColumnRepository } from '../../../infrastructure/board/adapters/http-column.repository';
-import { HttpTaskRepository } from '../../../infrastructure/board/adapters/task-http.repository';
-import { HttpUserConfigAdapter } from '../../../infrastructure/user-config/adapters/http-user-config.adapter';
+import {
+  COLUMN_REPOSITORY,
+  TASK_REPOSITORY,
+  USER_CONFIG_REPOSITORY,
+  USER_REPOSITORY,
+  type BoardColumnRepository,
+  type BoardTaskRepository,
+} from '../../../infrastructure/di/repository-tokens';
 import { AuthService } from '../../../infrastructure/auth/auth.service';
 import { Task } from '../../../domain/board/entities/task.entity';
 import { OWNER_PERMISSIONS } from '../../../domain/board/entities/board-permissions';
-import { HttpUserRepository } from '../../../infrastructure/users';
 
 describe('BoardLayout (integration)', () => {
   let fixture: ComponentFixture<BoardLayout>;
   let component: BoardLayout;
 
   beforeEach(async () => {
-    const columnRepoSpy = jasmine.createSpyObj('HttpColumnRepository', ['findByBoardId', 'create', 'delete', 'reorder', 'update']);
+    const columnRepoSpy = jasmine.createSpyObj('BoardColumnRepository', ['findByBoardId', 'create', 'delete', 'reorder', 'update']);
     columnRepoSpy.create.and.callFake((input: { title: string; position: number; boardId: number }) =>
       Promise.resolve({
         id: 4,
@@ -27,7 +31,7 @@ describe('BoardLayout (integration)', () => {
     );
     columnRepoSpy.reorder.and.returnValue(Promise.resolve());
     columnRepoSpy.update.and.returnValue(Promise.resolve());
-    const taskRepoSpy = jasmine.createSpyObj('HttpTaskRepository', ['findByColumnId', 'create', 'delete', 'reorder', 'moveTask', 'update']);
+    const taskRepoSpy = jasmine.createSpyObj('BoardTaskRepository', ['findByColumnId', 'create', 'delete', 'reorder', 'moveTask', 'update']);
     taskRepoSpy.create.and.callFake((input: { title: string; description: string; tagId: number | null; dueDate: string | null; estimatedHours: number | null; position: number; assigneeIds: number[]; columnId: number }) =>
       Promise.resolve(
         Task.fromSnapshot({
@@ -73,7 +77,7 @@ describe('BoardLayout (integration)', () => {
     taskRepoSpy.delete.and.returnValue(Promise.resolve());
     taskRepoSpy.reorder.and.returnValue(Promise.resolve());
     taskRepoSpy.moveTask.and.returnValue(Promise.resolve());
-    const userConfigAdapterSpy = jasmine.createSpyObj('HttpUserConfigAdapter', ['getConfig']);
+    const userConfigAdapterSpy = jasmine.createSpyObj('UserConfigRepositoryPort', ['getConfig']);
     userConfigAdapterSpy.getConfig.and.resolveTo({
       customTags: [
         { id: 1, name: 'Low', color: '#2e7d32', position: 1 },
@@ -83,17 +87,17 @@ describe('BoardLayout (integration)', () => {
       defaultTaskLimit: 10,
     });
     const authServiceSpy = jasmine.createSpyObj('AuthService', [], { user: { id: 1 } });
-    const userRepositorySpy = jasmine.createSpyObj('HttpUserRepository', ['findAll']);
+    const userRepositorySpy = jasmine.createSpyObj('UserRepository', ['findAll']);
     userRepositorySpy.findAll.and.resolveTo([]);
 
     await TestBed.configureTestingModule({
       imports: [FormsModule, BoardLayout],
       providers: [
-        { provide: HttpColumnRepository, useValue: columnRepoSpy },
-        { provide: HttpTaskRepository, useValue: taskRepoSpy },
-        { provide: HttpUserConfigAdapter, useValue: userConfigAdapterSpy },
+        { provide: COLUMN_REPOSITORY, useValue: columnRepoSpy },
+        { provide: TASK_REPOSITORY, useValue: taskRepoSpy },
+        { provide: USER_CONFIG_REPOSITORY, useValue: userConfigAdapterSpy },
         { provide: AuthService, useValue: authServiceSpy },
-        { provide: HttpUserRepository, useValue: userRepositorySpy },
+        { provide: USER_REPOSITORY, useValue: userRepositorySpy },
       ],
     }).compileComponents();
 
@@ -325,7 +329,7 @@ describe('BoardLayout (integration)', () => {
   });
 
   it('persists column reorder to backend when columns are reordered', () => {
-    const columnRepoSpy = TestBed.inject(HttpColumnRepository) as jasmine.SpyObj<HttpColumnRepository>;
+    const columnRepoSpy = TestBed.inject(COLUMN_REPOSITORY) as jasmine.SpyObj<BoardColumnRepository>;
 
     const mockEvent = {
       previousIndex: 0,
@@ -345,7 +349,7 @@ describe('BoardLayout (integration)', () => {
   });
 
   it('persists same-column task reorder to backend', () => {
-    const taskRepoSpy = TestBed.inject(HttpTaskRepository) as jasmine.SpyObj<HttpTaskRepository>;
+    const taskRepoSpy = TestBed.inject(TASK_REPOSITORY) as jasmine.SpyObj<BoardTaskRepository>;
     const sourceColumn = component.columns[0];
 
     // Add a second task to make reordering meaningful
@@ -382,7 +386,7 @@ describe('BoardLayout (integration)', () => {
   });
 
   it('persists cross-column task move to backend', () => {
-    const taskRepoSpy = TestBed.inject(HttpTaskRepository) as jasmine.SpyObj<HttpTaskRepository>;
+    const taskRepoSpy = TestBed.inject(TASK_REPOSITORY) as jasmine.SpyObj<BoardTaskRepository>;
     const sourceColumn = component.columns[0];
     const targetColumn = component.columns[1];
     const movedTask = sourceColumn.tasks[0];
@@ -408,7 +412,7 @@ describe('BoardLayout (integration)', () => {
   });
 
   it('persists same-column task reorder when the drop list exposes a sliced task array', () => {
-    const taskRepoSpy = TestBed.inject(HttpTaskRepository) as jasmine.SpyObj<HttpTaskRepository>;
+    const taskRepoSpy = TestBed.inject(TASK_REPOSITORY) as jasmine.SpyObj<BoardTaskRepository>;
     const sourceColumn = component.columns[0];
 
     sourceColumn.tasks.push({
@@ -446,7 +450,7 @@ describe('BoardLayout (integration)', () => {
   });
 
   it('persists cross-column task move when columns expose sliced task arrays', () => {
-    const taskRepoSpy = TestBed.inject(HttpTaskRepository) as jasmine.SpyObj<HttpTaskRepository>;
+    const taskRepoSpy = TestBed.inject(TASK_REPOSITORY) as jasmine.SpyObj<BoardTaskRepository>;
     const sourceColumn = component.columns[0];
     const targetColumn = component.columns[1];
     const movedTask = sourceColumn.tasks[0];
@@ -472,7 +476,7 @@ describe('BoardLayout (integration)', () => {
   });
 
   it('removes the moved task from the source column and keeps hidden tasks on a cross-column move', () => {
-    const taskRepoSpy = TestBed.inject(HttpTaskRepository) as jasmine.SpyObj<HttpTaskRepository>;
+    const taskRepoSpy = TestBed.inject(TASK_REPOSITORY) as jasmine.SpyObj<BoardTaskRepository>;
     const sourceColumn = component.columns[0];
     const targetColumn = component.columns[1];
     const movedTask = sourceColumn.tasks[0];

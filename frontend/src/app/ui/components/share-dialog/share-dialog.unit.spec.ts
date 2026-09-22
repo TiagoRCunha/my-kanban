@@ -1,12 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ShareDialog } from './share-dialog';
-import { HttpBoardMemberRepository } from '../../../infrastructure/board/adapters/http-board-member.repository';
+import { BOARD_MEMBER_REPOSITORY } from '../../../infrastructure/di/repository-tokens';
+import type { BoardMemberRepository } from '../../../domain/board/ports/board-member-repository.port';
 import { BoardMember } from '../../../domain/board/entities/board-member.entity';
 
 describe('ShareDialog', () => {
   let fixture: ComponentFixture<ShareDialog>;
   let component: ShareDialog;
-  let memberRepositorySpy: jasmine.SpyObj<HttpBoardMemberRepository>;
+  let memberRepositorySpy: jasmine.SpyObj<BoardMemberRepository>;
 
   const memberSnapshot = (id: number, email: string, fullName: string) =>
     BoardMember.fromSnapshot({
@@ -19,7 +20,7 @@ describe('ShareDialog', () => {
     });
 
   beforeEach(async () => {
-    memberRepositorySpy = jasmine.createSpyObj('HttpBoardMemberRepository', [
+    memberRepositorySpy = jasmine.createSpyObj('BoardMemberRepository', [
       'listMembers',
       'inviteMember',
       'updateMemberRole',
@@ -39,7 +40,7 @@ describe('ShareDialog', () => {
     await TestBed.configureTestingModule({
       imports: [ShareDialog],
       providers: [
-        { provide: HttpBoardMemberRepository, useValue: memberRepositorySpy },
+        { provide: BOARD_MEMBER_REPOSITORY, useValue: memberRepositorySpy },
       ],
     }).compileComponents();
 

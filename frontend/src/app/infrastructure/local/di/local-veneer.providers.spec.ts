@@ -43,6 +43,7 @@ function seedOwner(database: LocalDatabase): void {
 }
 
 describe('LocalSessionStore', () => {
+  beforeEach(() => localStorage.clear());
   afterEach(() => localStorage.clear());
 
   it('stores and returns the id of the current local user', () => {
@@ -68,6 +69,7 @@ describe('LocalSessionStore', () => {
 });
 
 describe('SessionLocalActor', () => {
+  beforeEach(() => localStorage.clear());
   afterEach(() => localStorage.clear());
 
   it('resolves the id of the stored session user', async () => {
@@ -139,6 +141,7 @@ describe('hydrateLocalVeneer', () => {
 });
 
 describe('provideLocalVeneer', () => {
+  beforeEach(() => localStorage.clear());
   afterEach(() => localStorage.clear());
 
   it('provides a singleton backend and database', () => {

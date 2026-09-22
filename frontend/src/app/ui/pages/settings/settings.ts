@@ -7,10 +7,12 @@ import { CustomTagRow, CustomTagFormValue } from '../../components/custom-tag-ro
 import { AnimatedButton } from '../../components/animated-button';
 import { AuthService } from '../../../infrastructure/auth';
 import { ThemeService } from '../../../infrastructure/theme/theme.service';
-import { HttpUserConfigAdapter } from '../../../infrastructure/user-config';
-import { HttpBoardRepository } from '../../../infrastructure/board/adapters/http-board.repository';
-import { HttpBoardMemberRepository } from '../../../infrastructure/board/adapters/http-board-member.repository';
-import { HttpColumnRepository } from '../../../infrastructure/board/adapters/http-column.repository';
+import {
+  BOARD_MEMBER_REPOSITORY,
+  BOARD_REPOSITORY,
+  COLUMN_REPOSITORY,
+  USER_CONFIG_REPOSITORY,
+} from '../../../infrastructure/di/repository-tokens';
 import { UserConfig } from '../../../domain/users/entities/user-config.entity';
 import { StartupColumn } from '../../../domain/users/entities/startup-column.entity';
 import { CustomTagSettings } from '../../../domain/users/entities/custom-tag-settings.entity';
@@ -33,10 +35,10 @@ type SettingsTab = 'appearance' | 'security' | 'startup-columns' | 'custom-tags'
 export class SettingsPage implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly themeService = inject(ThemeService);
-  private readonly configAdapter = inject(HttpUserConfigAdapter);
-  private readonly boardRepository = inject(HttpBoardRepository);
-  private readonly columnRepository = inject(HttpColumnRepository);
-  private readonly memberRepository = inject(HttpBoardMemberRepository);
+  private readonly configAdapter = inject(USER_CONFIG_REPOSITORY);
+  private readonly boardRepository = inject(BOARD_REPOSITORY);
+  private readonly columnRepository = inject(COLUMN_REPOSITORY);
+  private readonly memberRepository = inject(BOARD_MEMBER_REPOSITORY);
   private readonly listBoardMembersUseCase = new ListBoardMembersUseCase(this.memberRepository);
   private readonly inviteBoardMemberUseCase = new InviteBoardMemberUseCase(this.memberRepository);
   private readonly updateMemberRoleUseCase = new UpdateBoardMemberRoleUseCase(this.memberRepository);

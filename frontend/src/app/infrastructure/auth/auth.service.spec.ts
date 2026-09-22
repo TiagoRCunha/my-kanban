@@ -2,6 +2,18 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from './auth.service';
+import { provideRepositoryVeneer } from '../di/repository-veneer.providers';
+import { USER_CONFIG_REPOSITORY } from '../di/repository-tokens';
+import { HttpUserConfigAdapter } from '../user-config/adapters/http-user-config.adapter';
+import { LOCAL_DATABASE, LOCAL_SESSION_STORE } from '../local/di/local-veneer.providers';
+import type { LocalDatabaseSnapshot } from '../local/local-database';
+
+type BridgeApi = {
+  loadSnapshot(): Promise<LocalDatabaseSnapshot | null>;
+  saveSnapshot(snapshot: LocalDatabaseSnapshot): Promise<void>;
+};
+
+const NOW = '2026-09-20T10:00:00.000Z';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -15,6 +27,7 @@ describe('AuthService', () => {
         AuthService,
         provideHttpClient(),
         provideHttpClientTesting(),
+        { provide: USER_CONFIG_REPOSITORY, useExisting: HttpUserConfigAdapter },
       ],
     });
 
@@ -58,6 +71,7 @@ describe('AuthService', () => {
         AuthService,
         provideHttpClient(),
         provideHttpClientTesting(),
+        { provide: USER_CONFIG_REPOSITORY, useExisting: HttpUserConfigAdapter },
       ],
     });
 
@@ -78,6 +92,7 @@ describe('AuthService', () => {
         AuthService,
         provideHttpClient(),
         provideHttpClientTesting(),
+        { provide: USER_CONFIG_REPOSITORY, useExisting: HttpUserConfigAdapter },
       ],
     });
 
@@ -253,6 +268,137 @@ describe('AuthService', () => {
 
       req.flush(null);
       await changePromise;
+    });
+  });
+
+  describe('desktop mode', () => {
+    const userConfigDescriptor = {
+      getConfig: () => Promise.resolve({
+        id: 1,
+        userId: 1,
+        darkMode: false,
+        defaultTaskLimit: 10,
+        startupColumns: [],
+        customTags: [],
+        createdAt: NOW,
+        updatedAt: NOW,
+      }),
+      updateDarkMode: () => Promise.resolve(),
+    };
+
+    function configureDesktopInjector(): void {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          AuthService,
+          provideHttpClient(),
+          provideHttpClientTesting(),
+          provideRepositoryVeneer('desktop'),
+          { provide: USER_CONFIG_REPOSITORY, useValue: userConfigDescriptor },
+        ],
+      });
+    }
+
+    beforeEach(() => {
+      (window as Window & { api?: BridgeApi }).api = {
+        loadSnapshot: async () => null,
+        saveSnapshot: async () => {},
+      };
+    });
+
+    afterEach(() => {
+      delete (window as Window & { api?: BridgeApi }).api;
+      localStorage.clear();
+    });
+
+    it('should be authenticated from a seeded local session', async () => {
+      configureDesktopInjector();
+      const database = TestBed.inject(LOCAL_DATABASE);
+      const session = TestBed.inject(LOCAL_SESSION_STORE);
+      database.nextId('users');
+      database.users.push({
+        id: 1,
+        fullName: 'Local User',
+        email: 'local@mykanban.app',
+        passwordHash: 'mykanban',
+        avatarUrl: null,
+        role: 'ADMIN',
+        emailVerified: true,
+        createdAt: NOW,
+        updatedAt: NOW,
+      });
+      session.setUserId(1);
+
+      service = TestBed.inject(AuthService);
+
+      expect(service.isAuthenticated).toBeTrue();
+      expect(service.user?.email).toBe('local@mykanban.app');
+    });
+
+    it('should not be authenticated without a local session', async () => {
+      configureDesktopInjector();
+      TestBed.inject(LOCAL_DATABASE);
+
+      service = TestBed.inject(AuthService);
+
+      expect(service.isAuthenticated).toBeFalse();
+      expect(service.user).toBeNull();
+    });
+
+    it('should log in through the local backend', async () => {
+      configureDesktopInjector();
+      const database = TestBed.inject(LOCAL_DATABASE);
+      database.nextId('users');
+      database.users.push({
+        id: 1,
+        fullName: 'Local User',
+        email: 'local@mykanban.app',
+        passwordHash: 'mykanban',
+        avatarUrl: null,
+        role: 'ADMIN',
+        emailVerified: true,
+        createdAt: NOW,
+        updatedAt: NOW,
+      });
+
+      service = TestBed.inject(AuthService);
+      const loginPromise = service.login('local@mykanban.app', 'mykanban');
+
+      // Let ThemeService.loadFromBackend's microtasks drain.
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+      const user = await loginPromise;
+
+      expect(user.id).toBe(1);
+      expect(service.isAuthenticated).toBeTrue();
+      expect(TestBed.inject(LOCAL_SESSION_STORE).getUserId()).toBe(1);
+    });
+
+    it('should clear the local session on logout', async () => {
+      configureDesktopInjector();
+      const database = TestBed.inject(LOCAL_DATABASE);
+      const session = TestBed.inject(LOCAL_SESSION_STORE);
+      database.nextId('users');
+      database.users.push({
+        id: 1,
+        fullName: 'Local User',
+        email: 'local@mykanban.app',
+        passwordHash: 'mykanban',
+        avatarUrl: null,
+        role: 'ADMIN',
+        emailVerified: true,
+        createdAt: NOW,
+        updatedAt: NOW,
+      });
+      session.setUserId(1);
+
+      service = TestBed.inject(AuthService);
+      expect(service.isAuthenticated).toBeTrue();
+
+      service.logout();
+
+      expect(service.isAuthenticated).toBeFalse();
+      expect(session.getUserId()).toBeNull();
     });
   });
 });

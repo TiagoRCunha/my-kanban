@@ -74,11 +74,28 @@ export async function hydrateLocalVeneer(
 }
 
 /**
+ * Hook run once, after the persisted snapshot has been hydrated into the
+ * database on app boot. Used by the desktop bootstrap to seed a default local
+ * account and to establish the session deterministically AFTER hydration
+ * (Angular runs APP_INITIALIZERs concurrently, so seeding cannot be a
+ * separate initializer).
+ */
+export type LocalVeneerBootHook = (
+  database: LocalDatabase,
+  session: LocalSessionStore,
+  driver: StorageDriverPort,
+) => void | Promise<void>;
+
+/**
  * Angular providers for the local veneer. The storage driver is picked by
  * storage mode (memory/browser/desktop) and the backend is hydrated from it
- * on app boot.
+ * on app boot. When a boot hook is given it runs right after hydration,
+ * before any route guard is evaluated.
  */
-export function provideLocalVeneer(mode: StorageMode = detectStorageMode()): Provider[] {
+export function provideLocalVeneer(
+  mode: StorageMode = detectStorageMode(),
+  bootHook?: LocalVeneerBootHook,
+): Provider[] {
   return [
     { provide: LOCAL_STORAGE_MODE, useValue: mode },
     {
@@ -101,9 +118,11 @@ export function provideLocalVeneer(mode: StorageMode = detectStorageMode()): Pro
     },
     {
       provide: APP_INITIALIZER,
-      useFactory: (database: LocalDatabase, driver: StorageDriverPort) => () =>
-        hydrateLocalVeneer(database, driver),
-      deps: [LOCAL_DATABASE, LOCAL_DRIVER],
+      useFactory: (database: LocalDatabase, driver: StorageDriverPort, session: LocalSessionStore) =>
+        () => hydrateLocalVeneer(database, driver).then(async () => {
+          await bootHook?.(database, session, driver);
+        }),
+      deps: [LOCAL_DATABASE, LOCAL_DRIVER, LOCAL_SESSION_STORE],
       multi: true,
     },
     {

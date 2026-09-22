@@ -1,15 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { BoardListPage } from './board-list';
-import { HttpBoardRepository } from '../../../infrastructure/board/adapters/http-board.repository';
-import { AuthService } from '../../../infrastructure/auth/auth.service';
-import { ThemeService } from '../../../infrastructure/theme/theme.service';
 import { Board } from '../../../domain/board/entities/board.entity';
+import type { BoardRepository } from '../../../domain/board/ports/board-repository.port';
+import { BOARD_REPOSITORY } from '../../../infrastructure/di/repository-tokens';
+import { ThemeService } from '../../../infrastructure/theme/theme.service';
+import { AuthService } from '../../../infrastructure/auth/auth.service';
 
 describe('BoardListPage', () => {
   let fixture: ComponentFixture<BoardListPage>;
   let component: BoardListPage;
-  let boardRepositorySpy: jasmine.SpyObj<HttpBoardRepository>;
+  let boardRepositorySpy: jasmine.SpyObj<BoardRepository>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
 
   const boardSnapshot = (
@@ -27,7 +28,7 @@ describe('BoardListPage', () => {
     });
 
   beforeEach(async () => {
-    boardRepositorySpy = jasmine.createSpyObj('HttpBoardRepository', [
+    boardRepositorySpy = jasmine.createSpyObj('BoardRepository', [
       'findAll',
       'create',
       'update',
@@ -54,7 +55,7 @@ describe('BoardListPage', () => {
       imports: [BoardListPage],
       providers: [
         provideRouter([]),
-        { provide: HttpBoardRepository, useValue: boardRepositorySpy },
+        { provide: BOARD_REPOSITORY, useValue: boardRepositorySpy },
         { provide: AuthService, useValue: authServiceSpy },
         { provide: ThemeService, useValue: themeServiceSpy },
       ],

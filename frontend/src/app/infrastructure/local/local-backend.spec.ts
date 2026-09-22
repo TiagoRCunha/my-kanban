@@ -18,14 +18,16 @@ async function registerUser(
   return backend.register({ fullName, email, password: 'secret123' });
 }
 
+/**
+ * Registers a user (and returns its id). Local registration auto-verifies the
+ * account, so no separate email verification step is required.
+ */
 async function registerAndVerify(
   backend: LocalBackend,
   fullName = 'Alice',
   email = 'alice@example.com',
 ): Promise<number> {
   const user = await registerUser(backend, fullName, email);
-  const mail = backend.takeOutbox()[0];
-  await backend.verifyEmail(mail.token);
   return user.id;
 }
 
@@ -46,7 +48,7 @@ async function expectLocalError(promise: Promise<unknown>, status: number): Prom
 
 describe('LocalBackend', () => {
   describe('auth', () => {
-    it('registers a user with seeded config, startup columns and tags, and blocks login until verified', async () => {
+    it('registers a user with seeded config, startup columns and tags, and auto-verifies the account', async () => {
       const { backend, database } = setup();
 
       const user = await registerUser(backend);
@@ -54,10 +56,12 @@ describe('LocalBackend', () => {
       expect(user.email).toBe('alice@example.com');
       expect(user.role).toBe('USER');
 
-      await expectLocalError(backend.login('alice@example.com', 'secret123'), 403);
+      // Local/desktop registration has no email flow: the account is verified
+      // immediately, so login succeeds without a verification step.
+      await expectAsync(backend.login('alice@example.com', 'secret123')).toBeResolved();
 
       const record = database.users.find((u) => u.id === user.id);
-      expect(record?.emailVerified).toBeFalse();
+      expect(record?.emailVerified).toBeTrue();
       const config = database.userConfigs.find((c) => c.userId === user.id);
       expect(config?.darkMode).toBeFalse();
       expect(config?.defaultTaskLimit).toBe(10);
@@ -88,16 +92,12 @@ describe('LocalBackend', () => {
       await expectLocalError(backend.login('alice@example.com', 'wrong-password'), 401);
     });
 
-    it('verifies the email with the outbox token and issues a decodable access token', async () => {
+    it('registers an auto-verified user and issues a decodable access token on login', async () => {
       const { backend } = setup();
       await registerUser(backend);
 
-      const mail = backend.takeOutbox();
-      expect(mail).toHaveSize(1);
-      expect(mail[0].type).toBe('VERIFY_EMAIL');
-      expect(mail[0].email).toBe('alice@example.com');
-
-      await backend.verifyEmail(mail[0].token);
+      // Local accounts are auto-verified, so registration emits no mail.
+      expect(backend.takeOutbox()).toEqual([]);
 
       const tokenResponse = await backend.login('alice@example.com', 'secret123');
       expect(tokenResponse.tokenType).toBe('Bearer');
@@ -109,6 +109,35 @@ describe('LocalBackend', () => {
       };
       expect(payload.sub).toBe('alice@example.com');
       expect(payload.uid).toBe(1);
+    });
+
+    it('still verifies pre-existing unverified accounts through the outbox token', async () => {
+      const { backend, database } = setup();
+      // A snapshot restored from disk may hold accounts created before the
+      // local veneer auto-verified new registrations.
+      database.nextId('users');
+      database.users.push({
+        id: 2,
+        fullName: 'Legacy',
+        email: 'legacy@example.com',
+        passwordHash: 'password',
+        avatarUrl: null,
+        role: 'USER',
+        emailVerified: false,
+        createdAt: '2026-01-01T10:00:00.000Z',
+        updatedAt: '2026-01-01T10:00:00.000Z',
+      });
+
+      const token = await backend.resendVerification('legacy@example.com');
+      expect(token).not.toBeNull();
+
+      const mail = backend.takeOutbox();
+      expect(mail).toHaveSize(1);
+      expect(mail[0].type).toBe('VERIFY_EMAIL');
+      expect(mail[0].email).toBe('legacy@example.com');
+
+      await backend.verifyEmail(mail[0].token);
+      await expectAsync(backend.login('legacy@example.com', 'password')).toBeResolved();
     });
 
     it('rejects malformed or wrong-purpose verification tokens', async () => {
@@ -134,12 +163,28 @@ describe('LocalBackend', () => {
     });
 
     it('rejects reset tokens that are invalid or for a different purpose', async () => {
-      const { backend } = setup();
+      const { backend, database } = setup();
       await registerAndVerify(backend);
 
       await expectLocalError(backend.resetPassword('garbage', 'new'), 401);
 
-      const verificationToken = await backend.resendVerification('alice@example.com');
+      // New registrations are auto-verified, so mint a verification token for
+      // a manually-inserted unverified account to exercise the wrong-purpose
+      // rejection.
+      database.nextId('users');
+      database.users.push({
+        id: 2,
+        fullName: 'Legacy',
+        email: 'legacy@example.com',
+        passwordHash: 'password',
+        avatarUrl: null,
+        role: 'USER',
+        emailVerified: false,
+        createdAt: '2026-01-01T10:00:00.000Z',
+        updatedAt: '2026-01-01T10:00:00.000Z',
+      });
+      const verificationToken = await backend.resendVerification('legacy@example.com');
+      expect(verificationToken).not.toBeNull();
       await expectLocalError(
         backend.resetPassword(verificationToken ?? '', 'new'),
         401,

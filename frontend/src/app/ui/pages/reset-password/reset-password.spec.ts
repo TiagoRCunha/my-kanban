@@ -3,6 +3,12 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { ResetPasswordPage } from './reset-password';
+import { USER_CONFIG_REPOSITORY } from '../../../infrastructure/di/repository-tokens';
+
+const noopUserConfig = {
+  getConfig: (userId: number) => Promise.resolve({ userId, darkMode: false }),
+  updateDarkMode: (userId: number, darkMode: boolean) => Promise.resolve({ userId, darkMode }),
+};
 
 describe('ResetPasswordPage', () => {
   let fixture: ComponentFixture<ResetPasswordPage>;
@@ -28,6 +34,7 @@ describe('ResetPasswordPage', () => {
             },
           },
         },
+        { provide: USER_CONFIG_REPOSITORY, useValue: noopUserConfig },
       ],
     }).compileComponents();
 

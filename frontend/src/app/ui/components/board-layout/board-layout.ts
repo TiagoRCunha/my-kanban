@@ -6,8 +6,11 @@ import { ColumnController } from '../column-controller';
 import { CustomTag } from '../../../domain/board/entities/task.entity';
 import { TaskEditorFormValue, TaskEditorModal, TaskEditorState } from '../task-editor-modal';
 import { BoardPermissions, getBoardPermissions } from '../../../domain/board/entities/board-permissions';
-import { HttpColumnRepository, HttpTaskRepository } from '../../../infrastructure/board';
-import { HttpUserConfigAdapter } from '../../../infrastructure/user-config';
+import {
+  COLUMN_REPOSITORY,
+  TASK_REPOSITORY,
+  USER_CONFIG_REPOSITORY,
+} from '../../../infrastructure/di/repository-tokens';
 import { AuthService } from '../../../infrastructure/auth/auth.service';
 
 type BoardColumnData = {
@@ -31,9 +34,9 @@ export class BoardLayout implements OnChanges {
   @Input() boardOwnerId: number | null = null;
   @Input() permissions: BoardPermissions | null = null;
 
-  private readonly columnRepository = inject(HttpColumnRepository);
-  private readonly taskRepository = inject(HttpTaskRepository);
-  private readonly userConfigAdapter = inject(HttpUserConfigAdapter);
+  private readonly columnRepository = inject(COLUMN_REPOSITORY);
+  private readonly taskRepository = inject(TASK_REPOSITORY);
+  private readonly userConfigRepository = inject(USER_CONFIG_REPOSITORY);
   private readonly authService = inject(AuthService);
 
   taskEditor: TaskEditorState | null = null;
@@ -76,7 +79,7 @@ export class BoardLayout implements OnChanges {
     try {
       const userId = this.authService.user?.id;
       if (userId) {
-        const config = await this.userConfigAdapter.getConfig(userId);
+        const config = await this.userConfigRepository.getConfig(userId);
         this.availableTags = config.customTags.map((ct) => ({ id: ct.id, name: ct.name, color: ct.color, position: ct.position }));
         this.taskLimit = config.defaultTaskLimit;
       }

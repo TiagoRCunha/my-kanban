@@ -3,12 +3,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Navbar } from '../../components/navbar';
 import { BoardLayout } from '../../components/board-layout';
 import { ShareDialog } from '../../components/share-dialog';
-import { HttpBoardRepository } from '../../../infrastructure/board';
+import { BOARD_MEMBER_REPOSITORY, BOARD_REPOSITORY } from '../../../infrastructure/di/repository-tokens';
 import { Board } from '../../../domain/board/entities/board.entity';
 import { BoardMemberRole } from '../../../domain/board/entities/board-member.entity';
 import { BoardPermissions, getBoardPermissions } from '../../../domain/board/entities/board-permissions';
 import { ListBoardMembersUseCase } from '../../../domain/board/use-cases/board-member/list-board-members.use-case';
-import { HttpBoardMemberRepository } from '../../../infrastructure/board/adapters/http-board-member.repository';
 import { AuthService } from '../../../infrastructure/auth';
 
 @Component({
@@ -20,9 +19,9 @@ import { AuthService } from '../../../infrastructure/auth';
 export class BoardPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly boardRepository = inject(HttpBoardRepository);
+  private readonly boardRepository = inject(BOARD_REPOSITORY);
   private readonly authService = inject(AuthService);
-  private readonly memberRepository = inject(HttpBoardMemberRepository);
+  private readonly memberRepository = inject(BOARD_MEMBER_REPOSITORY);
   private readonly listMembersUseCase = new ListBoardMembersUseCase(this.memberRepository);
 
   board: Board | null = null;

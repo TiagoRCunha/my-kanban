@@ -165,7 +165,9 @@ export class LocalBackend {
     password: string;
     avatarUrl?: string | null;
   }): Promise<AuthUserResponseDto> {
-    return this.createUserAccount(input.fullName, input.email, input.password, input.avatarUrl ?? null, 'USER', false);
+    // The local/desktop variant has no email flow, so new accounts are
+    // trusted (emailVerified) right away.
+    return this.createUserAccount(input.fullName, input.email, input.password, input.avatarUrl ?? null, 'USER', true);
   }
 
   public async verifyEmail(token: string): Promise<void> {

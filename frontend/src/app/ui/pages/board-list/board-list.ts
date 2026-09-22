@@ -2,7 +2,7 @@ import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { Navbar } from '../../components/navbar';
 import { BoardCreatorDialog, BoardCreatorFormValue } from '../../components/board-creator-dialog';
-import { HttpBoardRepository } from '../../../infrastructure/board';
+import { BOARD_REPOSITORY } from '../../../infrastructure/di/repository-tokens';
 import { Board } from '../../../domain/board/entities/board.entity';
 import { AuthService } from '../../../infrastructure/auth/auth.service';
 
@@ -13,7 +13,7 @@ import { AuthService } from '../../../infrastructure/auth/auth.service';
   styleUrl: './board-list.scss',
 })
 export class BoardListPage implements OnInit {
-  private readonly boardRepository = inject(HttpBoardRepository);
+  private readonly boardRepository = inject(BOARD_REPOSITORY);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 

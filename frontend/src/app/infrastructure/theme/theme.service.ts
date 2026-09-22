@@ -1,15 +1,12 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
 
-import { API_BASE_URL } from '../config/api.config';
+import { USER_CONFIG_REPOSITORY } from '../di/repository-tokens';
 
 const DARK_MODE_KEY = 'mykanban_dark_mode';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  private readonly httpClient = inject(HttpClient);
-  private readonly apiBaseUrl = inject(API_BASE_URL);
+  private readonly userConfigRepository = inject(USER_CONFIG_REPOSITORY);
 
   private isDarkMode = false;
 
@@ -30,20 +27,16 @@ export class ThemeService {
     this.applyTheme();
     localStorage.setItem(DARK_MODE_KEY, JSON.stringify(this.isDarkMode));
 
-    firstValueFrom(
-      this.httpClient.patch(`${this.apiBaseUrl}/users/${userId}/config`, {
-        darkMode: this.isDarkMode,
-      }),
-    ).catch(() => {});
+    // Fire and forget: the optimisation must never block the UI, exactly like
+    // the original HTTP call that swallowed its own errors.
+    this.userConfigRepository
+      .updateDarkMode(userId, this.isDarkMode)
+      .catch(() => {});
   }
 
   async loadFromBackend(userId: number): Promise<void> {
     try {
-      const config = await firstValueFrom(
-        this.httpClient.get<{ darkMode: boolean }>(
-          `${this.apiBaseUrl}/users/${userId}/config`,
-        ),
-      );
+      const config = await this.userConfigRepository.getConfig(userId);
       this.isDarkMode = config.darkMode;
       this.applyTheme();
       localStorage.setItem(DARK_MODE_KEY, JSON.stringify(this.isDarkMode));

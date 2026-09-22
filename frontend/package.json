@@ -1,11 +1,19 @@
 {
   "name": "frontend",
   "version": "1.0.3",
+  "productName": "My Kanban",
+  "description": "My Kanban — portfolio kanban board (Angular). Includes a desktop/offline edition powered by an Electron shell.",
+  "author": "my-kanban",
+  "main": "desktop/main.cjs",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
+    "build:desktop": "ng build --configuration desktop",
+    "desktop:run": "npm --prefix desktop start",
+    "start:desktop": "npm run build:desktop && npm --prefix desktop start",
+    "dist:win": "npm run build:desktop && electron-builder --win",
     "test": "ng test",
     "test:unit": "ng test --watch=false --browsers=ChromeHeadless",
     "test:unit:all": "ng test --watch=false --browsers=ChromeHeadless --include='**/*.unit.spec.ts'",
@@ -13,6 +21,29 @@
     "test:integration:all": "ng test --watch=false --browsers=ChromeHeadless --include='**/*.integration.spec.ts'",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install chromium"
+  },
+  "build": {
+    "appId": "com.mykanban.desktop",
+    "productName": "My Kanban",
+    "electronVersion": "33.4.11",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "desktop/main.cjs",
+      "desktop/preload.cjs",
+      "dist/frontend/browser/**/*"
+    ],
+    "win": {
+      "target": [
+        "portable",
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   },
   "prettier": {
     "printWidth": 100,
@@ -45,6 +76,7 @@
     "@angular/compiler-cli": "^20.3.0",
     "@playwright/test": "^1.61.1",
     "@types/jasmine": "~5.1.0",
+    "electron-builder": "^26.15.3",
     "jasmine-core": "~5.9.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
@@ -53,5 +85,12 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "sass": "^1.101.0",
     "typescript": "~5.9.2"
+  },
+  "allowScripts": {
+    "@parcel/watcher@2.5.6": true,
+    "esbuild@0.28.1": true,
+    "lmdb@3.4.2": true,
+    "msgpackr-extract@3.0.4": true,
+    "electron-winstaller@5.4.0": true
   }
 }

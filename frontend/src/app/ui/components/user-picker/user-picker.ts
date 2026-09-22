@@ -9,7 +9,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { User } from '../../../domain/users';
 import { ListUsersUseCase } from '../../../domain/users';
-import { HttpUserRepository } from '../../../infrastructure/users';
+import { USER_REPOSITORY } from '../../../infrastructure/di/repository-tokens';
 
 @Component({
   selector: 'app-user-picker',
@@ -21,7 +21,7 @@ export class UserPicker implements OnChanges {
   @Input() selectedIds: number[] = [];
   @Output() selectedIdsChange = new EventEmitter<number[]>();
 
-  private readonly userRepository = inject(HttpUserRepository);
+  private readonly userRepository = inject(USER_REPOSITORY);
   private readonly listUsersUseCase = new ListUsersUseCase(this.userRepository);
 
   users: User[] = [];

@@ -3,6 +3,12 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
 import { VerifyEmailPage } from './verify-email';
+import { USER_CONFIG_REPOSITORY } from '../../../infrastructure/di/repository-tokens';
+
+const noopUserConfig = {
+  getConfig: (userId: number) => Promise.resolve({ userId, darkMode: false }),
+  updateDarkMode: (userId: number, darkMode: boolean) => Promise.resolve({ userId, darkMode }),
+};
 
 describe('VerifyEmailPage', () => {
   let fixture: ComponentFixture<VerifyEmailPage>;
@@ -26,6 +32,7 @@ describe('VerifyEmailPage', () => {
             },
           },
         },
+        { provide: USER_CONFIG_REPOSITORY, useValue: noopUserConfig },
       ],
     }).compileComponents();
 

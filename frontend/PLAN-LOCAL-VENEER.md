@@ -43,12 +43,34 @@ HTTP client + JWT for `LocalBackend` + `LocalActorPort` (acting user id):
    `hydrateLocalVeneer` are the composable boot core. `LocalDatabase.hydrate`
    restores a persisted snapshot in place on boot.
 
-## Remaining (Phase 4 — feature flag + shell)
-1. **Feature flag**: route/page guards and UI injection must pick the local
-   adapters by storage mode. Today every page injects the `Http*` concrete
-   classes directly, so this is the switch-over step.
-2. **Desktop shell**: Electron/Tauri draft that calls
-   `provideLocalVeneer('desktop')` (IPC storage bridge → main process →
-   SQLite/IndexedDB) and shows the board offline, surviving restart.
-3. **Acceptance**: full suite green (done) plus a manual offline smoke test of
-   the shell.
+## Progress — Phase 4 (feature flag + shell) COMPLETE
+
+1. **Feature flag**: `di/repository-tokens.ts` exposes seven `InjectionToken`s
+   (USER_REPOSITORY, BOARD_REPOSITORY, BOARD_MEMBER_REPOSITORY,
+   USER_CONFIG_REPOSITORY, COLUMN_REPOSITORY, TASK_REPOSITORY,
+   COMMENT_REPOSITORY). `di/repository-veneer.providers.ts::provideRepositoryVeneer`
+   selects HTTP adapters (`useExisting`) or the local veneer verbs a storage
+   mode; `app.config.ts` calls it with
+   `detectStorageMode() === 'desktop' ? 'desktop' : 'http'`. All pages,
+   components and ThemeService now inject the tokens; AuthService delegates to
+   `LocalBackend` and the local session in desktop mode.
+2. **Desktop shell**: `desktop/` Electron app (`package.json`, `main.cjs`,
+   `preload.cjs` exposing `window.api`). `angular.json` gained a `desktop`
+   build configuration (`baseHref: ./`, prod optimization) —
+   `npm run build:desktop`; renderer is loaded from `dist/frontend/browser`.
+   Persistence is a single JSON snapshot under `app.getPath('userData')`
+   >> (divergence from the earlier SQLite idea — keeps the shell
+   dependency-free, mirrors the IndexedDB single-record contract).
+   `desktop-seed.ts::seedLocalSession` runs as an APP_INITIALIZER boot hook
+   after hydration: seeds `local@mykanban.app` / `mykanban` (ADMIN, verified,
+   darkMode false) and opens the session on first run.
+3. **Acceptance**: full suite **227 specs green**; `ng build` (web prod) and
+   `ng build --configuration desktop` both succeed; Electron smoke test boots
+   the renderer offline and persists the seeded snapshot to userData.
+   Pending (one-off, needs network/approval): `npm approve-scripts electron`
+   then `start` inside `desktop/` after `npm ci`.
+   Run/build scripts (added for convenience):
+   - `npm run desktop:run` — launches Electron dev run using the existing build.
+   - `npm run start:desktop` — `ng build --configuration desktop` + Electron dev run.
+   - `npm run dist:win` — electron-builder Windows targets (portable + NSIS
+     installer) into `frontend/release/`.

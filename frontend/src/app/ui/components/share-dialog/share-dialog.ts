@@ -6,7 +6,7 @@ import { ListBoardMembersUseCase } from '../../../domain/board/use-cases/board-m
 import { InviteBoardMemberUseCase } from '../../../domain/board/use-cases/board-member/invite-board-member.use-case';
 import { UpdateBoardMemberRoleUseCase } from '../../../domain/board/use-cases/board-member/update-board-member-role.use-case';
 import { RemoveBoardMemberUseCase } from '../../../domain/board/use-cases/board-member/remove-board-member.use-case';
-import { HttpBoardMemberRepository } from '../../../infrastructure/board/adapters/http-board-member.repository';
+import { BOARD_MEMBER_REPOSITORY } from '../../../infrastructure/di/repository-tokens';
 
 @Component({
   selector: 'app-share-dialog',
@@ -19,7 +19,7 @@ export class ShareDialog implements OnChanges {
   @Input() open = false;
   @Output() closed = new EventEmitter<void>();
 
-  private readonly memberRepository = inject(HttpBoardMemberRepository);
+  private readonly memberRepository = inject(BOARD_MEMBER_REPOSITORY);
   private readonly listMembersUseCase = new ListBoardMembersUseCase(this.memberRepository);
   private readonly inviteMemberUseCase = new InviteBoardMemberUseCase(this.memberRepository);
   private readonly updateRoleUseCase = new UpdateBoardMemberRoleUseCase(this.memberRepository);
